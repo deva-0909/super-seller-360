@@ -3,7 +3,32 @@
 -- ============================================================================
 
 -- ---------------------------------------------------------------------------
--- Helper role-group functions (reuse current_role_name() from Phase 1)
+-- Bug fix: current_role_name() (defined in Phase 1) queries user_profiles,
+-- which has an RLS policy that itself calls current_role_name() — a
+-- self-referential loop that recurses until Postgres hits its stack depth
+-- limit under a genuine low-privilege session. Invisible in earlier testing
+-- because that ran through a privileged connection that bypasses RLS
+-- entirely, never exercising the recursive path — only surfaced once
+-- testing actually switched to the `authenticated` role. Standard fix:
+-- SECURITY DEFINER so it bypasses RLS when looking up the CALLER'S OWN
+-- role — safe, since it only ever reads auth.uid()'s own row.
+-- ---------------------------------------------------------------------------
+create or replace function current_role_name()
+returns text
+language sql
+stable
+security definer
+set search_path = public, pg_temp
+as $$
+  select r.name from user_profiles up
+  join roles r on r.role_id = up.role_id
+  where up.user_id = auth.uid()
+$$;
+revoke execute on function current_role_name() from anon, public;
+grant execute on function current_role_name() to authenticated;
+
+-- ---------------------------------------------------------------------------
+-- Helper role-group functions
 -- ---------------------------------------------------------------------------
 -- IMPORTANT: every one of these coalesces to false explicitly. Without it,
 -- a caller with no user_profiles row gets current_role_name() = NULL, and

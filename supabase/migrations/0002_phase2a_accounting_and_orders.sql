@@ -200,9 +200,19 @@ create trigger trg_voucher_lines_immutable
   before update or delete on voucher_lines
   for each row execute function prevent_posted_voucher_line_mutation();
 
--- Mirror every voucher_line into journal_entries the moment its voucher is posted.
+-- Mirror every voucher_line into journal_entries the moment its voucher is
+-- posted. journal_entries has no direct INSERT policy for anyone (it's a
+-- derived table) — so this trigger MUST be SECURITY DEFINER, or a manually
+-- posted voucher (Finance/Accountant posting directly, not through
+-- post_sales_voucher) fails with a permission error the instant it tries to
+-- sync. post_sales_voucher's own SECURITY DEFINER masked this in early
+-- testing since everything it triggers inherits that elevated context —
+-- the gap only showed up once the manual-posting path was tested for real.
 create or replace function sync_journal_entries()
-returns trigger language plpgsql as $$
+returns trigger language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
 begin
   delete from journal_entries where voucher_id = new.voucher_id;
   if new.status = 'posted' then
@@ -215,7 +225,8 @@ begin
   return new;
 end;
 $$;
-alter function sync_journal_entries() set search_path = public, pg_temp;
+-- Never called directly by anyone — only by trg_sync_journal_entries below.
+revoke execute on function sync_journal_entries() from anon, authenticated, public;
 
 -- Fires after the voucher's lines are inserted (see post_sales_voucher),
 -- keyed off an explicit call rather than a raw insert trigger on

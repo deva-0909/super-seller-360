@@ -85,17 +85,43 @@ Permissions are enforced in Postgres itself, not just hidden in the UI — a War
     so it can't silently trust an unverified request in the meantime
 14. ✅ Pushed to GitHub
 
-## A bug caught and fixed during Phase 2 testing
+## Bugs caught and fixed during Phase 2 testing
 
-`post_sales_voucher()`'s authorization check used `if not (has_orders_write() or
-has_accounting_write())` — but when a caller has no `user_profiles` row at all,
-`current_role_name()` returns SQL `NULL`, and `NULL in (...)` evaluates to `NULL`, not `false`.
-`if not NULL` is falsy in plpgsql, so the check silently **didn't** raise — an order posted
-successfully for a caller with no role whatsoever. Found by testing exactly that case end-to-end
-against the live database, not by inspection. Fixed by having every `has_*_write()`/
-`has_*_view()` helper coalesce to `false` explicitly (migration `0003`, and the standalone
-lockdown in `0004` that also revokes `EXECUTE` from the `anon` role). Re-tested after the fix —
-the same call now correctly raises "Not authorized to post sales vouchers".
+Three real bugs surfaced while testing the accounting engine — worth documenting honestly,
+including where the testing method itself was initially inadequate:
+
+**1. NULL-handling bypassed the authorization check.** `post_sales_voucher()`'s check used
+`if not (has_orders_write() or has_accounting_write())` — but when a caller has no
+`user_profiles` row, `current_role_name()` returns SQL `NULL`, and `NULL in (...)` evaluates to
+`NULL`, not `false`. `if not NULL` is falsy in plpgsql, so the check silently didn't raise — an
+order posted successfully for a caller with no role whatsoever. Fixed by having every
+`has_*_write()`/`has_*_view()` helper coalesce to `false` explicitly (migration `0003`).
+
+**2. A self-referential RLS policy caused infinite recursion.** `current_role_name()` queries
+`user_profiles`, and `user_profiles`'s own RLS policy calls `current_role_name()` — a loop. This
+was completely invisible through bug #1's testing, because that testing ran through a privileged
+database connection that bypasses RLS entirely (only the JWT identity was simulated, not a
+genuinely restricted session) — so the recursive path was never actually exercised. It only
+surfaced once testing was redone by explicitly switching to the low-privilege `authenticated`
+Postgres role, which crashed with "stack depth limit exceeded" on the very first real attempt.
+Fixed by making `current_role_name()` `SECURITY DEFINER` (migration `0003`) — the standard
+Supabase pattern for exactly this case, safe here because it only ever reads the caller's own row.
+
+**3. The journal-sync trigger lacked permission to write its own derived table.**
+`journal_entries` intentionally has no direct INSERT policy for anyone (it's system-derived).
+`sync_journal_entries()` (the trigger that populates it) wasn't `SECURITY DEFINER`, so it ran as
+whichever role fired it — fine when fired inside `post_sales_voucher()` (already elevated), but a
+Finance Manager posting a voucher *directly* (the manual-journal path the RLS policies explicitly
+allow) hit a permission error the instant their voucher tried to sync. Also only found once
+testing exercised that direct path under genuine RLS. Fixed by making `sync_journal_entries()`
+`SECURITY DEFINER` too (migration `0002`).
+
+All three were re-tested after fixing — under a real `SET ROLE authenticated` session this time,
+not a privileged connection — confirming: manual voucher posting now syncs correctly, an
+unauthorized caller is still correctly rejected, and `post_sales_voucher()` still works for
+legitimate callers. The lockdown migration (`0004`) also revokes `EXECUTE` on all three
+`SECURITY DEFINER` functions from the `anon` role, and `sync_journal_entries()` from
+`authenticated` too, since it should only ever run via its trigger, never be called directly.
 
 ## How inviting users works
 

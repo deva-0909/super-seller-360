@@ -166,7 +166,12 @@ alter table channel_sku_map    enable row level security;
 alter table user_warehouse_scope enable row level security;
 alter table user_channel_scope   enable row level security;
 
--- Helper: current user's role name
+-- Helper: current user's role name.
+-- NOTE: this original definition has a self-referential RLS recursion bug
+-- (it queries user_profiles, whose own RLS policy calls this function) —
+-- found during Phase 2 testing, fixed by redefining it SECURITY DEFINER in
+-- migration 0003_phase2a_rls_and_seed.sql. Left as-is here for history;
+-- 0003's `create or replace` supersedes it on any fresh install.
 create or replace function current_role_name()
 returns text language sql stable as $$
   select r.name from user_profiles up
