@@ -68,7 +68,28 @@ Permissions are enforced in Postgres itself, not just hidden in the UI — a War
 5. ✅ Users screen (ADM-132) — list + invite, backed by an `invite-user` Edge Function
 6. ✅ Roles screen (ADM-133) — read-only view of the 10 fixed roles
 7. ✅ First Super Admin account bootstrapped directly in the database (see note below)
-8. ✅ Pushed to GitHub
+8. ✅ **Phase 2A: native accounting engine** — chart of accounts, voucher types, accounting
+   periods, immutable double-entry vouchers/voucher lines, a derived journal_entries table,
+   and `post_sales_voucher()` — the function that turns an order into a balanced invoice +
+   posted voucher in one transaction (Order → Invoice → Accounting entry, per WF-002)
+9. ✅ Channels screen (channel master data — required before any order can exist)
+10. ✅ Order List (ORD-012) + Order Detail (ORD-013) screens, with a "Generate invoice & post"
+    action on unposted orders
+11. ✅ CSV order import (`/orders/import`) — the documented fallback ingestion method from the
+    Integration Matrix, works today without needing live Shopify/Amazon API credentials
+12. ✅ Pushed to GitHub
+
+## A bug caught and fixed during Phase 2 testing
+
+`post_sales_voucher()`'s authorization check used `if not (has_orders_write() or
+has_accounting_write())` — but when a caller has no `user_profiles` row at all,
+`current_role_name()` returns SQL `NULL`, and `NULL in (...)` evaluates to `NULL`, not `false`.
+`if not NULL` is falsy in plpgsql, so the check silently **didn't** raise — an order posted
+successfully for a caller with no role whatsoever. Found by testing exactly that case end-to-end
+against the live database, not by inspection. Fixed by having every `has_*_write()`/
+`has_*_view()` helper coalesce to `false` explicitly (migration `0003`, and the standalone
+lockdown in `0004` that also revokes `EXECUTE` from the `anon` role). Re-tested after the fix —
+the same call now correctly raises "Not authorized to post sales vouchers".
 
 ## How inviting users works
 
@@ -83,9 +104,13 @@ the first is created through the Invite flow, by design.
 
 ## Next steps
 
-1. Permissions, Integrations, Audit Trail — remaining Admin screens (deferred: Integrations pairs
-   naturally with Phase 2's portal work, Audit Trail with the audit logging system that spans every module)
-2. Begin Phase 2: Order ingestion + native accounting engine
+1. Wire a live portal (Shopify first) via an Edge Function webhook receiver, so orders arrive
+   automatically instead of only through CSV import
+2. Order Timeline (ORD-014), and order-line CSV import (line items aren't imported yet — only
+   order headers)
+3. Ledger/Chart of Accounts screens — the accounting tables exist and are posting correctly, but
+   there's no UI yet to browse a ledger's transaction history or the trial balance
+4. Continue Phase 2 toward Phase 3: Returns/RTO + inventory state machine
 
 ## Phase roadmap
 
