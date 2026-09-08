@@ -24,7 +24,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { label: "Bank / COD", status: "soon" },
       { label: "Claims", status: "soon" },
       { label: "Tax", status: "soon" },
-      { label: "Accounting", status: "soon" },
+      { label: "Accounting", href: "/accounting/ledgers", status: "live" },
       { label: "Reports", status: "soon" },
     ],
   },

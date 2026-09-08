@@ -77,7 +77,13 @@ Permissions are enforced in Postgres itself, not just hidden in the UI — a War
     action on unposted orders
 11. ✅ CSV order import (`/orders/import`) — the documented fallback ingestion method from the
     Integration Matrix, works today without needing live Shopify/Amazon API credentials
-12. ✅ Pushed to GitHub
+12. ✅ Ledgers screen (`/accounting/ledgers`) + per-ledger transaction history — browse the
+    running balance and every posted entry behind it, computed from `journal_entries`
+13. ✅ Shopify order webhook (`shopify-order-webhook`) — HMAC-verified receiver that normalizes
+    `orders/create`/`orders/updated` into our Order/OrderLine shape. **Not yet tested against a
+    live store** (none connected) — fails closed (503) until `SHOPIFY_WEBHOOK_SECRET` is set,
+    so it can't silently trust an unverified request in the meantime
+14. ✅ Pushed to GitHub
 
 ## A bug caught and fixed during Phase 2 testing
 
@@ -104,13 +110,12 @@ the first is created through the Invite flow, by design.
 
 ## Next steps
 
-1. Wire a live portal (Shopify first) via an Edge Function webhook receiver, so orders arrive
-   automatically instead of only through CSV import
+1. Actually connect a Shopify store and register the webhook — the receiver is built and
+   deployed but genuinely untested until then; treat the first real webhook as an integration
+   test, not a known-working path
 2. Order Timeline (ORD-014), and order-line CSV import (line items aren't imported yet — only
    order headers)
-3. Ledger/Chart of Accounts screens — the accounting tables exist and are posting correctly, but
-   there's no UI yet to browse a ledger's transaction history or the trial balance
-4. Continue Phase 2 toward Phase 3: Returns/RTO + inventory state machine
+3. Continue Phase 2 toward Phase 3: Returns/RTO + inventory state machine
 
 ## Phase roadmap
 
