@@ -5,13 +5,20 @@ export type CurrentUser = {
   id: string;
   email: string;
   name: string;
+  /** Effective role for display/gating — reflects an active preview if one is set. */
   roleName: string;
+  /** The caller's actual role, never affected by preview. */
+  realRoleName: string;
+  isPreviewing: boolean;
 };
 
 /**
- * Fetches the signed-in user's profile + role name in one call.
- * Every dashboard screen needs this to decide what to show/allow,
- * so it's centralized here rather than repeated per screen.
+ * Fetches the signed-in user's profile + effective role in one call.
+ * Every dashboard screen uses `roleName` to decide what to show — it's the
+ * PREVIEWED role when Super Admin has one active, so screens naturally
+ * render as that role would see them without each screen needing its own
+ * preview-awareness. `realRoleName` is for identity display only (e.g. "Amit
+ * (Super Admin), previewing as Warehouse Manager").
  */
 export async function getCurrentUser(): Promise<CurrentUser> {
   const supabase = await createClient();
@@ -23,17 +30,23 @@ export async function getCurrentUser(): Promise<CurrentUser> {
     redirect("/login");
   }
 
-  const { data: profile } = await supabase
-    .from("user_profiles")
-    .select("name, email, roles(name)")
-    .eq("user_id", user.id)
-    .single();
+  const [{ data: profile }, { data: effectiveRole }, { data: realRole }] =
+    await Promise.all([
+      supabase
+        .from("user_profiles")
+        .select("name, email")
+        .eq("user_id", user.id)
+        .single(),
+      supabase.rpc("current_role_name"),
+      supabase.rpc("real_role_name"),
+    ]);
 
   return {
     id: user.id,
     email: profile?.email ?? user.email ?? "",
     name: profile?.name ?? user.email ?? "",
-    // Supabase types this as an array for the join; it's a single row via the FK.
-    roleName: (profile?.roles as unknown as { name: string } | null)?.name ?? "Unknown",
+    roleName: effectiveRole ?? "Unknown",
+    realRoleName: realRole ?? "Unknown",
+    isPreviewing: effectiveRole !== realRole,
   };
 }

@@ -142,6 +142,34 @@ with **"Database error querying schema"**, which doesn't obviously point at the 
 here in `0005_fix_bootstrap_auth_tokens.sql`; if bootstrapping fresh elsewhere, set those columns
 to `''` in the original `INSERT` rather than leaving them to default.
 
+## Role preview ("View as…" — top right of every screen)
+
+Super Admin can preview the app as any of the 10 roles, and it's backed by **real RLS**, not a
+client-side toggle hiding buttons while still fetching unrestricted data. `current_role_name()`
+(the function every RLS policy in the app calls) checks for an active `role_preview` row first,
+and only honors it if the caller's *actual* role is Super Admin — so nobody can preview their way
+into more access than they really have, only less. Verified live: previewing as Warehouse Manager
+correctly hides all 3 ledgers, which are visible again the instant the preview clears.
+
+Only Super Admin sees the switcher at all (`RoleSwitcher` returns `null` for anyone else), and the
+`role_preview` table's own RLS policy independently enforces the same restriction server-side.
+
+## Seed data
+
+`0007_phase2_seed_demo_data.sql` + `0008_seed_demo_team.sql` populate a realistic dataset so the
+whole app has real data to click through, not empty screens:
+
+- 3 channels (Shopify, Amazon, Flipkart), 2 warehouses, 8 products, 16 channel-SKU mappings
+- 18 orders over the last ~28 days with a realistic mix of statuses (delivered/shipped/pending/RTO,
+  paid/pending/refunded, prepaid/COD)
+- 10 of those orders posted through the **real** `post_sales_voucher()` — not pre-computed fake
+  numbers — producing 10 vouchers, 30 balanced voucher lines, and 10 invoices. Verified: total
+  debits equal total credits exactly (₹7,639.53 = ₹7,639.53) across all of it
+- 5 additional team member profiles across 5 different roles (Priya - Operations, Rohan - Finance,
+  Kavita - Warehouse [scoped to Surat only], Arjun - Marketplace [scoped to Amazon+Flipkart only],
+  Sneha - Auditor) — these demonstrate the scoped-visibility RLS policies too, not just role-level
+  ones. Their accounts have random unusable passwords; they exist for role realism, not real login.
+
 ## Next steps
 
 1. Actually connect a Shopify store and register the webhook — the receiver is built and
