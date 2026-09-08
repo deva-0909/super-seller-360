@@ -64,13 +64,28 @@ Permissions are enforced in Postgres itself, not just hidden in the UI — a War
 1. ✅ Supabase dev project created, Phase 1 migration + RLS applied
 2. ✅ Next.js app scaffolded with Supabase Auth client (browser + server + middleware)
 3. ✅ Auth screens built: Login, OTP/2FA, Forgot Password, Reset Password, Session Management
-4. ✅ Pushed to GitHub
+4. ✅ Dashboard shell (sidebar + top bar), reused by every screen below
+5. ✅ Users screen (ADM-132) — list + invite, backed by an `invite-user` Edge Function
+6. ✅ Roles screen (ADM-133) — read-only view of the 10 fixed roles
+7. ✅ First Super Admin account bootstrapped directly in the database (see note below)
+8. ✅ Pushed to GitHub
+
+## How inviting users works
+
+Creating an auth account requires Supabase's admin API (service-role privileges), which must never
+reach the browser. `supabase/functions/invite-user` is the only place that privilege exists — it
+re-checks the caller is Super Admin, invites the new user, then creates their `user_profiles` row.
+The Users screen calls this function; nobody can invite from the browser directly.
+
+**Bootstrapping the very first account** (before anyone exists to send an invite) was done once via
+direct SQL against `auth.users` — this is why there's no public sign-up screen: every user after
+the first is created through the Invite flow, by design.
 
 ## Next steps
 
-1. Admin screens — user invite/management, role assignment UI (currently `roles`/`user_profiles` only exist as data, no UI to manage them)
-2. Dashboard shell (sidebar nav + top bar) — the auth screens intentionally don't use it since they're pre-login
-3. Begin Phase 2: Order ingestion + native accounting engine
+1. Permissions, Integrations, Audit Trail — remaining Admin screens (deferred: Integrations pairs
+   naturally with Phase 2's portal work, Audit Trail with the audit logging system that spans every module)
+2. Begin Phase 2: Order ingestion + native accounting engine
 
 ## Phase roadmap
 
