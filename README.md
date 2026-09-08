@@ -134,6 +134,14 @@ The Users screen calls this function; nobody can invite from the browser directl
 direct SQL against `auth.users` — this is why there's no public sign-up screen: every user after
 the first is created through the Invite flow, by design.
 
+**Gotcha if you ever need to bootstrap another environment (e.g. production) this same way:** a
+manual `INSERT` into `auth.users` leaves several token columns (`recovery_token`,
+`email_change_token_new`, `email_change`, etc.) as `NULL` unless you set them explicitly — and
+Supabase's auth server expects empty strings there, not `NULL`. The symptom is sign-in failing
+with **"Database error querying schema"**, which doesn't obviously point at the real cause. Fixed
+here in `0005_fix_bootstrap_auth_tokens.sql`; if bootstrapping fresh elsewhere, set those columns
+to `''` in the original `INSERT` rather than leaving them to default.
+
 ## Next steps
 
 1. Actually connect a Shopify store and register the webhook — the receiver is built and
