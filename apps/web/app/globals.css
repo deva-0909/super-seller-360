@@ -1,0 +1,84 @@
+@import "tailwindcss";
+
+:root {
+  /* Surfaces */
+  --canvas: #f3f4f1;      /* app background — quiet paper-grey, not white, not cream */
+  --surface: #ffffff;     /* cards / panels sit on canvas */
+  --surface-sunken: #eceee9; /* table stripes, input backgrounds */
+
+  /* Ink */
+  --ink: #1b1f1d;         /* primary text — near-black, faint green undertone */
+  --ink-muted: #5b615c;   /* secondary text */
+  --ink-faint: #8b9089;   /* placeholder / disabled */
+
+  /* Lines */
+  --line: #d8dbd5;        /* default border */
+  --line-strong: #b7bcb2; /* emphasized border, table header rule */
+
+  /* Accent — deep ledger teal, not a default SaaS blue/purple */
+  --accent: #1f5e52;
+  --accent-hover: #17453c;
+  --accent-tint: #e5efec; /* accent-on-canvas backgrounds, focus rings */
+
+  /* Status — muted, not candy-saturated */
+  --success: #2e7d4f;
+  --success-tint: #e8f2ec;
+  --warning: #b8791c;
+  --warning-tint: #faf1e2;
+  --danger: #b23a2e;
+  --danger-tint: #f7e9e7;
+  --neutral: #4a5568;
+  --neutral-tint: #eaecef;
+}
+
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-faint: var(--ink-faint);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-tint: var(--accent-tint);
+  --color-success: var(--success);
+  --color-success-tint: var(--success-tint);
+  --color-warning: var(--warning);
+  --color-warning-tint: var(--warning-tint);
+  --color-danger: var(--danger);
+  --color-danger-tint: var(--danger-tint);
+  --color-neutral: var(--neutral);
+  --color-neutral-tint: var(--neutral-tint);
+
+  --font-sans: var(--font-plex-sans);
+  --font-mono: var(--font-plex-mono);
+}
+
+body {
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Numeric / identifier data always renders in mono — order IDs, SKUs,
+   amounts, timestamps. This is a functional distinction (scannable,
+   aligned figures), not decoration. Apply via the `font-data` class. */
+.font-data {
+  font-family: var(--font-mono), ui-monospace, "SFMono-Regular", monospace;
+  font-feature-settings: "tnum" 1, "zero" 1;
+}
+
+/* One deliberate focus treatment, reused everywhere */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
