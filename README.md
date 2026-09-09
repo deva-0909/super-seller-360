@@ -307,6 +307,40 @@ overstated this as a limitation when it wasn't one for that specific case.
 RPC — locked down to trigger-only use, then verified the triggers still fire correctly afterward
 (same pattern already proven safe with `sync_journal_entries` back in Phase 2A).
 
+## Audit round — closing the testing gaps found
+
+Worked through the audit list in risk order. Results:
+
+**RPCs tested for the first time (previously only code-reviewed, never invoked):**
+- `disposition_rto` — restocked both order lines correctly (SLEEVE-14, BOTL-750: 0→1 each)
+- `record_cod_remittance` — tested both partial (₹1,000 of ₹1,477.20 → correctly `short_remit`)
+  and completing remittance (→ correctly flips to `remitted`)
+- `advance_claim`'s `rejected` path — correctly sets status, leaves `approved_amount` null
+- `advance_claim`'s `recovered` path — tested two partial recoveries (₹200 + ₹250), correctly
+  accumulated to ₹450 matching the approved amount
+
+**A real bug found and fixed:** dispositioning a return/RTO as "restocked" for an order with an
+unmapped SKU crashed with a raw Postgres NOT NULL constraint error. Confirmed live the crash
+rolled back cleanly (no data corruption — a single function call is atomic) but the UX was broken.
+Fixed: unmapped lines are now skipped with a notice reporting how many, instead of crashing the
+whole operation.
+
+**A real limitation, stated honestly:** the `invite-user` Edge Function's authorization depends on
+verifying a genuine, cryptographically-signed JWT from a real browser session. The SQL-based role
+simulation used throughout this project's testing (setting `request.jwt.claims` directly) works
+for testing RLS policies, but does **not** produce a token Supabase's Auth server would accept —
+so the live HTTP invite flow remains unverified from this environment. What *was* verified: the
+database-side preconditions (role lookup query, the `user_profiles` insert shape) work correctly
+in isolation. The end-to-end flow — actually clicking "Send invite" in the browser — still needs
+verification by an actual logged-in user.
+
+**Still not done from the original audit list:**
+- Clicking through the screens that were never opened in a browser (Dashboard, Ledgers, Order
+  Timeline, CSV import, most create-forms) — verified via equivalent SQL, not via the actual UI
+- Products and Warehouses master-data screens (still don't exist — see audit)
+- Edit/delete capability anywhere (still create-only everywhere)
+- The remaining Admin screens (Permissions, Integrations, Audit Trail, etc.)
+
 ## Next steps
 
 1. Actually connect a Shopify store and register the webhook — still genuinely untested
