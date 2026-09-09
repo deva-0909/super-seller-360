@@ -33,11 +33,16 @@ export function CreateRtoForm({
     setError(null);
     setLoading(true);
 
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
     const { error } = await supabase.from("rtos").insert({
       order_id: orderId,
       awb: awb || null,
       reason: reason || null,
       warehouse_id: warehouseId || null,
+      created_by: user?.id ?? null,
     });
 
     setLoading(false);

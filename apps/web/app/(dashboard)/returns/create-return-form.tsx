@@ -32,10 +32,15 @@ export function CreateReturnForm({
     setError(null);
     setLoading(true);
 
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
     const { error } = await supabase.from("returns").insert({
       order_id: orderId,
       return_reason: reason || null,
       warehouse_id: warehouseId || null,
+      created_by: user?.id ?? null,
     });
 
     setLoading(false);

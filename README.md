@@ -405,6 +405,28 @@ column that turned out not to exist on that table at all (only `api_status`, a d
 by testing against the real database before considering it done, not by inspection — added the
 missing column via migration `0020`, then re-verified the fix live.
 
+## Audit Trail and Permissions screens — plus a systemic attribution bug fixed first
+
+Before building Audit Trail, checked whether the data it would show was even real: **it wasn't**.
+`post_sales_voucher()` and `close_accounting_period()` never set `vouchers.created_by` despite the
+column existing — confirmed live, 11 real posted vouchers, 0 attributed to anyone. Same gap in the
+Return/RTO/Claim create forms (`created_by`/`owner` columns existed, never populated). Fixed the
+two SQL functions, fixed the three forms, and backfilled the 11 existing vouchers with their real
+creators (10 sales postings → Super Admin, 1 period close → the Finance Manager who actually did
+it, per this session's own testing history). Re-verified live afterward: real attribution now
+flows through correctly (confirmed `inventory_transactions.created_by` was already working
+correctly — only vouchers and the three create forms had the gap).
+
+**Audit Trail** (ADM-143) now aggregates real attributed events — voucher postings, order status
+changes, return/RTO/claim creation, inventory movements — sorted by time, with actual actor names,
+not "Unknown" everywhere. Honestly scoped in the screen itself: this is action attribution, not a
+full field-level change-history log, and Settlements/Bank/COD don't have creator tracking yet so
+they're not included.
+
+**Permissions** (ADM-134) is a read-only reference rendering the exact permission matrix every RLS
+policy in this app implements — including the finer-grained tiers (Accountant's "Reconcile",
+Warehouse Manager's "Evidence") that got collapsed to nothing in earlier phases' documentation.
+
 ## Next steps
 
 1. Actually connect a Shopify store and register the webhook — still genuinely untested

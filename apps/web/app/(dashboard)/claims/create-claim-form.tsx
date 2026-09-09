@@ -24,11 +24,16 @@ export function CreateClaimForm({ orders }: { orders: Order[] }) {
     setError(null);
     setLoading(true);
 
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
     const { error } = await supabase.from("claims").insert({
       order_id: orderId,
       claim_type: claimType,
       potential_amount: Number(amount) || 0,
       deadline: deadline || null,
+      owner: user?.id ?? null,
     });
 
     setLoading(false);
