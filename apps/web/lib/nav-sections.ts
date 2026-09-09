@@ -29,6 +29,8 @@ export const NAV_SECTIONS: NavSection[] = [
       { label: "Accounting", href: "/accounting/ledgers", status: "live" },
       { label: "Profit & Loss", href: "/accounting/profit-and-loss", status: "live" },
       { label: "Balance Sheet", href: "/accounting/balance-sheet", status: "live" },
+      { label: "Cash Flow", href: "/accounting/cash-flow", status: "live" },
+      { label: "Periods", href: "/accounting/periods", status: "live" },
       { label: "Reports", status: "soon" },
     ],
   },

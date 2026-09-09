@@ -49,13 +49,29 @@ function groupRows(rows: CsvRow[]): GroupedOrder[] {
       });
     }
     if (r.sku) {
-      map.get(id)!.lines.push({
-        sku: r.sku.trim(),
-        quantity: Number(r.quantity) || 1,
-        unit_price: Number(r.unit_price) || 0,
-        discount: Number(r.discount) || 0,
-        tax: Number(r.tax) || 0,
-      });
+      const order = map.get(id)!;
+      const sku = r.sku.trim();
+      const quantity = Number(r.quantity) || 1;
+      const unit_price = Number(r.unit_price) || 0;
+      const discount = Number(r.discount) || 0;
+      const tax = Number(r.tax) || 0;
+
+      // Same order + same SKU appearing twice within one file (e.g. an
+      // export with an overlapping date range) merges into one line by
+      // summing quantities/amounts, rather than silently doubling the
+      // order — this was a real gap found after shipping the first version.
+      const existing = order.lines.find((l) => l.sku === sku);
+      if (existing) {
+        existing.quantity += quantity;
+        existing.discount += discount;
+        existing.tax += tax;
+        // Unit price for a merged line is the most recent occurrence's
+        // price — mixing two different prices for the same SKU in one
+        // order is an edge case rare enough not to warrant averaging logic.
+        existing.unit_price = unit_price;
+      } else {
+        order.lines.push({ sku, quantity, unit_price, discount, tax });
+      }
     }
   }
   return Array.from(map.values());

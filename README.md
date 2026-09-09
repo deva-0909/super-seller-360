@@ -276,13 +276,42 @@ against. That's a true reflection of what's been built, not a bug.
 earnings ledger — it's shown explicitly as "Current period profit (unclosed)" rather than silently
 folded into an equity ledger that doesn't actually reflect it.
 
+## Period Close, Cash Flow, and CSV dedup — the last roadmap items
+
+**Period Close** — `close_accounting_period()` posts a genuine closing entry (not just a status
+flag): each income/expense ledger's activity *for that period only* is zeroed out and transferred
+to a new Retained Earnings ledger. Deliberate separation of duties honored exactly from the Role
+Permission sheet: Period Close is Full for Finance Manager, Configured for Accountant, and "—" for
+**every other role — including Super Admin**. Verified live: Super Admin was correctly blocked
+("Not authorized to close accounting periods"), a real Finance Manager then closed August 2026
+successfully — ₹4,992.89 moved from Sales Revenue to Retained Earnings, and the closing voucher
+balances exactly. Also verified: attempting to invoice an order dated in the now-closed period is
+correctly rejected. Because these are real transactions (not a flag), the existing P&L and Balance
+Sheet screens automatically reflect the closure correctly with no code changes needed — closed
+periods' income naturally drops out of the all-time ledger balance since the closing entry itself
+reduced it.
+
+**Cash Flow** — built from real `bank_transactions`, categorized by what each one is matched to
+(settlement receipts, COD remittances, other). Investing/Financing sections are omitted rather
+than shown as a false zero, since no such activity is modeled yet.
+
+**CSV import dedup fix** — a genuine gap, now fixed: if the same order+SKU combination appears
+twice within a single uploaded file, the importer now merges them into one line (summing
+quantity/discount/tax) instead of silently double-counting. Cross-file re-import of an
+already-existing order was actually already safe (Postgres's `ON CONFLICT DO NOTHING` doesn't
+return skipped rows, and the import code already checks for that) — the earlier README wording
+overstated this as a limitation when it wasn't one for that specific case.
+
+**Security note:** two new trigger-only functions (`log_order_status_change`,
+`prevent_voucher_in_closed_period`) got flagged by the security advisor as directly callable via
+RPC — locked down to trigger-only use, then verified the triggers still fire correctly afterward
+(same pattern already proven safe with `sync_journal_entries` back in Phase 2A).
+
 ## Next steps
 
 1. Actually connect a Shopify store and register the webhook — still genuinely untested
-2. Cash Flow statement (the remaining P1 report)
-3. Idempotent line-item CSV re-import (dedupe on order_id + sku, not just order-level)
-4. A real period-close workflow, which would let Balance Sheet show true retained earnings
-   instead of "unclosed" profit
+2. Admin screens not yet built: Permissions, Integrations, Audit Trail
+3. A dedicated Reports/KPI browser beyond what's on the Dashboard (drill-downs, saved filters)
 
 ## Phase roadmap
 

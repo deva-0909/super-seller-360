@@ -56,6 +56,14 @@ export default async function ProfitAndLossPage() {
         </p>
       ) : null}
 
+      <p className="mt-3 border border-line bg-surface p-3 text-xs text-ink-muted">
+        Shows only <strong>unclosed</strong> activity — once a period is
+        closed, its income and expenses are transferred to Retained Earnings
+        (see Balance Sheet) and drop out of this all-time view by design.
+        For a closed period&apos;s historical P&amp;L, check that period&apos;s
+        closing voucher in the Ledgers screen.
+      </p>
+
       <div className="mt-6 border border-line bg-surface p-5">
         <h2 className="text-sm font-semibold text-ink">Income</h2>
         <dl className="mt-2 flex flex-col gap-1.5 text-sm">
