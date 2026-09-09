@@ -638,6 +638,31 @@ worked, don't just assume it did — is the same standard this whole QA process 
 over-remittance (protected by an earlier fix) when tested against an already-fully-remitted
 collection.
 
+## Senior-QA pass round 5: the warehouse-scope fix had a hole of its own
+
+Directly following up on the write-scoping fix from round 2 — with a specific, well-founded
+suspicion: `disposition_return()` and `disposition_rto()` are `SECURITY DEFINER`, meaning their
+internal `UPDATE` statements **bypass RLS entirely**, including the exact policy just fixed.
+Tested it deliberately rather than assuming the earlier fix was sufficient: created a return
+against Mumbai's warehouse as Super Admin, then had Kavita (Warehouse Manager, scoped to Surat
+only) call `disposition_return()` on it directly.
+
+**It worked. No error at all** — she successfully restocked real inventory into a warehouse she
+has zero authority over. The RLS fix genuinely does protect direct table writes (confirmed back
+in round 2), but a `SECURITY DEFINER` function deliberately runs with elevated privilege and was
+never touched by that fix — it needed its own explicit check.
+
+Fixed by adding the same warehouse-scope check directly inside both functions. Re-verified three
+ways: the exact same attack is now blocked ("Not authorized to disposition a return for a
+warehouse outside your assignment"), her legitimate Surat-scoped disposition still works with zero
+regression, and — checked rather than assumed — inventory balances came back to **exactly** the
+original correct seed state (T-Shirt White ×1, Laptop Sleeve ×1, both at Surat, nothing else) with
+books still balanced at ₹13,067.92.
+
+**The general lesson, worth stating for anyone extending this codebase**: an RLS fix on a table
+never automatically protects a `SECURITY DEFINER` function that writes to that table — each one
+needs to be checked and fixed independently, since it's deliberately bypassing RLS by design.
+
 ## Next steps
 
 1. Actually connect a Shopify store and register the webhook — still genuinely untested
