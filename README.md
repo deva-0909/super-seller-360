@@ -663,9 +663,31 @@ books still balanced at ₹13,067.92.
 never automatically protects a `SECURITY DEFINER` function that writes to that table — each one
 needs to be checked and fixed independently, since it's deliberately bypassing RLS by design.
 
+## Senior-QA pass round 6: a status-check gap in invite-user — found, fixed in code, NOT yet redeployed
+
+Extending the suspended-user fix's logic: does it actually cover every code path, or just the ones
+going through `current_role_name()`? Checked `invite-user`'s Edge Function specifically, since it
+queries `user_profiles` directly via the admin client (bypassing RLS by design, the same way the
+disposition functions do) rather than calling `current_role_name()` at all.
+
+**Confirmed by code inspection**: it checked the caller's role, but never their `status`. A
+suspended Super Admin's still-valid session could still invite new users through this specific
+path — the exact same class of gap as round 5, on yet another different code path. Fixed in the
+function source.
+
+**Important limitation, stated plainly rather than glossed over**: I could not redeploy this fix
+in this session — the Edge Function deployment tool returned an approval requirement I don't have
+access to here. The fix exists correctly in `supabase/functions/invite-user/index.ts` in this
+repo, but **the live deployed function on Supabase may still be running the old, unpatched
+version** until it's redeployed (via the Supabase CLI, dashboard, or a future session with working
+tool access). This is a genuine gap between "fixed in source" and "fixed in production" — worth
+tracking as its own follow-up, not assuming it's closed.
+
 ## Next steps
 
-1. Actually connect a Shopify store and register the webhook — still genuinely untested
+1. **Redeploy `invite-user` Edge Function** — the suspended-caller fix is in the source but not
+   yet live; deployment was blocked by a tool-permission issue this session
+2. Actually connect a Shopify store and register the webhook — still genuinely untested
 2. Admin screens not yet built: Permissions, Integrations, Audit Trail
 3. A dedicated Reports/KPI browser beyond what's on the Dashboard (drill-downs, saved filters)
 

@@ -46,9 +46,22 @@ Deno.serve(async (req: Request) => {
 
   const { data: callerProfile } = await adminClient
     .from("user_profiles")
-    .select("roles(name)")
+    .select("status, roles(name)")
     .eq("user_id", caller.id)
     .single();
+
+  // Checked independently of current_role_name() (the Postgres function
+  // used everywhere else) because this function queries user_profiles
+  // directly via the admin client, bypassing RLS by design — it has to
+  // re-implement this check itself rather than inherit it. Found during
+  // senior-QA testing after fixing the equivalent gap for current_role_name():
+  // this function had the exact same class of gap on a different code path.
+  if (callerProfile?.status === "suspended") {
+    return new Response(
+      JSON.stringify({ error: "Your account has been suspended" }),
+      { status: 403 },
+    );
+  }
 
   const callerRole = (callerProfile?.roles as any)?.name;
   if (callerRole !== "Super Admin") {
