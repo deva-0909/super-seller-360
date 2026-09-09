@@ -538,6 +538,24 @@ Settlements/Bank/Tax/Accounting (9 items), Accountant and Tax Manager correctly 
 Inventory/Returns/RTO/Claims, Claims Manager hides only Tax, Marketplace Manager hides only the
 Accounting-tier screens — matching `has_returns_view()`, `has_settlements_view()`, etc. exactly.
 
+## Server-side validation — a real security gap, not just UX polish
+
+Checked whether the amount validation added earlier was actually enforced, or just a UI nicety —
+it was only the latter. Confirmed live: calling `reconcile_settlement()` **directly** with `-100`
+as the amount succeeded with zero server-side check, silently saving a negative "money received"
+value that passed right through the client-side guard's back. Client-side validation is UX, not
+security — any direct API call skips it entirely.
+
+Fixed by adding the same checks inside all three amount-accepting RPCs
+(`reconcile_settlement`, `record_cod_remittance`, `advance_claim`), then re-verified the exact same
+attack is now blocked. Two more business-logic guards came out of this pass, worth having found
+while already in there: a COD remittance can no longer be recorded in excess of the total amount
+owed, and a claim's recovered amount can no longer exceed what was actually approved — tested live,
+both correctly rejected.
+
+**Confirmed the fix didn't break existing data**: re-checked all 5 seeded claims against the new
+"recovered ≤ approved" rule — all pass, nothing needed correcting.
+
 ## Next steps
 
 1. Actually connect a Shopify store and register the webhook — still genuinely untested
