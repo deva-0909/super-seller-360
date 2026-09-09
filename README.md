@@ -341,6 +341,19 @@ verification by an actual logged-in user.
 - Edit/delete capability anywhere (still create-only everywhere)
 - The remaining Admin screens (Permissions, Integrations, Audit Trail, etc.)
 
+## Products and Warehouses master screens (audit follow-up)
+
+Turned out these didn't need any new database work — the RLS policies for both already existed
+from Phase 1 (`operations and admin manage products`, `admin manages warehouses`), I'd just never
+built a UI on top of them. Built list + create screens for both.
+
+**This also closed two more audit gaps while testing them:**
+- **Operations Manager** (Priya) — never independently tested before this — correctly created a
+  product and a warehouse
+- **Auditor** (Sneha) — seeded from the start but never actually used in any test until now —
+  correctly blocked from creating a product (RLS rejected the insert), and correctly sees all
+  existing products (read access confirmed)
+
 ## Next steps
 
 1. Actually connect a Shopify store and register the webhook — still genuinely untested
