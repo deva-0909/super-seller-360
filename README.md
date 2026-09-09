@@ -462,6 +462,23 @@ database before trusting it: all column references (`orders.gross_amount`, `sett
 `journal_entries.debit/credit`, `products.cost_price`) confirmed valid with zero errors — unlike
 the Channels `status` column bug from the previous round, this page checked out clean.
 
+## Verified the rest of the never-loaded screens
+
+Continued the pattern from the Dashboard check: ran the exact query column-sets from every
+remaining screen that had never actually been loaded in a browser, live against the database,
+before trusting them. Checked: Tax, Cash Flow, Inventory, Accounting Periods, Ledgers list, Ledger
+Detail, and Audit Trail's six parallel queries.
+
+**Result: all clean, zero new bugs found this round.** Worth stating plainly rather than padding —
+this is a real, useful outcome (these screens' query shapes are correct), not a gap to report. The
+Channels `status` bug from an earlier round is still the only column-reference bug this method has
+caught; everything else checked with this technique has passed.
+
+What this verification method does *not* cover: client-side JS logic (e.g. the CSV import's
+row-grouping/merging), actual rendering/layout in a browser, or interaction bugs (broken button
+bindings, state management issues) — only whether each screen's database queries are valid against
+the real schema. Genuine browser click-through remains the one form of testing only you can do.
+
 ## Next steps
 
 1. Actually connect a Shopify store and register the webhook — still genuinely untested
