@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
+import { friendlyError } from "@/lib/friendly-error";
 
 export function PostInvoiceButton({ orderId }: { orderId: string }) {
   const router = useRouter();
@@ -22,7 +23,7 @@ export function PostInvoiceButton({ orderId }: { orderId: string }) {
     setLoading(false);
 
     if (error) {
-      setError(error.message);
+      setError(friendlyError(error.message));
       return;
     }
 

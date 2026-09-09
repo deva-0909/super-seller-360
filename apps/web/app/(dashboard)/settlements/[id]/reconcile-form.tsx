@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Field } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
+import { friendlyError } from "@/lib/friendly-error";
 
 type BankTxn = { bank_txn_id: string; txn_date: string; reference: string | null; amount: number };
 
@@ -26,6 +27,11 @@ export function ReconcileForm({
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+
+    if (Number(actualAmount) < 0) {
+      setError("Amount can't be negative.");
+      return;
+    }
     setLoading(true);
 
     const { error } = await supabase.rpc("reconcile_settlement", {
@@ -37,7 +43,7 @@ export function ReconcileForm({
     setLoading(false);
 
     if (error) {
-      setError(error.message);
+      setError(friendlyError(error.message));
       return;
     }
 

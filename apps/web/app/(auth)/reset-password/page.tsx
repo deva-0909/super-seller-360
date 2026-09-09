@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { Field } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
+import { friendlyError } from "@/lib/friendly-error";
 
 const MIN_LENGTH = 8;
 
@@ -36,7 +37,7 @@ export default function ResetPasswordPage() {
     setLoading(false);
 
     if (error) {
-      setError(error.message);
+      setError(friendlyError(error.message));
       return;
     }
 

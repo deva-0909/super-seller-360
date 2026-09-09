@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Field } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
+import { friendlyError } from "@/lib/friendly-error";
 
 type Account = { bank_account_id: string; bank_name: string; account_number_last4: string | null };
 
@@ -46,7 +47,7 @@ export function CreateBankTxnForm({ accounts }: { accounts: Account[] }) {
 
     setLoading(false);
     if (error) {
-      setError(error.message);
+      setError(friendlyError(error.message));
       return;
     }
     router.refresh();
@@ -55,6 +56,11 @@ export function CreateBankTxnForm({ accounts }: { accounts: Account[] }) {
   async function handleCreateTxn(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+
+    if (Number(amount) <= 0) {
+      setError("Amount must be greater than zero.");
+      return;
+    }
     setLoading(true);
 
     const { error } = await supabase.from("bank_transactions").insert({
@@ -67,7 +73,7 @@ export function CreateBankTxnForm({ accounts }: { accounts: Account[] }) {
 
     setLoading(false);
     if (error) {
-      setError(error.message);
+      setError(friendlyError(error.message));
       return;
     }
     setReference("");

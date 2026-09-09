@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
+import { friendlyError } from "@/lib/friendly-error";
 
 const RECEIVABLE_STATUSES = ["requested", "approved", "pickup", "in_transit"];
 const DISPOSITIONABLE_STATUSES = ["received", "inspected"];
@@ -33,7 +34,7 @@ export function ReturnActions({
       .eq("return_id", returnId);
     setLoading(false);
     if (error) {
-      setError(error.message);
+      setError(friendlyError(error.message));
       return;
     }
     router.refresh();
@@ -50,7 +51,7 @@ export function ReturnActions({
     });
     setLoading(false);
     if (error) {
-      setError(error.message);
+      setError(friendlyError(error.message));
       return;
     }
     router.refresh();

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { friendlyError } from "@/lib/friendly-error";
 
 type Role = { role_id: string; name: string };
 
@@ -31,7 +32,7 @@ export function UserRoleControl({
       .eq("user_id", userId);
     setLoading(false);
     if (error) {
-      setError(error.message);
+      setError(friendlyError(error.message));
       return;
     }
     router.refresh();

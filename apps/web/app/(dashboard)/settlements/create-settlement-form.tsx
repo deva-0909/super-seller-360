@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Field } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
+import { friendlyError } from "@/lib/friendly-error";
 
 type Channel = { channel_id: string; name: string };
 
@@ -29,6 +30,17 @@ export function CreateSettlementForm({ channels }: { channels: Channel[] }) {
     const g = Number(gross) || 0;
     const d = Number(deductions) || 0;
 
+    if (g < 0 || d < 0) {
+      setError("Amounts can't be negative.");
+      setLoading(false);
+      return;
+    }
+    if (periodStart && periodEnd && periodEnd < periodStart) {
+      setError("Period end can't be before period start.");
+      setLoading(false);
+      return;
+    }
+
     const { error } = await supabase.from("settlements").insert({
       channel_id: channelId,
       external_settlement_id: externalId,
@@ -42,7 +54,7 @@ export function CreateSettlementForm({ channels }: { channels: Channel[] }) {
     setLoading(false);
 
     if (error) {
-      setError(error.message);
+      setError(friendlyError(error.message));
       return;
     }
 

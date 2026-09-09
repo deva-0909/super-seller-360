@@ -427,6 +427,26 @@ they're not included.
 policy in this app implements — including the finer-grained tiers (Accountant's "Reconcile",
 Warehouse Manager's "Evidence") that got collapsed to nothing in earlier phases' documentation.
 
+## Friendlier errors and input validation (audit follow-up)
+
+**Raw Postgres errors were leaking straight to the UI** — e.g. a duplicate SKU would show
+`duplicate key value violates unique constraint "products_company_id_sku_key"` verbatim. Added a
+shared `friendlyError()` helper and wired it into all 20 forms that previously showed
+`error.message` raw. Custom RPC exceptions (`post_sales_voucher`, `disposition_return`, etc.) were
+already written as clear messages via `raise exception` — those pass through unchanged; this only
+rewrites the generic Postgres/PostgREST ones.
+
+**Verified the regex patterns against real error strings, not guessed formats** — tested live
+against three actual error cases (RLS denial, duplicate SKU, missing required field) before
+wiring it in, and caught one wrong assumption in the process: the specific conflicting value in a
+unique-constraint violation lives in Postgres's separate `DETAIL` line, which `error.message` from
+supabase-js doesn't include — only the generic constraint-violation message does. Adjusted the
+duplicate-key message accordingly rather than shipping a pattern that would never match.
+
+**Added missing input validation**: negative amounts blocked on Settlements, Claims, COD, Bank
+transactions, and settlement reconciliation; `period_end` before `period_start` blocked on
+Settlements.
+
 ## Next steps
 
 1. Actually connect a Shopify store and register the webhook — still genuinely untested

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
+import { friendlyError } from "@/lib/friendly-error";
 
 export function ClosePeriodButton({
   periodId,
@@ -26,7 +27,7 @@ export function ClosePeriodButton({
     });
     setLoading(false);
     if (error) {
-      setError(error.message);
+      setError(friendlyError(error.message));
       return;
     }
     router.refresh();

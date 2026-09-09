@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { StatusPill } from "@/components/ui/status-pill";
+import { friendlyError } from "@/lib/friendly-error";
 
 type Product = {
   product_id: string;
@@ -52,7 +53,7 @@ export function ProductRow({
       .eq("product_id", product.product_id);
     setLoading(false);
     if (error) {
-      setError(error.message);
+      setError(friendlyError(error.message));
       return;
     }
     setEditing(false);

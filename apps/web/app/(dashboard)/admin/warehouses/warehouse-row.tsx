@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { StatusPill } from "@/components/ui/status-pill";
+import { friendlyError } from "@/lib/friendly-error";
 
 type Warehouse = {
   warehouse_id: string;
@@ -40,7 +41,7 @@ export function WarehouseRow({
       .eq("warehouse_id", warehouse.warehouse_id);
     setLoading(false);
     if (error) {
-      setError(error.message);
+      setError(friendlyError(error.message));
       return;
     }
     setEditing(false);

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Field } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
+import { friendlyError } from "@/lib/friendly-error";
 
 type Order = { order_id: string; external_order_id: string };
 
@@ -22,6 +23,11 @@ export function CreateClaimForm({ orders }: { orders: Order[] }) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+
+    if (Number(amount) <= 0) {
+      setError("Potential amount must be greater than zero.");
+      return;
+    }
     setLoading(true);
 
     const {
@@ -39,7 +45,7 @@ export function CreateClaimForm({ orders }: { orders: Order[] }) {
     setLoading(false);
 
     if (error) {
-      setError(error.message);
+      setError(friendlyError(error.message));
       return;
     }
 
