@@ -193,14 +193,32 @@ inspection with a "good" disposition) is enforced in a single controlled functio
 kept structurally separate), Inventory (current stock per warehouse, read-only — the only way
 stock changes is through a real disposition, never a direct edit).
 
+## Phase 4: Settlements, Bank, COD reconciliation
+
+Addresses pain points #2 (verifying portal/gateway payments after deductions) and #4 (COD
+collection tracking) from the original brief.
+
+**Verified live, under genuine RLS (using a real Finance Manager test session):**
+- Logged a settlement expecting ₹850, matched it against a real bank transaction of ₹800 —
+  `reconcile_settlement()` correctly computed `short_pay` status and linked the bank transaction
+  as matched, in one atomic call
+- Confirmed a Warehouse Manager (who has no Settlements/Bank/COD access at all per the Role
+  Permission sheet) genuinely sees 0 settlements — not hidden by the UI, actually invisible at
+  the database level
+
+**Live screens:** Settlements (log + reconcile against a bank transaction, shows variance),
+Bank transactions (log credits/debits, see match status), COD Collections (log what a courier
+collected, mark remittances, see pending amount and ageing in days on what's still outstanding).
+
+Note: `ageing_days` (listed in the BRD's CODCollection entity) is computed at query time from
+`collected_date` rather than stored — a stored value would go stale the moment a day passes
+without a background job updating it.
+
 ## Next steps
 
-1. Actually connect a Shopify store and register the webhook — the receiver is built and
-   deployed but genuinely untested until then; treat the first real webhook as an integration
-   test, not a known-working path
-2. Order Timeline (ORD-014), and order-line CSV import (line items aren't imported yet — only
-   order headers)
-3. Phase 4: Settlements + Bank/COD reconciliation
+1. Actually connect a Shopify store and register the webhook — still genuinely untested
+2. Order Timeline, order-line CSV import
+3. Phase 5: Claims, Tax reconciliation, Reports/Dashboards
 
 ## Phase roadmap
 
