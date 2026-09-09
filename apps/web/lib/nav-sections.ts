@@ -18,8 +18,9 @@ export const NAV_SECTIONS: NavSection[] = [
     items: [
       { label: "Dashboards", status: "soon" },
       { label: "Orders", href: "/orders", status: "live" },
-      { label: "Inventory", status: "soon" },
-      { label: "Returns / RTO", status: "soon" },
+      { label: "Inventory", href: "/inventory", status: "live" },
+      { label: "Returns", href: "/returns", status: "live" },
+      { label: "RTO", href: "/rto", status: "live" },
       { label: "Settlements", status: "soon" },
       { label: "Bank / COD", status: "soon" },
       { label: "Claims", status: "soon" },

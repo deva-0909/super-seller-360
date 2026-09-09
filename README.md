@@ -170,6 +170,29 @@ whole app has real data to click through, not empty screens:
   Sneha - Auditor) — these demonstrate the scoped-visibility RLS policies too, not just role-level
   ones. Their accounts have random unusable passwords; they exist for role realism, not real login.
 
+## Phase 3: Returns, RTO, Inventory
+
+This directly closes the #1 original pain point: accounting records vs. physical inventory
+mismatch. The core rule (BR-003 — saleable stock changes only after physical receipt AND
+inspection with a "good" disposition) is enforced in a single controlled function
+(`disposition_return()` / `disposition_rto()`), not left to application-layer discipline.
+
+**Verified live, under genuine RLS:**
+- A return dispositioned as "damaged → quarantined" does NOT credit stock (confirmed: stock stayed
+  at 0 after quarantining a return with mug/sleeve line items)
+- A return dispositioned as "good → restocked" DOES credit stock, exactly matching order line
+  quantities, with a full before/after audit trail (confirmed: 0 → 1 unit, traceable to the exact
+  return that caused it)
+- Returns and RTOs are two completely separate tables (BR-004) — never conflated
+- A caller with no valid role is blocked from even creating a return (RLS rejects the INSERT
+  outright)
+- Warehouse Manager's visibility is scoped to their assigned warehouse(s), consistent with the
+  Phase 1 pattern already used for the `warehouses` table itself
+
+**Live screens:** Returns (list + create + received/disposition workflow), RTO (same pattern,
+kept structurally separate), Inventory (current stock per warehouse, read-only — the only way
+stock changes is through a real disposition, never a direct edit).
+
 ## Next steps
 
 1. Actually connect a Shopify store and register the webhook — the receiver is built and
@@ -177,7 +200,7 @@ whole app has real data to click through, not empty screens:
    test, not a known-working path
 2. Order Timeline (ORD-014), and order-line CSV import (line items aren't imported yet — only
    order headers)
-3. Continue Phase 2 toward Phase 3: Returns/RTO + inventory state machine
+3. Phase 4: Settlements + Bank/COD reconciliation
 
 ## Phase roadmap
 
