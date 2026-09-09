@@ -556,6 +556,25 @@ both correctly rejected.
 **Confirmed the fix didn't break existing data**: re-checked all 5 seeded claims against the new
 "recovered ≤ approved" rule — all pass, nothing needed correcting.
 
+## Senior-QA-style pass: found and fixed a critical authorization bug
+
+Doing structured testing beyond happy-path RLS checks — starting with the highest-severity class:
+**does what the UI claims actually hold at the authorization layer?** First test: suspend a user,
+then check whether their still-valid session actually loses access.
+
+**It didn't.** `current_role_name()` — the function every single permission check and RLS policy
+in this app depends on — never checked `user_profiles.status` at all. A suspended user retained
+full, unrestricted access to everything their role permitted. The "Suspend" button built earlier
+was cosmetic: it flipped a label that nothing else ever read.
+
+Fixed at the root, in the one function that underpins everything, rather than patching every
+individual policy. **Caught a second issue while fixing the first**: an initial fix restricting to
+`status = 'active'` would have permanently locked out every newly-invited user too, since nothing
+in this app ever transitions a user from `invited` to `active` after they accept — that's a real,
+separate gap, but not a reason to lock them out. Narrowed the fix to exactly the bug being closed
+(`status <> 'suspended'`) instead. Verified live both ways afterward: a suspended user is now
+correctly blocked from even creating a product; an invited user's access is completely unaffected.
+
 ## Next steps
 
 1. Actually connect a Shopify store and register the webhook — still genuinely untested
