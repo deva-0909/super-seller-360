@@ -616,6 +616,28 @@ afterward: multi-installment recovery works again (₹200 + ₹300 = ₹500), th
 exploit is still blocked, and all 5 originally-seeded claims still show their correct values with
 zero corruption from the testing process itself.
 
+## Senior-QA pass round 4: a revenue-recognition bug, plus a testing-process mistake worth being honest about
+
+**Bug: cancelled orders could still be invoiced.** `post_sales_voucher()` checked that an order
+existed and wasn't already invoiced, but never checked its fulfilment status at all. Confirmed
+live: a **cancelled** order was successfully invoiced, generating ₹1,180 of phantom revenue for
+something that was never actually sold. Fixed by rejecting `cancelled` and `rto` orders explicitly.
+Re-verified: the same order is now correctly refused ("Cannot invoice an order with fulfilment
+status cancelled"). None of the 10 originally-seeded invoices are affected — all were posted for
+genuinely delivered orders.
+
+**Also worth stating plainly**: my own test cleanup was incomplete on the first pass — I deleted
+what I believed was the phantom voucher, but the trial balance came back ₹1,180 off afterward,
+which is exactly how this was caught. Rather than assume the number was right, I queried for any
+voucher whose source order no longer existed, found the real leftover, removed it properly, and
+confirmed the books returned to their exact correct value (₹13,067.92 = ₹13,067.92) with zero
+stray test orders remaining. Flagging this because the same discipline — verify the cleanup
+worked, don't just assume it did — is the same standard this whole QA process depends on.
+
+**Other checks this round that came back clean**: COD remittance already correctly blocked
+over-remittance (protected by an earlier fix) when tested against an already-fully-remitted
+collection.
+
 ## Next steps
 
 1. Actually connect a Shopify store and register the webhook — still genuinely untested
