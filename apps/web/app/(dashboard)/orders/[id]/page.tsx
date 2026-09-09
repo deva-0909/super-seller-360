@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/current-user";
@@ -37,6 +38,54 @@ export default async function OrderDetailPage({
       | { invoice_id: string; invoice_number: string; total: number }[]
       | null
   )?.[0];
+
+  const { data: statusHistory } = await supabase
+    .from("order_status_history")
+    .select("history_id, fulfilment_status, payment_status, changed_at")
+    .eq("order_id", id)
+    .order("changed_at", { ascending: true });
+
+  const [{ data: orderReturns }, { data: orderRtos }, { data: orderClaims }] =
+    await Promise.all([
+      supabase
+        .from("returns")
+        .select("return_id, status, created_at")
+        .eq("order_id", id),
+      supabase
+        .from("rtos")
+        .select("rto_id, status, created_at")
+        .eq("order_id", id),
+      supabase
+        .from("claims")
+        .select("claim_id, status, created_at")
+        .eq("order_id", id),
+    ]);
+
+  type TimelineEvent = { at: string; label: string; href?: string };
+  const timeline: TimelineEvent[] = [
+    ...(statusHistory ?? []).map((h) => ({
+      at: h.changed_at,
+      label: `Status: ${h.fulfilment_status} / ${h.payment_status}`,
+    })),
+    ...(invoice
+      ? [{ at: order.order_date, label: `Invoiced — ${invoice.invoice_number}` }]
+      : []),
+    ...(orderReturns ?? []).map((r) => ({
+      at: r.created_at,
+      label: `Return logged (${r.status})`,
+      href: `/returns/${r.return_id}`,
+    })),
+    ...(orderRtos ?? []).map((r) => ({
+      at: r.created_at,
+      label: `RTO logged (${r.status})`,
+      href: `/rto/${r.rto_id}`,
+    })),
+    ...(orderClaims ?? []).map((c) => ({
+      at: c.created_at,
+      label: `Claim logged (${c.status})`,
+      href: `/claims/${c.claim_id}`,
+    })),
+  ].sort((a, b) => new Date(a.at).getTime() - new Date(b.at).getTime());
 
   return (
     <div className="mx-auto max-w-3xl px-8 py-8">
@@ -149,6 +198,29 @@ export default async function OrderDetailPage({
             Accounting roles can post this.
           </p>
         )}
+      </div>
+
+      <h2 className="mt-8 text-sm font-semibold text-ink">Timeline</h2>
+      <div className="mt-3 border border-line bg-surface p-5">
+        <ol className="flex flex-col gap-3">
+          {timeline.map((event, i) => (
+            <li key={i} className="flex items-start gap-3 text-sm">
+              <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />
+              <div>
+                <p className="font-data text-xs text-ink-muted">
+                  {new Date(event.at).toLocaleString()}
+                </p>
+                {event.href ? (
+                  <Link href={event.href} className="text-accent hover:underline">
+                    {event.label}
+                  </Link>
+                ) : (
+                  <p className="text-ink">{event.label}</p>
+                )}
+              </div>
+            </li>
+          ))}
+        </ol>
       </div>
     </div>
   );

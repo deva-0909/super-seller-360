@@ -240,12 +240,29 @@ This completes all P0 modules from the original roadmap. What's left: connecting
 (the Shopify webhook is built but untested), and P1 items from the Reports KPI sheet (Cash Flow,
 full P&L/Balance Sheet statements) that weren't in the original 5-phase scope.
 
+## Order Timeline + line-item CSV import
+
+Two gaps closed from the roadmap:
+
+**Order Timeline** — `order_status_history` now logs automatically via a trigger every time an
+order's fulfilment or payment status changes (verified live: updating SHOP-1009 to "delivered"
+correctly appended a second history row alongside its original state). Order Detail's Timeline
+section merges this with invoice posting, returns, RTOs, and claims tied to that order into one
+chronological view — not just a raw status log.
+
+**Line-item CSV import** — the importer now expects one row per line item (order-level fields
+repeated), matching real portal export shapes, groups rows by `external_order_id`, and computes
+gross/tax/net from the actual line items rather than trusting a separate total column. Known
+limitation, stated honestly in the UI: re-importing the same file skips orders that already exist,
+but doesn't yet dedupe line items within a brand-new order across two overlapping files — fine for
+a clean one-time batch, not yet a robust re-sync path.
+
 ## Next steps
 
 1. Actually connect a Shopify store and register the webhook — still genuinely untested
-2. Order Timeline, order-line CSV import
-3. P1 reports: full P&L, Balance Sheet, Cash Flow statements (Trial Balance and General Ledger
+2. P1 reports: full P&L, Balance Sheet, Cash Flow statements (Trial Balance and General Ledger
    already exist via the Ledgers screen)
+3. Idempotent line-item CSV re-import (dedupe on order_id + sku, not just order-level)
 
 ## Phase roadmap
 

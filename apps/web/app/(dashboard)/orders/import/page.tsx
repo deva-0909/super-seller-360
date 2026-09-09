@@ -35,14 +35,23 @@ export default async function ImportOrdersPage() {
       <div className="mt-8 border border-line bg-surface p-5">
         <h2 className="text-sm font-semibold text-ink">Expected columns</h2>
         <p className="mt-2 text-xs text-ink-muted">
-          One row per order (line items aren&apos;t imported this way yet).
+          One row per line item — order-level fields repeated on every row for
+          that order, matching how portal exports actually look. Rows are
+          grouped by <code className="font-data">external_order_id</code>;
+          amounts are computed from the line items, not read from the file.
           Header row required, columns in any order:
         </p>
         <code className="font-data mt-3 block text-xs text-ink-muted">
           external_order_id, order_date, customer_ref, payment_type,
-          gross_amount, discount, tax_amount, net_amount, fulfilment_status,
-          payment_status
+          fulfilment_status, payment_status, sku, quantity, unit_price,
+          discount, tax
         </code>
+        <p className="mt-3 text-xs text-ink-muted">
+          Note: re-importing the same file skips orders that already exist
+          (matched on channel + order ID), but doesn&apos;t currently
+          dedupe line items if you import overlapping files twice for a
+          brand-new order — best used for a clean, one-time batch per file.
+        </p>
       </div>
     </div>
   );

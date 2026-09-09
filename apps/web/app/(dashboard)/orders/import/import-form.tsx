@@ -13,20 +13,60 @@ type CsvRow = {
   order_date?: string;
   customer_ref?: string;
   payment_type?: string;
-  gross_amount?: string;
-  discount?: string;
-  tax_amount?: string;
-  net_amount?: string;
   fulfilment_status?: string;
   payment_status?: string;
+  sku?: string;
+  quantity?: string;
+  unit_price?: string;
+  discount?: string;
+  tax?: string;
 };
+
+type GroupedOrder = {
+  external_order_id: string;
+  order_date: string;
+  customer_ref: string | null;
+  payment_type: string | null;
+  fulfilment_status: string;
+  payment_status: string;
+  lines: { sku: string; quantity: number; unit_price: number; discount: number; tax: number }[];
+};
+
+function groupRows(rows: CsvRow[]): GroupedOrder[] {
+  const map = new Map<string, GroupedOrder>();
+  for (const r of rows) {
+    if (!r.external_order_id) continue;
+    const id = r.external_order_id.trim();
+    if (!map.has(id)) {
+      map.set(id, {
+        external_order_id: id,
+        order_date: r.order_date || new Date().toISOString(),
+        customer_ref: r.customer_ref || null,
+        payment_type: r.payment_type || null,
+        fulfilment_status: r.fulfilment_status || "pending",
+        payment_status: r.payment_status || "pending",
+        lines: [],
+      });
+    }
+    if (r.sku) {
+      map.get(id)!.lines.push({
+        sku: r.sku.trim(),
+        quantity: Number(r.quantity) || 1,
+        unit_price: Number(r.unit_price) || 0,
+        discount: Number(r.discount) || 0,
+        tax: Number(r.tax) || 0,
+      });
+    }
+  }
+  return Array.from(map.values());
+}
 
 export function ImportForm({ channels }: { channels: Channel[] }) {
   const router = useRouter();
   const supabase = createClient();
 
   const [channelId, setChannelId] = useState(channels[0]?.channel_id ?? "");
-  const [rows, setRows] = useState<CsvRow[]>([]);
+  const [orders, setOrders] = useState<GroupedOrder[]>([]);
   const [fileName, setFileName] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<{ imported: number } | null>(null);
@@ -48,53 +88,75 @@ export function ImportForm({ channels }: { channels: Channel[] }) {
           setError("That file has no rows.");
           return;
         }
-        setRows(results.data);
+        setOrders(groupRows(results.data));
       },
       error: () => setError("Couldn't read that file as CSV."),
     });
   }
 
   async function handleImport() {
-    if (!rows.length || !channelId) return;
+    if (!orders.length || !channelId) return;
     setError(null);
     setLoading(true);
 
-    const payload = rows
-      .filter((r) => r.external_order_id)
-      .map((r) => ({
-        channel_id: channelId,
-        external_order_id: r.external_order_id!.trim(),
-        order_date: r.order_date || new Date().toISOString(),
-        customer_ref: r.customer_ref || null,
-        payment_type: r.payment_type || null,
-        gross_amount: Number(r.gross_amount) || 0,
-        discount: Number(r.discount) || 0,
-        tax_amount: Number(r.tax_amount) || 0,
-        net_amount: Number(r.net_amount) || 0,
-        fulfilment_status: r.fulfilment_status || "pending",
-        payment_status: r.payment_status || "pending",
-      }));
+    // Resolve SKUs to product_ids once, up front.
+    const { data: products } = await supabase.from("products").select("product_id, sku");
+    const skuMap = new Map((products ?? []).map((p) => [p.sku, p.product_id]));
 
-    // Upsert with ignoreDuplicates: BR-001 requires a unique source-transaction
-    // key, so re-importing the same file (or an overlapping export window)
-    // skips rows that already exist instead of erroring the whole batch.
-    const { error, count } = await supabase
-      .from("orders")
-      .upsert(payload, {
-        onConflict: "channel_id,external_order_id",
-        ignoreDuplicates: true,
-        count: "exact",
-      });
+    let imported = 0;
 
-    setLoading(false);
+    for (const o of orders) {
+      const gross = o.lines.reduce((s, l) => s + l.quantity * l.unit_price, 0);
+      const discount = o.lines.reduce((s, l) => s + l.discount, 0);
+      const tax = o.lines.reduce((s, l) => s + l.tax, 0);
+      const net = gross - discount + tax;
 
-    if (error) {
-      setError(error.message);
-      return;
+      const { data: inserted, error: orderError } = await supabase
+        .from("orders")
+        .upsert(
+          {
+            channel_id: channelId,
+            external_order_id: o.external_order_id,
+            order_date: o.order_date,
+            customer_ref: o.customer_ref,
+            payment_type: o.payment_type,
+            gross_amount: gross,
+            discount,
+            tax_amount: tax,
+            net_amount: net,
+            fulfilment_status: o.fulfilment_status,
+            payment_status: o.payment_status,
+          },
+          { onConflict: "channel_id,external_order_id", ignoreDuplicates: true },
+        )
+        .select("order_id")
+        .maybeSingle();
+
+      if (orderError) {
+        setError(`${o.external_order_id}: ${orderError.message}`);
+        continue;
+      }
+      // ignoreDuplicates means an existing order returns no row — skip its lines too.
+      if (!inserted) continue;
+
+      if (o.lines.length) {
+        await supabase.from("order_lines").insert(
+          o.lines.map((l) => ({
+            order_id: inserted.order_id,
+            product_id: skuMap.get(l.sku) ?? null,
+            quantity: l.quantity,
+            unit_price: l.unit_price,
+            discount: l.discount,
+            tax: l.tax,
+          })),
+        );
+      }
+      imported += 1;
     }
 
-    setResult({ imported: count ?? payload.length });
-    setRows([]);
+    setLoading(false);
+    setResult({ imported });
+    setOrders([]);
     setFileName(null);
     router.refresh();
   }
@@ -133,10 +195,12 @@ export function ImportForm({ channels }: { channels: Channel[] }) {
           />
         </div>
 
-        {fileName && rows.length ? (
+        {fileName && orders.length ? (
           <p className="text-sm text-ink-muted">
-            <span className="font-data">{fileName}</span> — {rows.length} row
-            {rows.length === 1 ? "" : "s"} ready to import.
+            <span className="font-data">{fileName}</span> —{" "}
+            {orders.length} order{orders.length === 1 ? "" : "s"},{" "}
+            {orders.reduce((s, o) => s + o.lines.length, 0)} line items ready
+            to import.
           </p>
         ) : null}
 
@@ -147,15 +211,15 @@ export function ImportForm({ channels }: { channels: Channel[] }) {
         ) : null}
         {result ? (
           <p className="text-sm text-success">
-            Imported {result.imported} order
-            {result.imported === 1 ? "" : "s"}. Duplicates (matching channel +
-            order ID) were skipped automatically.
+            Imported {result.imported} new order
+            {result.imported === 1 ? "" : "s"} with line items. Orders that
+            already existed were skipped.
           </p>
         ) : null}
 
         <Button
           onClick={handleImport}
-          disabled={!rows.length || loading}
+          disabled={!orders.length || loading}
           className="w-auto px-4"
         >
           {loading ? "Importing…" : "Import orders"}
