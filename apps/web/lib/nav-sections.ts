@@ -43,7 +43,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { label: "Products", href: "/admin/products", status: "live" },
       { label: "Warehouses", href: "/admin/warehouses", status: "live" },
       { label: "Permissions", href: "/admin/permissions", status: "live" },
-      { label: "Integrations", status: "soon" },
+      { label: "Integrations", href: "/admin/integrations", status: "live" },
       { label: "Audit Trail", href: "/admin/audit-trail", status: "live" },
     ],
   },

@@ -447,6 +447,21 @@ duplicate-key message accordingly rather than shipping a pattern that would neve
 transactions, and settlement reconciliation; `period_end` before `period_start` blocked on
 Settlements.
 
+## Integrations screen + Dashboard verification
+
+**Integrations** (ADM-137) shows real data, not placeholders: actual channel connection statuses
+from the database, and the Shopify webhook's genuine deployment state pulled from Supabase (both
+Edge Functions confirmed `ACTIVE`). States plainly that the webhook is deployed but unverified
+against a real store, and gives the exact real endpoint URL (built from the actual project URL)
+plus the exact setup steps needed to connect one — not a vague "integrations coming soon" page.
+
+**Dashboard** — this was one of the screens flagged in the earlier audit as never actually loaded
+or verified, only reasoned about. Ran every one of its exact query patterns live against the
+database before trusting it: all column references (`orders.gross_amount`, `settlements.status`,
+`cod_collections.remitted_amount`, `inventory_balances.quantity`, `claims.approved_amount`,
+`journal_entries.debit/credit`, `products.cost_price`) confirmed valid with zero errors — unlike
+the Channels `status` column bug from the previous round, this page checked out clean.
+
 ## Next steps
 
 1. Actually connect a Shopify store and register the webhook — still genuinely untested
