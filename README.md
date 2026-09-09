@@ -518,6 +518,26 @@ impact), SHOP-1005 (just **requested**, not yet received — shows the "Mark rec
 **Credit note** — against FLIP-1010's return, with a real posted reversing voucher (Dr Sales
 Revenue ₹386.66, Dr GST Payable ₹48.84, Cr Trade Receivables ₹435.50) — not a standalone record.
 
+## Role-aware sidebar
+
+You asked directly whether the sidebar differs per role — checking the code, it didn't: `NAV_SECTIONS`
+was a flat static list with zero role-awareness, so every role saw every link, even ones RLS would
+block them from seeing any data on. Fixed by mapping each nav item to the *exact* `has_*_view()`
+RLS function that governs its screen (confirmed by reading the actual function source from the
+database, not from memory) — a role only has an item hidden if it would see genuinely zero rows,
+not just "limited" access. Screens where everyone sees *something* (Users, Roles, Channels,
+Products, Warehouses, Permissions, Integrations, Audit Trail) are deliberately left visible to all,
+since hiding them would misrepresent limited access as none.
+
+Uses the *effective* role (`roleName`, which reflects an active role-preview), not the real one —
+so when Super Admin previews as another role via the switcher, the sidebar genuinely shows what
+that role would see too, not just the data restrictions underneath.
+
+Verified the filter logic against the real permission functions: Warehouse Manager correctly hides
+Settlements/Bank/Tax/Accounting (9 items), Accountant and Tax Manager correctly hide
+Inventory/Returns/RTO/Claims, Claims Manager hides only Tax, Marketplace Manager hides only the
+Accounting-tier screens — matching `has_returns_view()`, `has_settlements_view()`, etc. exactly.
+
 ## Next steps
 
 1. Actually connect a Shopify store and register the webhook — still genuinely untested
