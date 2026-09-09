@@ -16,7 +16,7 @@ export const NAV_SECTIONS: NavSection[] = [
   {
     label: "Workspace",
     items: [
-      { label: "Dashboards", status: "soon" },
+      { label: "Dashboards", href: "/dashboard", status: "live" },
       { label: "Orders", href: "/orders", status: "live" },
       { label: "Inventory", href: "/inventory", status: "live" },
       { label: "Returns", href: "/returns", status: "live" },
@@ -24,8 +24,8 @@ export const NAV_SECTIONS: NavSection[] = [
       { label: "Settlements", href: "/settlements", status: "live" },
       { label: "Bank / COD", href: "/bank", status: "live" },
       { label: "COD Collections", href: "/cod", status: "live" },
-      { label: "Claims", status: "soon" },
-      { label: "Tax", status: "soon" },
+      { label: "Claims", href: "/claims", status: "live" },
+      { label: "Tax", href: "/tax", status: "live" },
       { label: "Accounting", href: "/accounting/ledgers", status: "live" },
       { label: "Reports", status: "soon" },
     ],

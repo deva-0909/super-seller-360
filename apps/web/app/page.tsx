@@ -7,7 +7,6 @@ export default async function RootPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // No Dashboards module yet (Phase 5) — land on Users as the most useful
-  // authenticated screen that exists today.
-  redirect(user ? "/admin/users" : "/login");
+  // Dashboard now exists (Phase 5) — land there instead of Users.
+  redirect(user ? "/dashboard" : "/login");
 }

@@ -214,11 +214,38 @@ Note: `ageing_days` (listed in the BRD's CODCollection entity) is computed at qu
 `collected_date` rather than stored — a stored value would go stale the moment a day passes
 without a background job updating it.
 
+## Phase 5: Claims, Tax, Dashboard — all P0 modules from the original roadmap are now live
+
+**Claims** — tracks losses (lost shipments, damaged returns, incorrect deductions) from potential
+through recovery. `advance_claim()` keeps status and amount fields moving together (an "approved"
+claim always has an `approved_amount`).
+
+**Verified live, under genuine RLS:**
+- Marketplace Manager (Create+View tier) could create a claim, but was correctly **blocked** from
+  approving it — "Not authorized to update claim status"
+- A real Finance Manager then filed → approved it (₹350 claimed → ₹300 approved), exactly matching
+  what was submitted
+
+**Tax** — logs GST/TDS/TCS records, and — the part that actually matters — reconciles the logged
+GST total against the real GST Payable ledger balance (computed from `journal_entries`, the same
+data the Ledgers screen already uses). This is a genuine books-vs-records comparison, not two
+disconnected numbers sitting next to each other.
+
+**Dashboard** — every KPI is computed live from the actual database on page load: Gross/Net Sales,
+Settlement Pending/Shortfall, COD Pending, Return Rate, RTO Rate, Inventory Value, Claims
+Recoverable, Trial Balance. None of it is hardcoded — it reads real rows from every module built
+across Phases 2–5.
+
+This completes all P0 modules from the original roadmap. What's left: connecting a live portal
+(the Shopify webhook is built but untested), and P1 items from the Reports KPI sheet (Cash Flow,
+full P&L/Balance Sheet statements) that weren't in the original 5-phase scope.
+
 ## Next steps
 
 1. Actually connect a Shopify store and register the webhook — still genuinely untested
 2. Order Timeline, order-line CSV import
-3. Phase 5: Claims, Tax reconciliation, Reports/Dashboards
+3. P1 reports: full P&L, Balance Sheet, Cash Flow statements (Trial Balance and General Ledger
+   already exist via the Ledgers screen)
 
 ## Phase roadmap
 
