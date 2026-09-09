@@ -575,6 +575,25 @@ separate gap, but not a reason to lock them out. Narrowed the fix to exactly the
 (`status <> 'suspended'`) instead. Verified live both ways afterward: a suspended user is now
 correctly blocked from even creating a product; an invited user's access is completely unaffected.
 
+## Senior-QA pass round 2: a second real write-scoping bug, plus state-machine checks
+
+**Bug found and fixed: Warehouse Manager write-scoping was missing entirely.** The returns/rtos
+SELECT policy correctly scopes a Warehouse Manager to their assigned warehouse(s), but the
+INSERT/UPDATE policies never did — only checking role. First attempt to prove this looked
+blocked, but for the wrong reason (an `INSERT ... RETURNING` incidentally fails when the inserted
+row wouldn't pass the SELECT policy — a Postgres side-effect, not real protection). Re-tested
+with a plain `INSERT` and no `RETURNING` — matching exactly how the app's real `.insert()` calls
+work — and it succeeded silently: Kavita (Warehouse Manager, scoped to Surat only) created a
+return against **Mumbai's** warehouse with zero error. Fixed by applying the same scope check the
+SELECT policy already uses to INSERT and UPDATE, for both `returns` and `rtos`. Re-verified after
+the fix: the same attack is blocked, writing to her own warehouse still works, Super Admin is
+unaffected.
+
+**State-machine integrity re-confirmed under adversarial conditions** (not just happy-path):
+closing an already-closed accounting period is correctly rejected ("Period Aug 2026 is already
+closed"); dispositioning an already-restocked return a second time is correctly rejected ("Return
+must be received before it can be dispositioned") — no double-crediting of stock is possible.
+
 ## Next steps
 
 1. Actually connect a Shopify store and register the webhook — still genuinely untested
