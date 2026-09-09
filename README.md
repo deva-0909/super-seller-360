@@ -594,6 +594,28 @@ closing an already-closed accounting period is correctly rejected ("Period Aug 2
 closed"); dispositioning an already-restocked return a second time is correctly rejected ("Return
 must be received before it can be dispositioned") — no double-crediting of stock is possible.
 
+## Senior-QA pass round 3: two more real bugs, same pattern each time
+
+Following the same adversarial method — trying to break state integrity, not just permissions.
+
+**Bug: settlements could be silently re-reconciled.** `reconcile_settlement()` had no check
+against running on a settlement that was already resolved. Confirmed live: an already-reconciled
+settlement (real ₹5,270) was silently overwritten to a fabricated ₹9,999 — the UI hides the form
+once status isn't `pending`, but the function itself enforced nothing. Fixed: reconciling now
+requires `pending` status, re-verified the same attack is blocked and restored the real value.
+
+**Bug: claims had no state-transition rules at all.** `advance_claim()` let any status jump to any
+other status in any order. Confirmed live: a terminal `rejected` claim was silently reopened and
+"approved" for a fabricated ₹5,000. **First fix attempt broke a legitimate flow** — it required
+status to be exactly `approved` before recording a recovery, which blocked the multi-installment
+recovery pattern (several partial recoveries in sequence) built and tested earlier in this
+project. Caught before shipping by re-testing that exact flow, not just the exploit: a second
+partial recovery failed with "must be approved." Corrected to allow `recovered → recovered`
+(another installment) alongside `approved → recovered` (the first one). Re-verified three ways
+afterward: multi-installment recovery works again (₹200 + ₹300 = ₹500), the original rejected-claim
+exploit is still blocked, and all 5 originally-seeded claims still show their correct values with
+zero corruption from the testing process itself.
+
 ## Next steps
 
 1. Actually connect a Shopify store and register the webhook — still genuinely untested
