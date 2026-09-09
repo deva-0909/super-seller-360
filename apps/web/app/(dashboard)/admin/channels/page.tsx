@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/current-user";
 import { StatusPill } from "@/components/ui/status-pill";
 import { CreateChannelForm } from "./create-channel-form";
+import { ChannelStatusToggle } from "./channel-status-toggle";
 
 export default async function ChannelsPage() {
   const currentUser = await getCurrentUser();
@@ -9,7 +10,7 @@ export default async function ChannelsPage() {
 
   const { data: channels } = await supabase
     .from("channels")
-    .select("channel_id, name, type, api_status, settlement_cycle")
+    .select("channel_id, name, type, api_status, settlement_cycle, status")
     .order("name");
 
   const canCreate = currentUser.roleName === "Super Admin";
@@ -33,6 +34,8 @@ export default async function ChannelsPage() {
                 <th className="px-4 py-3 font-medium">Type</th>
                 <th className="px-4 py-3 font-medium">API status</th>
                 <th className="px-4 py-3 font-medium">Settlement cycle</th>
+                <th className="px-4 py-3 font-medium">Active</th>
+                {canCreate ? <th className="px-4 py-3 font-medium"></th> : null}
               </tr>
             </thead>
             <tbody>
@@ -57,12 +60,22 @@ export default async function ChannelsPage() {
                   <td className="px-4 py-3 text-ink-muted">
                     {c.settlement_cycle ?? "—"}
                   </td>
+                  <td className="px-4 py-3">
+                    <StatusPill status={c.status === "active" ? "success" : "neutral"}>
+                      {c.status}
+                    </StatusPill>
+                  </td>
+                  {canCreate ? (
+                    <td className="px-4 py-3">
+                      <ChannelStatusToggle channelId={c.channel_id} status={c.status} />
+                    </td>
+                  ) : null}
                 </tr>
               ))}
               {!channels?.length ? (
                 <tr>
                   <td
-                    colSpan={4}
+                    colSpan={6}
                     className="px-4 py-8 text-center text-sm text-ink-muted"
                   >
                     No channels yet — add one to start bringing in orders.

@@ -388,6 +388,23 @@ get back to their list except the sidebar — only Ledger Detail had a "← All 
 the same consistent pattern to all of them, plus Order Import and Session Management, which had
 the same gap.
 
+## Edit capability (audit follow-up — was create-only everywhere)
+
+- **Users**: Super Admin can now change anyone's role inline, and suspend/reactivate accounts.
+  Verified live: successfully changed Priya's role and back; separately confirmed Priya herself
+  (Operations Manager) is correctly blocked from promoting herself to Super Admin — the RLS policy
+  restricting `user_profiles` writes to Super Admin holds regardless of what the UI shows
+- **Products**: inline edit (name, category, HSN, GST rate, cost price) + click-to-toggle
+  active/inactive, for Super Admin and Operations Manager
+- **Warehouses**: inline edit (name, address) + active/inactive toggle
+- **Channels**: active/inactive toggle for Super Admin
+
+**A real bug caught before shipping:** the Channels deactivate feature referenced a `status`
+column that turned out not to exist on that table at all (only `api_status`, a different concept
+— connection status, not active/inactive). Would have crashed immediately in the browser. Caught
+by testing against the real database before considering it done, not by inspection — added the
+missing column via migration `0020`, then re-verified the fix live.
+
 ## Next steps
 
 1. Actually connect a Shopify store and register the webhook — still genuinely untested

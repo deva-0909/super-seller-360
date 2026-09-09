@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/current-user";
-import { StatusPill } from "@/components/ui/status-pill";
 import { CreateWarehouseForm } from "./create-warehouse-form";
+import { WarehouseRow } from "./warehouse-row";
 
 export default async function WarehousesPage() {
   const currentUser = await getCurrentUser();
@@ -33,27 +33,21 @@ export default async function WarehousesPage() {
                 <th className="px-4 py-3 font-medium">Type</th>
                 <th className="px-4 py-3 font-medium">Address</th>
                 <th className="px-4 py-3 font-medium">Status</th>
+                {canCreate ? <th className="px-4 py-3 font-medium"></th> : null}
               </tr>
             </thead>
             <tbody>
               {warehouses?.map((w, i) => (
-                <tr
+                <WarehouseRow
                   key={w.warehouse_id}
-                  className={i % 2 === 1 ? "bg-surface-sunken/50" : undefined}
-                >
-                  <td className="px-4 py-3 text-ink">{w.name}</td>
-                  <td className="px-4 py-3 font-data text-ink-muted">{w.type}</td>
-                  <td className="px-4 py-3 text-ink-muted">{w.address ?? "—"}</td>
-                  <td className="px-4 py-3">
-                    <StatusPill status={w.status === "active" ? "success" : "neutral"}>
-                      {w.status}
-                    </StatusPill>
-                  </td>
-                </tr>
+                  warehouse={w}
+                  striped={i % 2 === 1}
+                  canEdit={canCreate}
+                />
               ))}
               {!warehouses?.length ? (
                 <tr>
-                  <td colSpan={4} className="px-4 py-8 text-center text-sm text-ink-muted">
+                  <td colSpan={5} className="px-4 py-8 text-center text-sm text-ink-muted">
                     No warehouses yet.
                   </td>
                 </tr>

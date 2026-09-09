@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/current-user";
 import { StatusPill } from "@/components/ui/status-pill";
 import { InviteUserForm } from "./invite-user-form";
+import { UserRoleControl, UserStatusToggle } from "./user-controls";
 
 export default async function UsersPage() {
   const currentUser = await getCurrentUser();
@@ -10,7 +11,7 @@ export default async function UsersPage() {
   const [{ data: users }, { data: roles }] = await Promise.all([
     supabase
       .from("user_profiles")
-      .select("user_id, name, email, status, roles(name)")
+      .select("user_id, name, email, status, role_id, roles(name)")
       .order("name"),
     supabase.from("roles").select("role_id, name").order("name"),
   ]);
@@ -36,41 +37,67 @@ export default async function UsersPage() {
                 <th className="px-4 py-3 font-medium">Email</th>
                 <th className="px-4 py-3 font-medium">Role</th>
                 <th className="px-4 py-3 font-medium">Status</th>
+                {isSuperAdmin ? <th className="px-4 py-3 font-medium">Action</th> : null}
               </tr>
             </thead>
             <tbody>
-              {users?.map((u, i) => (
-                <tr
-                  key={u.user_id}
-                  className={i % 2 === 1 ? "bg-surface-sunken/50" : undefined}
-                >
-                  <td className="px-4 py-3 text-ink">{u.name}</td>
-                  <td className="px-4 py-3 font-data text-ink-muted">
-                    {u.email}
-                  </td>
-                  <td className="px-4 py-3 text-ink-muted">
-                    {(u.roles as unknown as { name: string } | null)?.name ??
-                      "—"}
-                  </td>
-                  <td className="px-4 py-3">
-                    <StatusPill
-                      status={
-                        u.status === "active"
-                          ? "success"
-                          : u.status === "invited"
-                            ? "neutral"
-                            : "warning"
-                      }
-                    >
-                      {u.status}
-                    </StatusPill>
-                  </td>
-                </tr>
-              ))}
+              {users?.map((u, i) => {
+                const isSelf = u.user_id === currentUser.id;
+                return (
+                  <tr
+                    key={u.user_id}
+                    className={i % 2 === 1 ? "bg-surface-sunken/50" : undefined}
+                  >
+                    <td className="px-4 py-3 text-ink">
+                      {u.name}
+                      {isSelf ? (
+                        <span className="ml-1.5 text-xs text-ink-faint">(you)</span>
+                      ) : null}
+                    </td>
+                    <td className="px-4 py-3 font-data text-ink-muted">
+                      {u.email}
+                    </td>
+                    <td className="px-4 py-3 text-ink-muted">
+                      {isSuperAdmin ? (
+                        <UserRoleControl
+                          userId={u.user_id}
+                          currentRoleId={u.role_id}
+                          roles={roles ?? []}
+                          isSelf={isSelf}
+                        />
+                      ) : (
+                        (u.roles as unknown as { name: string } | null)?.name ?? "—"
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      <StatusPill
+                        status={
+                          u.status === "active"
+                            ? "success"
+                            : u.status === "invited"
+                              ? "neutral"
+                              : "warning"
+                        }
+                      >
+                        {u.status}
+                      </StatusPill>
+                    </td>
+                    {isSuperAdmin ? (
+                      <td className="px-4 py-3">
+                        <UserStatusToggle
+                          userId={u.user_id}
+                          status={u.status}
+                          isSelf={isSelf}
+                        />
+                      </td>
+                    ) : null}
+                  </tr>
+                );
+              })}
               {!users?.length ? (
                 <tr>
                   <td
-                    colSpan={4}
+                    colSpan={isSuperAdmin ? 5 : 4}
                     className="px-4 py-8 text-center text-sm text-ink-muted"
                   >
                     No users yet.

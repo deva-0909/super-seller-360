@@ -1,0 +1,11 @@
+-- ============================================================================
+-- Super Seller 360 — Fix: channels table was missing a status column
+--
+-- Found by testing the new "Deactivate channel" UI feature against the real
+-- database before shipping: the channels table only ever had api_status
+-- (connection status: not_connected/connected/error/disabled), never a
+-- separate active/inactive status the way products and warehouses do.
+-- The UI code referenced a column that didn't exist — would have crashed
+-- immediately in the browser had this not been caught here first.
+-- ============================================================================
+alter table channels add column status text not null default 'active' check (status in ('active','inactive'));
