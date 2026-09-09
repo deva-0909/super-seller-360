@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { ImportForm } from "./import-form";
 
@@ -10,7 +11,11 @@ export default async function ImportOrdersPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-8 py-8">
-      <h1 className="text-lg font-semibold tracking-tight text-ink">
+      <Link href="/orders" className="text-sm text-ink-muted hover:text-ink">
+        ← All orders
+      </Link>
+
+      <h1 className="mt-4 text-lg font-semibold tracking-tight text-ink">
         Import orders from CSV
       </h1>
       <p className="mt-1 text-sm text-ink-muted">

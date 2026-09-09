@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/current-user";
@@ -36,7 +37,11 @@ export default async function ClaimDetailPage({
 
   return (
     <div className="mx-auto max-w-2xl px-8 py-8">
-      <div className="flex items-baseline justify-between">
+      <Link href="/claims" className="text-sm text-ink-muted hover:text-ink">
+        ← All claims
+      </Link>
+
+      <div className="mt-4 flex items-baseline justify-between">
         <div>
           <h1 className="font-data text-lg font-semibold tracking-tight text-ink">
             Claim — {order?.external_order_id}

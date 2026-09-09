@@ -89,7 +89,11 @@ export default async function OrderDetailPage({
 
   return (
     <div className="mx-auto max-w-3xl px-8 py-8">
-      <div className="flex items-baseline justify-between">
+      <Link href="/orders" className="text-sm text-ink-muted hover:text-ink">
+        ← All orders
+      </Link>
+
+      <div className="mt-4 flex items-baseline justify-between">
         <div>
           <h1 className="font-data text-lg font-semibold tracking-tight text-ink">
             {order.external_order_id}

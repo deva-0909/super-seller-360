@@ -381,6 +381,13 @@ pre-login Auth screens. Because the whole app was already built on CSS custom-pr
 this took editing `globals.css` plus 4 shared components (Sidebar, Topbar, Button, StatusPill,
 AuthShell) — every page picked up the new look automatically with zero page-level edits.
 
+## Back navigation fix
+
+Real gap you caught: 5 of 6 detail screens (Order, Return, RTO, Claim, Settlement) had no way to
+get back to their list except the sidebar — only Ledger Detail had a "← All ledgers" link. Added
+the same consistent pattern to all of them, plus Order Import and Session Management, which had
+the same gap.
+
 ## Next steps
 
 1. Actually connect a Shopify store and register the webhook — still genuinely untested

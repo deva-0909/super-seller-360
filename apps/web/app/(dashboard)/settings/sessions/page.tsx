@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { SignOutControls } from "./sign-out-controls";
@@ -14,7 +15,11 @@ export default async function SessionManagementPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-12">
-      <h1 className="text-xl font-semibold tracking-tight text-ink">
+      <Link href="/dashboard" className="text-sm text-ink-muted hover:text-ink">
+        ← Back to dashboard
+      </Link>
+
+      <h1 className="mt-4 text-xl font-semibold tracking-tight text-ink">
         Session management
       </h1>
       <p className="mt-2 text-sm text-ink-muted">
