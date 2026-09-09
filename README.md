@@ -479,6 +479,45 @@ row-grouping/merging), actual rendering/layout in a browser, or interaction bugs
 bindings, state management issues) — only whether each screen's database queries are valid against
 the real schema. Genuine browser click-through remains the one form of testing only you can do.
 
+## Comprehensive seed data — every module now has real, clickable examples
+
+Audit finding: Phases 3–5 (Returns, RTO, Inventory, Settlements, Bank, Claims, Tax) had **zero**
+permanent seed data — every test during development was created and cleaned up right after, so
+despite the features being built and tested, there was nothing to actually click through. Fixed:
+seeded real examples across every state each module supports, using real existing orders posted
+through the actual workflow functions (not fabricated final rows), grounded in Surat throughout.
+
+**Verified afterward:** books still balance exactly (₹13,067.92 debit = ₹13,067.92 credit) even
+after all this new activity, including a credit note that now has a real reversing voucher behind
+it — Sales Revenue and Trade Receivables both correctly reduced, not just a standalone record with
+no accounting effect.
+
+**Bank accounts** — HDFC Bank (Ring Road Branch, Surat) and ICICI Bank (Udhna Branch, Surat).
+
+**Settlements** — Amazon Aug (reconciled), Flipkart Aug (short-pay — expected ₹3,485, got ₹3,180),
+Flipkart Sep (pending, ready to reconcile from the UI).
+
+**Bank transactions** — 2 matched to the settlements above, 1 unmatched credit, 1 unmatched debit
+(bank charges) — so the "needs reconciliation" view has something real to show.
+
+**COD collections** (Surat-area couriers) — Delhivery/Sachin GIDC (remitted), Ecom Express/Udhna
+(remitted), DTDC/Ring Road (short-remit — ₹900 of ₹1,944.82), Bluedart/Surat City (collected,
+pending remittance, real ageing visible).
+
+**Returns** — FLIP-1010 (received → inspected good → **restocked**, real stock now sitting in
+Surat Main Warehouse), SHOP-1016 (received → damaged → **quarantined**, correctly zero stock
+impact), SHOP-1005 (just **requested**, not yet received — shows the "Mark received" action).
+
+**RTOs** — FLIP-1017 (received → good → **restocked**), SHOP-1007 (still **in transit** back).
+
+**Claims** — one in each of the 5 states: AMAZ-1003 (potential), FLIP-1011 (claimed), FLIP-1006
+(approved — shows in "recoverable"), SHOP-1002 (fully recovered, closed), FLIP-1001 (rejected).
+
+**Tax transactions** — one GST record matched, one unmatched, one TDS matched, one TCS disputed.
+
+**Credit note** — against FLIP-1010's return, with a real posted reversing voucher (Dr Sales
+Revenue ₹386.66, Dr GST Payable ₹48.84, Cr Trade Receivables ₹435.50) — not a standalone record.
+
 ## Next steps
 
 1. Actually connect a Shopify store and register the webhook — still genuinely untested
