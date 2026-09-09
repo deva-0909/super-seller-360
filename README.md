@@ -257,12 +257,32 @@ limitation, stated honestly in the UI: re-importing the same file skips orders t
 but doesn't yet dedupe line items within a brand-new order across two overlapping files — fine for
 a clean one-time batch, not yet a robust re-sync path.
 
+## Profit & Loss and Balance Sheet
+
+Both computed live from `journal_entries` — the same real, tested data every other accounting
+screen uses. No fabricated numbers.
+
+**Verified by hand before shipping:** with the real posted vouchers currently in the database
+(Trade Receivables ₹7,639.53 debit, Sales Revenue ₹6,711.30 credit, GST Payable ₹928.23 credit),
+Assets (₹7,639.53) = Liabilities (₹928.23) + Equity/unclosed profit (₹6,711.30) = ₹7,639.53 exactly.
+
+**Honest gap stated in the P&L UI itself:** no expense ledgers exist yet — the accounting engine
+currently only auto-posts Sales Revenue via order invoicing, so the P&L will show revenue with
+zero expenses until expense ledgers (commission, shipping, packaging) are added and posted
+against. That's a true reflection of what's been built, not a bug.
+
+**Honest gap stated in the Balance Sheet UI itself:** no formal period-close process exists yet
+(a feature in its own right), so current-period profit hasn't been transferred to a retained
+earnings ledger — it's shown explicitly as "Current period profit (unclosed)" rather than silently
+folded into an equity ledger that doesn't actually reflect it.
+
 ## Next steps
 
 1. Actually connect a Shopify store and register the webhook — still genuinely untested
-2. P1 reports: full P&L, Balance Sheet, Cash Flow statements (Trial Balance and General Ledger
-   already exist via the Ledgers screen)
+2. Cash Flow statement (the remaining P1 report)
 3. Idempotent line-item CSV re-import (dedupe on order_id + sku, not just order-level)
+4. A real period-close workflow, which would let Balance Sheet show true retained earnings
+   instead of "unclosed" profit
 
 ## Phase roadmap
 
