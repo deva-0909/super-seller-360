@@ -8,10 +8,10 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <nav className="flex h-full w-60 flex-col gap-6 overflow-y-auto border-r border-line bg-surface px-4 py-6">
+    <nav className="flex h-full w-60 flex-col gap-6 overflow-y-auto bg-sidebar-bg px-4 py-6">
       {NAV_SECTIONS.map((section) => (
         <div key={section.label}>
-          <p className="px-2 text-xs font-medium text-ink-faint">
+          <p className="px-2 text-xs font-semibold uppercase tracking-wide text-sidebar-text-muted">
             {section.label}
           </p>
           <ul className="mt-2 flex flex-col gap-0.5">
@@ -20,7 +20,7 @@ export function Sidebar() {
               if (item.status === "soon" || !item.href) {
                 return (
                   <li key={item.label}>
-                    <span className="flex items-center justify-between px-2 py-1.5 text-sm text-ink-faint">
+                    <span className="flex items-center justify-between rounded-lg px-2 py-1.5 text-sm text-sidebar-text-muted">
                       {item.label}
                       <span className="text-xs">soon</span>
                     </span>
@@ -31,10 +31,10 @@ export function Sidebar() {
                 <li key={item.label}>
                   <Link
                     href={item.href}
-                    className={`block px-2 py-1.5 text-sm transition-colors ${
+                    className={`block rounded-lg px-2 py-1.5 text-sm transition-colors ${
                       active
-                        ? "bg-accent-tint text-accent font-medium"
-                        : "text-ink hover:bg-surface-sunken"
+                        ? "bg-sidebar-bg-active font-medium text-sidebar-text-active"
+                        : "text-sidebar-text hover:bg-white/5 hover:text-sidebar-text-active"
                     }`}
                   >
                     {item.label}

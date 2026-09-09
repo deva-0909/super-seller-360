@@ -1,34 +1,41 @@
 @import "tailwindcss";
 
 :root {
-  /* Surfaces */
-  --canvas: #f3f4f1;      /* app background — quiet paper-grey, not white, not cream */
-  --surface: #ffffff;     /* cards / panels sit on canvas */
-  --surface-sunken: #eceee9; /* table stripes, input backgrounds */
+  /* Surfaces — light blue-tinted workspace, not stark white, not the old paper-grey */
+  --canvas: #f4f6fb;
+  --surface: #ffffff;
+  --surface-sunken: #eef2fa;
 
   /* Ink */
-  --ink: #1b1f1d;         /* primary text — near-black, faint green undertone */
-  --ink-muted: #5b615c;   /* secondary text */
-  --ink-faint: #8b9089;   /* placeholder / disabled */
+  --ink: #1b2a4a;         /* deep navy, warmer than pure black */
+  --ink-muted: #5b6b8c;
+  --ink-faint: #97a3bd;
 
   /* Lines */
-  --line: #d8dbd5;        /* default border */
-  --line-strong: #b7bcb2; /* emphasized border, table header rule */
+  --line: #dde3f0;
+  --line-strong: #c3ccdf;
 
-  /* Accent — deep ledger teal, not a default SaaS blue/purple */
-  --accent: #1f5e52;
-  --accent-hover: #17453c;
-  --accent-tint: #e5efec; /* accent-on-canvas backgrounds, focus rings */
+  /* Accent — vivid SaaS blue */
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --accent-tint: #dbeafe;
 
-  /* Status — muted, not candy-saturated */
-  --success: #2e7d4f;
-  --success-tint: #e8f2ec;
-  --warning: #b8791c;
-  --warning-tint: #faf1e2;
-  --danger: #b23a2e;
-  --danger-tint: #f7e9e7;
-  --neutral: #4a5568;
-  --neutral-tint: #eaecef;
+  /* Status — bright, confident colors */
+  --success: #16a34a;
+  --success-tint: #dcfce7;
+  --warning: #f59e0b;
+  --warning-tint: #fef3c7;
+  --danger: #dc2626;
+  --danger-tint: #fee2e2;
+  --neutral: #6366f1;
+  --neutral-tint: #e0e7ff;
+
+  /* Sidebar — colorful deep-navy panel distinct from the light canvas */
+  --sidebar-bg: #16213e;
+  --sidebar-bg-active: #1f5ee6;
+  --sidebar-text: #c7d2f0;
+  --sidebar-text-muted: #7c89b8;
+  --sidebar-text-active: #ffffff;
 }
 
 @theme inline {
@@ -51,6 +58,11 @@
   --color-danger-tint: var(--danger-tint);
   --color-neutral: var(--neutral);
   --color-neutral-tint: var(--neutral-tint);
+  --color-sidebar-bg: var(--sidebar-bg);
+  --color-sidebar-bg-active: var(--sidebar-bg-active);
+  --color-sidebar-text: var(--sidebar-text);
+  --color-sidebar-text-muted: var(--sidebar-text-muted);
+  --color-sidebar-text-active: var(--sidebar-text-active);
 
   --font-sans: var(--font-plex-sans);
   --font-mono: var(--font-plex-mono);
@@ -68,6 +80,16 @@ body {
 .font-data {
   font-family: var(--font-mono), ui-monospace, "SFMono-Regular", monospace;
   font-feature-settings: "tnum" 1, "zero" 1;
+}
+
+/* Global reskin: every bordered panel/input/button across the app already
+   uses Tailwind's plain `.border` utility, so rounding + softly lifting
+   them here recolors the whole app without editing 30+ page files. */
+.border {
+  border-radius: 0.625rem;
+}
+.bg-surface {
+  box-shadow: 0 1px 3px rgba(27, 42, 74, 0.06), 0 1px 2px rgba(27, 42, 74, 0.04);
 }
 
 /* One deliberate focus treatment, reused everywhere */

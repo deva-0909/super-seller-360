@@ -21,7 +21,7 @@ export function StatusPill({
 }) {
   return (
     <span
-      className={`inline-flex items-center border px-2 py-0.5 text-xs font-medium ${STYLES[status]}`}
+      className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${STYLES[status]}`}
     >
       {children}
     </span>

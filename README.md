@@ -354,6 +354,33 @@ built a UI on top of them. Built list + create screens for both.
   correctly blocked from creating a product (RLS rejected the insert), and correctly sees all
   existing products (read access confirmed)
 
+## Audit round 2 — all 10 roles now tested, colorful reskin
+
+**All 10 roles have now actually been tested**, not just reasoned about from RLS policy code.
+The 4 that had never been exercised at all (no seeded user existed) — Accountant, Tax Manager,
+Claims Manager, CEO/Owner — now have demo accounts and were verified live:
+- **Accountant**'s distinct "Reconcile" tier on Settlements: correctly blocked from *creating* a
+  settlement, correctly *could* reconcile an existing one (Full write is Finance-Manager-only,
+  Reconcile is broader)
+- **Tax Manager**: confirmed genuinely sees 0 claims even with a real claim in the database
+  (Claims = "—" for this role)
+- **Claims Manager**: correctly approved a claim (Full tier), correctly blocked from creating a
+  tax record (Tax = "—" for this role)
+- **CEO/Owner**: correctly views orders/ledgers but a status update was silently rejected —
+  view-only confirmed for real, not just assumed
+
+Kept these 4 as permanent seed accounts (matching the reasoning for the original 5) — the Users
+screen and role switcher now demonstrate all 10 roles, not 6.
+
+**Full visual reskin** — moved from the original quiet ledger-paper aesthetic to a colorful,
+Zoho-style look: vivid blue accent (`#2563EB`) replacing the deep teal, a deep-navy sidebar with a
+bright blue active state, rounded-full status pills, softly rounded cards with a subtle lift
+(shadow), and a bold colorful "S" brand badge used consistently in both the Topbar and the
+pre-login Auth screens. Because the whole app was already built on CSS custom-property tokens
+(`--accent`, `--success`, etc.) rather than hardcoded colors scattered through 30+ page files,
+this took editing `globals.css` plus 4 shared components (Sidebar, Topbar, Button, StatusPill,
+AuthShell) — every page picked up the new look automatically with zero page-level edits.
+
 ## Next steps
 
 1. Actually connect a Shopify store and register the webhook — still genuinely untested

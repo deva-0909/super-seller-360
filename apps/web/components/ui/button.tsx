@@ -9,10 +9,10 @@ export function Button({
   ...props
 }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: Variant }) {
   const base =
-    "h-10 w-full text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed";
+    "h-10 w-full rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed";
   const styles =
     variant === "primary"
-      ? "bg-accent text-white hover:bg-accent-hover"
+      ? "bg-accent text-white shadow-sm hover:bg-accent-hover"
       : "border border-line bg-surface text-ink hover:bg-surface-sunken";
 
   return (
