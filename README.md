@@ -683,6 +683,24 @@ version** until it's redeployed (via the Supabase CLI, dashboard, or a future se
 tool access). This is a genuine gap between "fixed in source" and "fixed in production" — worth
 tracking as its own follow-up, not assuming it's closed.
 
+## Senior-QA pass round 7: the direct analog of the warehouse bug, on orders
+
+Specifically went looking for the Marketplace Manager equivalent of the Warehouse Manager
+write-scoping bug, since channel visibility is scoped the same way warehouse visibility is.
+Confirmed live: Arjun (Marketplace Manager, scoped to Amazon + Flipkart only) successfully
+**cancelled a real Shopify order** with zero error — the orders INSERT/UPDATE policies checked
+role only, never channel scope, despite his channel *visibility* already being correctly scoped.
+Reverted the change immediately, then fixed the root cause with a `has_channel_scope()` check
+mirroring the warehouse one. Re-verified three ways: the same attack is now blocked, writing to
+his own scoped channels (Amazon) still works, and unscoped roles (Super Admin, Operations
+Manager) are completely unaffected.
+
+**Vercel deployment status, checked honestly**: the connected Vercel account doesn't include the
+`super-seller-360` project (only two unrelated ones), so I can't verify build/deploy status
+directly — same limitation noted before. Every `git push` so far has succeeded, and Vercel
+auto-deploys on push by default, so a new deployment has very likely triggered each time, but this
+is inferred, not confirmed. Checking the Vercel dashboard directly would give a definite answer.
+
 ## Next steps
 
 1. **Redeploy `invite-user` Edge Function** — the suspended-caller fix is in the source but not
