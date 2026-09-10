@@ -808,6 +808,20 @@ sweep across all eight affected tables afterward confirmed every single one matc
 correct seed count — 8 products, 18 orders, 4 bank transactions, 3 settlements, 4 COD collections,
 4 tax transactions, 5 claims, 3 returns — zero contamination from this entire round of testing.
 
+## Senior-QA pass round 14: two clean results — XSS surface and referential integrity
+
+Not every round finds a bug — worth recording the clean results with the same rigor as the ones
+that found something, since "checked and confirmed working" is different from "never tested."
+
+**XSS surface**: swept the entire codebase for `dangerouslySetInnerHTML` — zero uses anywhere.
+Every user-submitted text field (return reasons, claim narrations, voucher notes) goes through
+normal JSX interpolation, which React auto-escapes by default. Clean.
+
+**Referential integrity**: tried to delete Surat Main Warehouse directly, despite it having real
+returns, RTOs, and inventory balances referencing it. Correctly blocked with a clear foreign key
+error ("violates foreign key constraint 'returns_warehouse_id_fkey'") — genuine protection against
+orphaning dependent data, not something that needed fixing.
+
 ## Next steps
 
 1. **Redeploy `invite-user` Edge Function** — the suspended-caller fix is in the source but not
