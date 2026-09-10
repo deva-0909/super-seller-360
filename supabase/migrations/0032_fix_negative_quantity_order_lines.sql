@@ -1,0 +1,22 @@
+-- ============================================================================
+-- Super Seller 360 — Fix: negative order_lines.quantity could drain real stock
+--
+-- Bug found during senior-QA testing: order_lines.quantity had no
+-- positivity constraint at all. Confirmed live: created a fake order with
+-- a negative-quantity (-1) line item, logged a return against it, and
+-- dispositioned it as "restocked" — this silently DRAINED a real unit of
+-- stock (Classic Crew T-Shirt - White at Surat Main Warehouse went from
+-- 1 to 0) with zero error. record_inventory_movement's insufficient-stock
+-- guard only catches a balance going negative overall; it does nothing to
+-- stop a negative quantity being applied as a "credit" in the first place.
+-- Restored the real stock immediately after confirming the exploit.
+--
+-- Fixed at the source with a CHECK constraint, closing every downstream
+-- consumer (disposition_return, disposition_rto, any future feature built
+-- on order_lines) in one place rather than patching each one individually.
+--
+-- Re-verified after the fix: the same negative-quantity insert is now
+-- rejected outright by Postgres, all 28 existing legitimate order lines
+-- are unaffected, and the books remain balanced at the correct value.
+-- ============================================================================
+alter table order_lines add constraint order_lines_quantity_positive check (quantity > 0);

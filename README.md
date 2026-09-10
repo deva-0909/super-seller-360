@@ -719,6 +719,24 @@ create a claim against that same Shopify order with no regression. Final state c
 exactly 16 `channel_sku_map` rows and 5 claims, matching the original seed data precisely, books
 still balanced.
 
+## Senior-QA pass round 9: privilege-escalation check (clean) + a real inventory-draining bug
+
+**Role-preview escalation, checked and clean**: Kavita (Warehouse Manager) tried to grant herself
+a Super Admin preview, and separately tried to set a role-preview row for a *different* user
+(Amit) — both correctly blocked by RLS. The mechanism controlling perceived permissions across the
+whole app holds up under direct attack.
+
+**Bug found: negative quantities could silently drain real stock.** `order_lines.quantity` had no
+positivity constraint at all. Confirmed live: created a fake order with a **-1** quantity line
+item, logged a return against it, dispositioned it as "restocked" — and it silently drained a real
+unit of stock (a genuine T-Shirt at Surat Main Warehouse went from 1 to 0) with zero error. The
+existing insufficient-stock guard only catches a balance going negative overall; it does nothing
+to stop a negative quantity being fed in as a "credit" to begin with. Restored the real stock
+immediately, then fixed it at the source with a CHECK constraint — closing every current and
+future consumer of `order_lines.quantity` in one place, not just the specific path that was
+exploited. Re-verified: the same insert is now rejected outright by Postgres, all 28 existing
+legitimate order lines are unaffected, and the books remain correctly balanced.
+
 ## Next steps
 
 1. **Redeploy `invite-user` Edge Function** — the suspended-caller fix is in the source but not
