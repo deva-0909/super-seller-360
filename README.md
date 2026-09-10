@@ -756,6 +756,22 @@ attempt now fails with "Cannot post a voucher into a closed accounting period," 
 came back to their correct balanced state (₹13,067.92) with exactly the 2 real accounting periods
 intact, zero contamination from the test.
 
+## Senior-QA pass round 11: same channel-scoping gap on returns/rtos, fixed at both layers this time
+
+Extended the channel-scoping check to the last remaining write path Marketplace Manager can reach:
+returns and RTOs. First test looked blocked, but for the wrong reason again — Marketplace Manager
+has zero warehouse visibility at all (a separate, deliberate design choice, not real channel
+enforcement), which incidentally stopped a return referencing a specific warehouse. Retested with
+`warehouse_id` left null specifically to bypass that false protection: Arjun created a return
+against a real **Shopify** order with zero error.
+
+**Fixed at both layers immediately** — RLS and the `disposition_return`/`disposition_rto`
+`SECURITY DEFINER` functions — rather than repeating the two-round pattern from the warehouse bug
+(0025 fixed RLS, 0029 had to separately fix the functions after finding they still bypassed it).
+Re-verified thoroughly: the same attack is blocked, his legitimate return against his own Amazon
+order still works, Kavita's (Warehouse Manager) legitimate Surat return has zero regression, and
+final counts confirmed exactly clean — 3 returns, books still balanced at ₹13,067.92.
+
 ## Next steps
 
 1. **Redeploy `invite-user` Edge Function** — the suspended-caller fix is in the source but not
