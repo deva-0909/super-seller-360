@@ -822,6 +822,22 @@ returns, RTOs, and inventory balances referencing it. Correctly blocked with a c
 error ("violates foreign key constraint 'returns_warehouse_id_fkey'") — genuine protection against
 orphaning dependent data, not something that needed fixing.
 
+## Senior-QA pass round 15: the most important check yet — can scope be self-granted? No.
+
+This was arguably the highest-stakes test of the whole session: every warehouse/channel-scoping
+fix made across rounds 2, 5, 7, 8, and 11 depends entirely on `user_warehouse_scope` and
+`user_channel_scope` themselves being un-forgeable. If Kavita could simply insert a row granting
+herself Mumbai, every other fix would be trivially bypassed regardless of how solid it looked.
+
+Tested directly: Kavita (Warehouse Manager, scoped only to Surat) tried to grant herself Mumbai;
+Arjun (Marketplace Manager, scoped to Amazon + Flipkart) tried to grant himself Shopify. Learned
+from earlier false-negatives in this session and specifically ruled out the "can't even see the
+target row" trap by using hardcoded UUIDs rather than a sub-select. **Both genuinely blocked with
+explicit RLS errors** — not silent no-ops, real policy violations. The `WITH CHECK` clause on both
+scope tables correctly requires Super Admin or Operations Manager, with no self-referential
+exception, unlike the more permissive `USING` clause that lets someone read their own row. This
+was designed correctly from the very first migration and has held under direct, deliberate attack.
+
 ## Next steps
 
 1. **Redeploy `invite-user` Edge Function** — the suspended-caller fix is in the source but not
