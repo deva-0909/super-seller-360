@@ -795,6 +795,19 @@ order lines remain anywhere in the database. Given this pattern has now appeared
 worth noting for anyone continuing this style of testing: always re-verify cleanup by querying for
 orphans directly, never trust a `RETURNING` value alone when multiple statements ran in one call.
 
+## Senior-QA pass round 13: the negative-amount gap was systemic, not a one-off
+
+Having found negative amounts breaking `orders`, checked whether the same gap existed elsewhere —
+it did, on every other table holding financial amounts. Confirmed live, one at a time, cleaned up
+immediately after each: `bank_transactions` (a "credit" of -₹5,000, which would silently *subtract*
+from Cash Flow's reported inflow while displaying as income), `settlements`, `cod_collections`,
+`tax_transactions`, and `products` (negative cost price, and a tested 500% GST rate — both
+accepted). Fixed all five with CHECK constraints in one migration. Re-verified: negative amounts
+and the absurd GST rate are now rejected outright, legitimate values still work, and a full count
+sweep across all eight affected tables afterward confirmed every single one matches its exact
+correct seed count — 8 products, 18 orders, 4 bank transactions, 3 settlements, 4 COD collections,
+4 tax transactions, 5 claims, 3 returns — zero contamination from this entire round of testing.
+
 ## Next steps
 
 1. **Redeploy `invite-user` Edge Function** — the suspended-caller fix is in the source but not
