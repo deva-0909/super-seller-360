@@ -701,6 +701,24 @@ directly — same limitation noted before. Every `git push` so far has succeeded
 auto-deploys on push by default, so a new deployment has very likely triggered each time, but this
 is inferred, not confirmed. Checking the Vercel dashboard directly would give a definite answer.
 
+## Senior-QA pass round 8: two more instances of the same channel-scoping gap
+
+Having found the pattern once (orders, round 7), specifically checked the other two tables
+Marketplace Manager can write to that reference a channel:
+
+**`channel_sku_map`**: confirmed live — Arjun (scoped to Amazon + Flipkart) created a SKU mapping
+for **Shopify** with zero error.
+
+**`claims`**: confirmed live — Arjun created a claim against a real **Shopify** order with zero
+error (claims has no channel column of its own, so this scopes through the order's channel).
+
+Both cleaned up immediately, then fixed with the same `has_channel_scope()` helper added for
+orders. Re-verified thoroughly: both attacks are now blocked, a legitimate claim against his own
+Amazon order still works, and — checked, not assumed — Operations Manager (unscoped) can still
+create a claim against that same Shopify order with no regression. Final state confirmed clean:
+exactly 16 `channel_sku_map` rows and 5 claims, matching the original seed data precisely, books
+still balanced.
+
 ## Next steps
 
 1. **Redeploy `invite-user` Edge Function** — the suspended-caller fix is in the source but not
