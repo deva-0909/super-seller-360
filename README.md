@@ -737,6 +737,25 @@ future consumer of `order_lines.quantity` in one place, not just the specific pa
 exploited. Re-verified: the same insert is now rejected outright by Postgres, all 28 existing
 legitimate order lines are unaffected, and the books remain correctly balanced.
 
+## Senior-QA pass round 10: Period Close had a hole — draft vouchers could post after closure
+
+Tested a specific edge case using an isolated test period (never touching real seed data, given
+how disruptive accidentally closing the real September period would have been): what happens to a
+**draft** voucher already sitting in a period when that period gets closed?
+
+**It could still be posted afterward, with zero error** — completely defeating the purpose of
+Period Close. The trigger blocking postings into closed periods
+(`prevent_voucher_in_closed_period`) only fired on `INSERT`, never `UPDATE`, so a leftover draft
+voucher slipped straight through. Anyone could have left draft vouchers lying around and posted
+them retroactively into books that were supposed to be locked.
+
+Fixed by firing the same check on `UPDATE` too. Re-verified carefully given how central this
+function is: normal invoice posting (`post_sales_voucher`'s own internal draft→posted transition,
+which happens while the period is still open) still works correctly, the exact same exploit
+attempt now fails with "Cannot post a voucher into a closed accounting period," and the real books
+came back to their correct balanced state (₹13,067.92) with exactly the 2 real accounting periods
+intact, zero contamination from the test.
+
 ## Next steps
 
 1. **Redeploy `invite-user` Edge Function** — the suspended-caller fix is in the source but not
