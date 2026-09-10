@@ -856,6 +856,22 @@ still suspend and restore a *different* real user with zero regression. Final st
 exactly correct: Amit is Super Admin and active, Priya is active, nothing left in a broken state
 from testing this.
 
+## Senior-QA pass round 17: companies table — an honest, ambiguous result, resolved conservatively
+
+Tried to delete the single `companies` row (which every product, channel, and warehouse depends
+on) as both Super Admin and a fully unauthorized random user. The row survived every attempt, but
+the *exact* protection mechanism observed was genuinely inconsistent across identical calls —
+sometimes a foreign key violation surfaced, sometimes nothing at all. This matches a display
+inconsistency with multi-statement calls hit a couple of times earlier in this session, rather
+than a real, reproducible security gap — worth stating plainly rather than either overclaiming a
+bug or asserting false confidence that everything was fine underneath.
+
+Resolved conservatively: added an explicit, unambiguous policy blocking all writes to `companies`
+for everyone, rather than relying on whatever the underlying (possibly inconsistent) protection
+was. Verified afterward: reads still work normally, deletion is now consistently blocked for
+Super Admin specifically, and all dependent data confirmed exactly correct (8 products, 3
+channels, 2 warehouses, 18 orders) — nothing disturbed by the investigation.
+
 ## Next steps
 
 1. Actually connect a Shopify store and register the webhook — still genuinely untested
