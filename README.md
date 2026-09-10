@@ -772,6 +772,29 @@ Re-verified thoroughly: the same attack is blocked, his legitimate return agains
 order still works, Kavita's (Warehouse Manager) legitimate Surat return has zero regression, and
 final counts confirmed exactly clean — 3 returns, books still balanced at ₹13,067.92.
 
+## Senior-QA pass round 12: negative order amounts could corrupt the books — plus a testing-hygiene finding
+
+**Bug found: negative order amounts silently corrupted real accounting entries.** `orders` had no
+non-negative constraint on any amount column. Confirmed live: created an order with negative
+gross/tax/net amounts, then successfully invoiced it — the resulting voucher posted real
+**negative** entries into the books (Trade Receivables debited -₹1,180, Sales Revenue credited
+-₹1,180), silently reversing revenue with zero audit trail and completely bypassing the
+credit-note/return workflow that's supposed to be the only legitimate way to reverse a sale. The
+entry still technically "balanced" (both sides equalled -1180), which is a useful reminder that
+balance alone was never sufficient proof of correctness. Fixed at the source with a non-negative
+CHECK constraint on `orders`. Re-verified: the same insert is now rejected outright, and since
+Postgres validates existing rows when a CHECK constraint is added, all 18 pre-existing legitimate
+orders already passed with zero migration needed.
+
+**Also worth flagging**: while investigating this, found a stray orphaned voucher left over from
+an *earlier* round's cleanup — the voucher ID I'd recorded and deleted didn't match what actually
+existed in the table (a recurring discrepancy with this session's SQL tooling when multiple
+statements run together). Found it properly this time by querying for any voucher whose source
+order no longer exists, removed it correctly, and confirmed zero orphaned vouchers, invoices, or
+order lines remain anywhere in the database. Given this pattern has now appeared more than once,
+worth noting for anyone continuing this style of testing: always re-verify cleanup by querying for
+orphans directly, never trust a `RETURNING` value alone when multiple statements ran in one call.
+
 ## Next steps
 
 1. **Redeploy `invite-user` Edge Function** — the suspended-caller fix is in the source but not
