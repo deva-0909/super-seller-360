@@ -836,6 +836,26 @@ scope tables correctly requires Super Admin or Operations Manager, with no self-
 exception, unlike the more permissive `USING` clause that lets someone read their own row. This
 was designed correctly from the very first migration and has held under direct, deliberate attack.
 
+## Senior-QA pass round 16: Super Admin could have locked themselves out permanently
+
+The highest-stakes finding of the whole session, arguably higher than any of the authorization
+bypasses — because this one has no recovery path at all if it happens for real.
+
+Tested directly on the actual Super Admin account (restored immediately after each): (1) suspended
+it directly — `current_role_name()` correctly excludes suspended users, so this would have caused
+**complete, permanent lockout**, since undoing a suspension itself requires being Super Admin, and
+there's no other Super Admin account to do it. (2) Changed its own role to Auditor directly — less
+catastrophic, but still a permanent, irreversible loss of all admin capability for the same reason.
+Both succeeded with zero server-side protection; only the UI's "can't touch your own row" check
+existed, the same UI-enforces-DB-doesn't pattern found repeatedly this session.
+
+Fixed by extending the write policy on `user_profiles` to block any self-targeting change that
+would result in losing Super Admin status or being suspended. Re-verified three ways: both
+self-lockout attempts are now correctly rejected, and — checked, not assumed — Super Admin can
+still suspend and restore a *different* real user with zero regression. Final state confirmed
+exactly correct: Amit is Super Admin and active, Priya is active, nothing left in a broken state
+from testing this.
+
 ## Next steps
 
 1. Actually connect a Shopify store and register the webhook — still genuinely untested
