@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/client";
 
 export type EntityType =
-  | "voucher" | "cash_settlement_report" | "bank_transaction" | "cod_collection" | "settlement" | "claim" | "return" | "rto" | "tax_transaction" | "supplier_bill" | "supplier_payment" | "expense_claim";
+  | "voucher" | "cash_settlement_report" | "bank_transaction" | "cod_collection" | "settlement" | "claim" | "return" | "rto" | "tax_transaction" | "supplier_bill" | "supplier_payment" | "expense_claim" | "tds_challan";
 
 export type Proof = {
   attachment_id: string;

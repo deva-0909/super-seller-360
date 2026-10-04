@@ -23,6 +23,7 @@ const TABS = [
   { href: "/purchases/payments", label: "Payments" },
   { href: "/purchases/suppliers", label: "Suppliers" },
   { href: "/purchases/ageing", label: "Creditors ageing" },
+  { href: "/purchases/tds", label: "TDS" },
 ];
 
 export function PurchasesTabs() {
