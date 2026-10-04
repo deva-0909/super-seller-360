@@ -985,3 +985,36 @@ Note: 0046 runs as the Super Admin (sets `request.jwt.claims`) so the real engin
 - **Late entries**: a book entry posted after the statement was imported finds its bank line automatically.
 - **Statement feed** (Bank > Statement feed): CSV upload (any bank's export), API pull (generic: address, secret *name*, field mapping), or API push (HMAC-signed). Edge Function `supabase/functions/bank-statement-sync`. **No real bank is connected yet** — it needs a bank/aggregator API and token. Deploy: `supabase functions deploy bank-statement-sync --no-verify-jwt`.
 - Migration **0054** (apply after 0049–0053). Needs `has_bankcod_*` roles already in the app.
+
+## Cash settlement (migration 0055)
+
+Money that moves from the bank into cash must be accounted for.
+
+- **Detection.** Any posted entry that debits *Cash in Hand* and credits a bank account is a cash withdrawal. Bank statement lines
+  such as "ATM CASH WDL" or "SELF CHQ" are booked that way by the Rule Book rule `BNK-CASH-WITHDRAWAL` (and "CASH DEPOSIT" lines by
+  `BNK-CASH-DEPOSIT`). Both rules can be edited or switched off in Rule Book.
+- **Open until accounted for.** Cash credited out of *Cash in Hand* on or after the withdrawal date (expense entries, deposits back to
+  the bank) is applied oldest-first. What is left stays open. A reversed withdrawal drops off.
+- **On screen.** While anything is open a red bar shows on every screen, and a pop-up repeats every 30 minutes (Cash Settlement > Settings).
+  Only Super Admin, Finance Manager and Accountant see it.
+- **Settlement report.** Accounting > Cash Settlement > "Submit settlement report": lines of *spent* (posts Dr expense / Cr Cash in Hand),
+  *returned to bank*, *still in hand* or *recorded elsewhere*. The lines must add up to the open amount. Submitting clears the warning;
+  the report is kept as an audit trail.
+- **E-mail.** Deploy `supabase functions deploy cash-settlement-reminder --no-verify-jwt` and set the secrets `CASH_REMINDER_CRON_SECRET`,
+  `RESEND_API_KEY`, `MAIL_FROM` (and optionally `APP_URL`). Then call it every 15 minutes:
+
+  ```sql
+  select cron.schedule('cash-settlement-reminder', '*/15 * * * *', $$
+    select net.http_post(
+      url     := 'https://<project-ref>.supabase.co/functions/v1/cash-settlement-reminder',
+      headers := jsonb_build_object('x-cron-secret', '<CASH_REMINDER_CRON_SECRET>', 'Content-Type', 'application/json'),
+      body    := '{}'::jsonb) $$);
+  ```
+  Each open item is e-mailed to every Super Admin (plus any extra addresses) once, then again every 24 hours (Settings) until settled.
+
+## Journal entries and recurring entries (migration 0056)
+
+Accounting > Journal Entries > "New journal entry": a balanced multi-line entry. Tick **This is a recurring entry** and pick
+weekly, fortnightly, monthly, quarterly, half-yearly or annually (optional stop date). The entry you post is the first occurrence;
+later ones post automatically with the same lines when they fall due. Due entries are posted whenever someone opens the app, and by the
+same scheduled call as above if you set it up. Nothing is skipped: a closed period makes the schedule wait and show why.
