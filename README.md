@@ -1046,3 +1046,19 @@ Migration `0058_report_functions.sql` adds `trial_balance(from, to)` and `ledger
 - **Day Book** (`/accounting/day-book`) and **Voucher** (`/accounting/vouchers/<id>`): all vouchers by date; a voucher shows its lines and proofs.
 - Every report has a **Download Excel (CSV)** button. Dates default to the current Indian financial year (1 April) up to today.
 - The Ledgers list and Balance Sheet now include opening balances.
+
+## Purchases: suppliers, bills, payments, ageing
+
+Migration `0059_purchases.sql`. Screens under `/purchases`.
+
+- **Suppliers**: GSTIN is checked (format and check character) and fills the state and PAN. A new supplier, or a change to its GSTIN, TDS settings or bank account, needs approval by a second person. Bank details are visible only to roles that can write accounting.
+- **Bills**: line-wise GST. Same-state purchases split into CGST and SGST (CGST is half rounded down to the paisa, SGST the remainder); other-state purchases are IGST. An unregistered supplier cannot charge GST. Input credit can be switched off with a reason, and then the GST is added to the cost. The bill is posted only when a second person approves it: Dr Inventory or the expense ledger, Dr Input CGST/SGST/IGST, Cr Sundry Creditors, Cr TDS Payable.
+- **TDS**: deducted at booking, on the value before GST, from the supplier's TDS section. The single-bill and yearly thresholds come from `tds_sections`; when the yearly limit is crossed, TDS is caught up on the earlier bills. No PAN means the 20% rate. TDS is rounded to the rupee.
+- **Payments**: entered against bills (oldest first, or by hand), with a UTR that can be used only once, then approved by a second person: Dr Sundry Creditors, Cr bank or cash. Anything not tied to a bill is an advance.
+- **Cancelling** an approved bill or payment posts a reversal voucher; a bill with payments cannot be cancelled first.
+- **Creditors ageing**: Not due, 1-30, 31-60, 61-90 and 90+ days overdue, by supplier and by bill, with a check that it agrees with the Sundry Creditors ledger and a list of micro/small supplier bills past the 45-day limit.
+- `purchase_settings.allow_self_approval` (default off) lets a one-person business approve its own entries.
+
+**Confirm with your CA before relying on it:** the TDS sections, rates and thresholds in `tds_sections`, the allowed GST rates in `pb_calc`, the 45-day MSME rule, and the cash-payment note. They are starting values, not advice.
+
+Not in this step: remitting TDS to the government, reverse charge, debit notes to suppliers, and supplier opening balances (enter those as dated bills or a journal).
