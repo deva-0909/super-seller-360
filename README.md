@@ -1073,3 +1073,14 @@ Migration `0060_expense_claims.sql`. Screens under `/expenses` (visible to every
 - Categories (`expense_categories`) map to ledgers and can carry a per-item limit. Claims older than `max_age_days` (90) are refused. A claimant sees only their own claims; managers, finance and accountants see all. Receipts follow the same visibility.
 - Cancelling an approved claim posts a reversal voucher. A paid claim cannot be cancelled.
 - GST input credit on staff expenses is not claimed (the full amount is expensed). If a bill carries a supplier GSTIN and credit is wanted, enter it as a purchase bill instead.
+
+## GST returns (migration 0061)
+
+Adds a **GST Returns** area (`/gst`) for the monthly filing workings. Everything is computed in the database from posted sales, credit notes and purchase bills.
+
+- **GSTR-1** (`/gst/gstr1`): B2B, B2C Large, B2C Small, credit/debit notes (CDNR/CDNUR), HSN summary, document series, plus data-check warnings (missing HSN, state mismatch, unknown rate).
+- **GSTR-3B workings** (`/gst`): outward supplies, inter-state to unregistered, ITC from purchase bills, manual ITC adjustments/reversals, and the statutory set-off (IGST, then CGST, then SGST) with cash payable and carry-forward.
+- **Settings** (`/gst/settings`): B2C Large limit and marketplace (ECO) GSTINs.
+- Orders gain customer GSTIN and ship-to state code; credit notes gain a number and a reason.
+
+Caveats: all rates, limits and section rules are working figures and must be confirmed by your CA before filing. ECO supplies (Table 14/15), portal JSON export and GSTR-2B reconciliation are not included. Marketplace ITC is a lump sum in the books and must be split by head from GSTR-2B using the ITC adjustment entries.

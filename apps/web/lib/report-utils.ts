@@ -44,3 +44,15 @@ export function toCsv(rows: (string | number | null | undefined)[][]): string {
   };
   return rows.map((r) => r.map(cell).join(",")).join("\r\n");
 }
+
+/** A calendar month from ?month=YYYY-MM; defaults to the previous month (the one being filed). */
+export function parseMonth(raw: string | undefined, now: Date = new Date()): { month: string; from: string; to: string } {
+  let month = raw && /^\d{4}-(0[1-9]|1[0-2])$/.test(raw) ? raw : "";
+  if (!month) {
+    const d = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    month = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+  }
+  const [y, m] = month.split("-").map(Number);
+  const last = new Date(y, m, 0).getDate();
+  return { month, from: `${month}-01`, to: `${month}-${String(last).padStart(2, "0")}` };
+}

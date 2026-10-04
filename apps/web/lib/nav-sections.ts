@@ -22,6 +22,7 @@ export type NavSection = {
 const NO_INVENTORY_RETURNS_CLAIMS = ["Accountant", "Tax Manager"]; // has_returns_view / has_claims_view
 const NO_SETTLEMENTS_BANKCOD = ["Warehouse Manager"]; // has_settlements_view / has_bankcod_view
 const NO_ACCOUNTING = ["Warehouse Manager", "Marketplace Manager"]; // has_accounting_view
+const NO_GST = ["Warehouse Manager", "Claims Manager", "Operations Manager", "Marketplace Manager"]; // has_gst_view
 const NO_TAX = ["Warehouse Manager", "Claims Manager"]; // has_tax_view
 
 // Mirrors the Screen Master module list. Phase 1 ships Admin + Settings;
@@ -43,6 +44,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { label: "Expense Claims", href: "/expenses", status: "live" },
       { label: "Claims", href: "/claims", status: "live", hiddenFor: NO_INVENTORY_RETURNS_CLAIMS },
       { label: "Tax", href: "/tax", status: "live", hiddenFor: NO_TAX },
+      { label: "GST Returns", href: "/gst", status: "live", hiddenFor: NO_GST },
       { label: "Accounting", href: "/accounting/ledgers", status: "live", hiddenFor: NO_ACCOUNTING },
       { label: "Purchases", href: "/purchases/bills", status: "live", hiddenFor: NO_ACCOUNTING },
       { label: "Journal Entries", href: "/accounting/journal", status: "live", hiddenFor: NO_ACCOUNTING },
