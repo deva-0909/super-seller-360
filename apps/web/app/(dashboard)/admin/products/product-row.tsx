@@ -14,6 +14,7 @@ type Product = {
   hsn: string | null;
   gst_rate: number | null;
   cost_price: number | null;
+  stock_timeout_days: number | null;
   status: string;
 };
 
@@ -37,6 +38,7 @@ export function ProductRow({
   const [hsn, setHsn] = useState(product.hsn ?? "");
   const [gstRate, setGstRate] = useState(product.gst_rate?.toString() ?? "");
   const [costPrice, setCostPrice] = useState(product.cost_price?.toString() ?? "");
+  const [timeoutDays, setTimeoutDays] = useState(product.stock_timeout_days?.toString() ?? "");
 
   async function handleSave() {
     setLoading(true);
@@ -49,6 +51,7 @@ export function ProductRow({
         hsn: hsn || null,
         gst_rate: gstRate ? Number(gstRate) : null,
         cost_price: costPrice ? Number(costPrice) : null,
+        stock_timeout_days: timeoutDays ? Number(timeoutDays) : null,
       })
       .eq("product_id", product.product_id);
     setLoading(false);
@@ -116,6 +119,16 @@ export function ProductRow({
             className="h-8 w-24 border border-line bg-surface px-2 text-sm outline-none focus:border-accent"
           />
         </td>
+        <td className="px-4 py-2">
+          <input
+            type="number"
+            min={1}
+            max={1095}
+            value={timeoutDays}
+            onChange={(e) => setTimeoutDays(e.target.value)}
+            className="h-8 w-20 border border-line bg-surface px-2 text-sm outline-none focus:border-accent"
+          />
+        </td>
         <td className="px-4 py-2" colSpan={2}>
           <div className="flex items-center gap-2">
             <button
@@ -152,6 +165,9 @@ export function ProductRow({
         {product.cost_price != null
           ? `₹${Number(product.cost_price).toLocaleString("en-IN")}`
           : "—"}
+      </td>
+      <td className="px-4 py-3 text-right font-data text-ink-muted">
+        {product.stock_timeout_days != null ? `${product.stock_timeout_days}d` : "—"}
       </td>
       <td className="px-4 py-3">
         <button

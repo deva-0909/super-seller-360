@@ -17,6 +17,7 @@ export function CreateProductForm() {
   const [hsn, setHsn] = useState("");
   const [gstRate, setGstRate] = useState("");
   const [costPrice, setCostPrice] = useState("");
+  const [timeoutDays, setTimeoutDays] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -39,6 +40,7 @@ export function CreateProductForm() {
       hsn: hsn || null,
       gst_rate: gstRate ? Number(gstRate) : null,
       cost_price: costPrice ? Number(costPrice) : null,
+      stock_timeout_days: Number(timeoutDays),
     });
 
     setLoading(false);
@@ -54,6 +56,7 @@ export function CreateProductForm() {
     setHsn("");
     setGstRate("");
     setCostPrice("");
+    setTimeoutDays("");
     router.refresh();
   }
 
@@ -107,6 +110,19 @@ export function CreateProductForm() {
             onChange={(e) => setCostPrice(e.target.value)}
           />
         </div>
+
+        <Field
+          id="product-timeout"
+          label="Stock time-out (days)"
+          type="number"
+          min={1}
+          max={1095}
+          required
+          value={timeoutDays}
+          onChange={(e) => setTimeoutDays(e.target.value)}
+          placeholder="90"
+          hint="Max days this SKU's stock should sit unsold, counted from the last stock receipt. You'll be alerted 15 days before. Seasonal/occasion wear: 30–60; basics: 180."
+        />
 
         {error ? (
           <p role="alert" className="text-sm text-danger">

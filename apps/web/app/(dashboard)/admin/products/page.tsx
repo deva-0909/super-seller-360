@@ -9,7 +9,7 @@ export default async function ProductsPage() {
 
   const { data: products } = await supabase
     .from("products")
-    .select("product_id, sku, name, category, hsn, gst_rate, cost_price, status")
+    .select("product_id, sku, name, category, hsn, gst_rate, cost_price, stock_timeout_days, status")
     .order("name");
 
   const canCreate = ["Super Admin", "Operations Manager"].includes(currentUser.roleName);
@@ -36,6 +36,7 @@ export default async function ProductsPage() {
                 <th className="px-4 py-3 font-medium">HSN</th>
                 <th className="px-4 py-3 font-medium text-right">GST %</th>
                 <th className="px-4 py-3 font-medium text-right">Cost</th>
+                <th className="px-4 py-3 font-medium text-right">Time-out</th>
                 <th className="px-4 py-3 font-medium">Status</th>
                 {canCreate ? <th className="px-4 py-3 font-medium"></th> : null}
               </tr>
@@ -51,7 +52,7 @@ export default async function ProductsPage() {
               ))}
               {!products?.length ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-8 text-center text-sm text-ink-muted">
+                  <td colSpan={9} className="px-4 py-8 text-center text-sm text-ink-muted">
                     No products yet.
                   </td>
                 </tr>

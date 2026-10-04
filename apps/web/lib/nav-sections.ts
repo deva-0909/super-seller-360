@@ -32,6 +32,7 @@ export const NAV_SECTIONS: NavSection[] = [
     label: "Workspace",
     items: [
       { label: "Dashboards", href: "/dashboard", status: "live" },
+      { label: "Business Insights", href: "/insights", status: "live" },
       { label: "Orders", href: "/orders", status: "live" },
       { label: "Inventory", href: "/inventory", status: "live", hiddenFor: NO_INVENTORY_RETURNS_CLAIMS },
       { label: "Returns", href: "/returns", status: "live", hiddenFor: NO_INVENTORY_RETURNS_CLAIMS },

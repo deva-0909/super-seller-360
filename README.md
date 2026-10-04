@@ -963,3 +963,9 @@ Seed data re-themed for a men / women / boys / girls garment retailer. Generated
 - **0047** - bug fix found while seeding: `reconcile_settlement` numbered its commission voucher from `now()`, so two settlements reconciled in one transaction collided on the unique voucher number. Now numbered from the settlement id.
 
 Note: 0046 runs as the Super Admin (sets `request.jwt.claims`) so the real engine functions execute.
+
+## Round: owner analytics + stock time-out
+
+- **0048** - `products.stock_timeout_days` (registered per SKU; required in the Add-product form, editable on the Products screen), views `sku_stock_aging` (on-hand, last receipt, time-out date, days left, state overdue/nearing/ok; alert window 15 days; return/RTO restocks do not reset the clock) and `sku_channel_sales` (non-cancelled, non-RTO sales per SKU per platform). Both are `security_invoker`, so existing RLS applies.
+- **/insights** (nav: Business Insights) - revenue by platform (donut), daily revenue trend, **top 5 SKUs per platform**, **not-selling SKUs per platform** (listed + active + in stock + zero sales in range, ranked by idle stock cost), segment/category mix, and the **stock time-out watch**. Range: 30 days / 90 days / all time.
+- Inventory rows are tinted and badged by time-out status; the Dashboard shows time-out alert and stock-at-risk tiles.

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 
 function Kpi({
@@ -37,6 +38,7 @@ export default async function DashboardPage() {
     { data: inventoryBalances },
     { data: claims },
     { data: journalTotals },
+    { data: agingRows },
   ] = await Promise.all([
     supabase.from("orders").select("gross_amount, net_amount, fulfilment_status"),
     supabase.from("settlements").select("status, expected_amount, actual_amount"),
@@ -46,7 +48,12 @@ export default async function DashboardPage() {
     supabase.from("inventory_balances").select("quantity, products(cost_price)"),
     supabase.from("claims").select("status, approved_amount, recovered_amount"),
     supabase.from("journal_entries").select("debit, credit"),
+    supabase.from("sku_stock_aging").select("timeout_state, stock_cost_value").in("timeout_state", ["overdue", "nearing"]),
   ]);
+
+  const overdueSkus = (agingRows ?? []).filter((a) => a.timeout_state === "overdue").length;
+  const nearingSkus = (agingRows ?? []).filter((a) => a.timeout_state === "nearing").length;
+  const atRiskValue = (agingRows ?? []).reduce((s, a) => s + Number(a.stock_cost_value), 0);
 
   const grossSales = (orders ?? []).reduce((s, o) => s + Number(o.gross_amount), 0);
   const netSales = (orders ?? []).reduce((s, o) => s + Number(o.net_amount), 0);
@@ -112,6 +119,18 @@ export default async function DashboardPage() {
         <Kpi label="Return rate" value={`${returnRate.toFixed(1)}%`} />
         <Kpi label="RTO rate" value={`${rtoRate.toFixed(1)}%`} />
         <Kpi label="Inventory value" value={`₹${inventoryValue.toLocaleString("en-IN")}`} />
+        <Link href="/insights" className="block hover:opacity-90">
+          <Kpi
+            label="Stock time-out alerts"
+            value={`${overdueSkus} overdue · ${nearingSkus} nearing`}
+            tone={overdueSkus > 0 ? "danger" : nearingSkus > 0 ? "warning" : "success"}
+          />
+        </Link>
+        <Kpi
+          label="Stock at risk (cost)"
+          value={`₹${atRiskValue.toLocaleString("en-IN")}`}
+          tone={atRiskValue > 0 ? "warning" : "ink"}
+        />
         <Kpi
           label="Claims recoverable"
           value={`₹${claimsRecoverable.toLocaleString("en-IN")}`}

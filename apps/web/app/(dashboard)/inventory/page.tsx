@@ -1,4 +1,6 @@
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { TimeoutPill, type TimeoutState } from "@/components/ui/timeout-pill";
 
 export default async function InventoryPage() {
   const supabase = await createClient();
@@ -7,6 +9,14 @@ export default async function InventoryPage() {
     .from("inventory_balances")
     .select("quantity, updated_at, products(name, sku), warehouses(name)")
     .order("updated_at", { ascending: false });
+
+  const { data: agingRows } = await supabase
+    .from("sku_stock_aging")
+    .select("sku, timeout_state, days_left, timeout_date")
+    .limit(10000);
+  const aging = new Map((agingRows ?? []).map((a) => [a.sku, a]));
+  const overdueCount = (agingRows ?? []).filter((a) => a.timeout_state === "overdue").length;
+  const nearingCount = (agingRows ?? []).filter((a) => a.timeout_state === "nearing").length;
 
   return (
     <div className="px-8 py-8">
@@ -18,6 +28,18 @@ export default async function InventoryPage() {
         receipt and inspection, never by a return or RTO being logged.
       </p>
 
+      {overdueCount + nearingCount > 0 ? (
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border border-warning/40 bg-warning-tint px-4 py-3 text-sm text-ink">
+          <span>
+            <strong>{overdueCount}</strong> SKU{overdueCount === 1 ? "" : "s"} past stock time-out and{" "}
+            <strong>{nearingCount}</strong> nearing it (within 15 days).
+          </span>
+          <Link href="/insights" className="text-xs font-medium text-accent hover:underline">
+            See the time-out watch →
+          </Link>
+        </div>
+      ) : null}
+
       <div className="mt-6 border border-line bg-surface">
         <table className="w-full text-left text-sm">
           <thead>
@@ -26,6 +48,7 @@ export default async function InventoryPage() {
               <th className="px-4 py-3 font-medium">SKU</th>
               <th className="px-4 py-3 font-medium">Warehouse</th>
               <th className="px-4 py-3 font-medium text-right">Quantity</th>
+              <th className="px-4 py-3 font-medium">Stock time-out</th>
               <th className="px-4 py-3 font-medium">Last movement</th>
             </tr>
           </thead>
@@ -33,7 +56,15 @@ export default async function InventoryPage() {
             {balances?.map((b, i) => (
               <tr
                 key={`${(b.products as unknown as { sku: string } | null)?.sku}-${(b.warehouses as unknown as { name: string } | null)?.name}`}
-                className={i % 2 === 1 ? "bg-surface-sunken/50" : undefined}
+                className={
+                  aging.get((b.products as unknown as { sku: string } | null)?.sku ?? "")?.timeout_state === "overdue" && Number(b.quantity) > 0
+                    ? "bg-danger-tint/40"
+                    : aging.get((b.products as unknown as { sku: string } | null)?.sku ?? "")?.timeout_state === "nearing" && Number(b.quantity) > 0
+                      ? "bg-warning-tint/40"
+                      : i % 2 === 1
+                        ? "bg-surface-sunken/50"
+                        : undefined
+                }
               >
                 <td className="px-4 py-3 text-ink">
                   {(b.products as unknown as { name: string } | null)?.name}
@@ -47,6 +78,16 @@ export default async function InventoryPage() {
                 <td className="px-4 py-3 text-right font-data font-medium text-ink">
                   {b.quantity}
                 </td>
+                <td className="px-4 py-3">
+                  {(() => {
+                    const a = aging.get((b.products as unknown as { sku: string } | null)?.sku ?? "");
+                    return a ? (
+                      <span title={a.timeout_date ? `Times out on ${a.timeout_date}` : undefined}>
+                        <TimeoutPill state={(Number(b.quantity) > 0 ? a.timeout_state : "no_stock") as TimeoutState} daysLeft={a.days_left} />
+                      </span>
+                    ) : null;
+                  })()}
+                </td>
                 <td className="px-4 py-3 font-data text-ink-muted">
                   {new Date(b.updated_at).toLocaleString()}
                 </td>
@@ -55,7 +96,7 @@ export default async function InventoryPage() {
             {!balances?.length ? (
               <tr>
                 <td
-                  colSpan={5}
+                  colSpan={6}
                   className="px-4 py-8 text-center text-sm text-ink-muted"
                 >
                   No stock movements yet — restocking a return or RTO is what
