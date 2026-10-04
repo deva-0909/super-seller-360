@@ -18,7 +18,9 @@ export default async function BillPage({ params, searchParams }: { params: Promi
   const { data: b } = await supabase.from("purchase_bills").select("*, suppliers(name, gstin, tds_section)").eq("bill_id", id).maybeSingle();
   if (!b) notFound();
   const { data: lines } = await supabase.from("purchase_bill_lines").select("*, ledgers(name)").eq("bill_id", id).order("line_no");
+  const { data: notesAgainst } = await supabase.from("supplier_credit_notes").select("note_id, note_no, note_date, total, status, payable_reduction").eq("bill_id", id).in("status", ["pending", "approved"]).order("note_date");
   const { data: allocs } = await supabase.from("payment_allocations").select("amount, supplier_payments(payment_id, payment_no, payment_date, status)").eq("bill_id", id);
+  const credited = (notesAgainst ?? []).filter((n) => n.status === "approved").reduce((t, n) => t + Number(n.payable_reduction ?? 0), 0);
   const sup = b.suppliers as unknown as { name: string; gstin: string | null; tds_section: string | null };
   const paid = (allocs ?? []).filter((a) => (a.supplier_payments as unknown as { status: string }).status === "approved").reduce((t, a) => t + Number(a.amount), 0);
 
@@ -68,7 +70,8 @@ export default async function BillPage({ params, searchParams }: { params: Promi
           <div className="flex justify-between"><dt className="text-ink-muted">TDS {b.tds_section ? `(${b.tds_section}, ${Number(b.tds_rate)}% on ${inr(Number(b.tds_base))})` : ""}</dt><dd className="font-data">− {inr(Number(b.tds_amount))}</dd></div>
           <div className="flex justify-between font-medium"><dt>Net payable</dt><dd className="font-data">{inr(Number(b.net_payable))}</dd></div>
           <div className="flex justify-between"><dt className="text-ink-muted">Paid so far</dt><dd className="font-data">{inr(paid)}</dd></div>
-          <div className="flex justify-between font-medium"><dt>Outstanding</dt><dd className="font-data">{inr(Number(b.net_payable) - paid) === "—" ? "₹0.00" : inr(Number(b.net_payable) - paid)}</dd></div>
+          {credited > 0 ? <div className="flex justify-between"><dt className="text-ink-muted">Credit notes</dt><dd className="font-data">− {inr(credited)}</dd></div> : null}
+          <div className="flex justify-between font-medium"><dt>Outstanding</dt><dd className="font-data">{inr(Number(b.net_payable) - paid - credited) === "—" ? "₹0.00" : inr(Number(b.net_payable) - paid - credited)}</dd></div>
         </>) : sup.tds_section ? <p className="pt-1 text-xs text-ink-muted">TDS ({sup.tds_section}) is worked out when the bill is approved.</p> : null}
       </dl>
 
@@ -79,6 +82,11 @@ export default async function BillPage({ params, searchParams }: { params: Promi
           return <span key={p.payment_id}>{i ? ", " : ""}<Link className="text-accent hover:underline" href={`/purchases/payments/${p.payment_id}`}>{p.payment_no}</Link> ({p.status})</span>;
         })}</p>
       ) : null}
+
+      {(notesAgainst ?? []).length ? (
+        <p className="mt-2 text-sm text-ink-muted">Credit notes: {(notesAgainst ?? []).map((n, i) => <span key={n.note_id}>{i ? ", " : ""}<Link className="text-accent hover:underline" href={`/purchases/credit-notes/${n.note_id}`}>{n.note_no}</Link> ({n.status})</span>)}</p>
+      ) : null}
+      {b.status === "approved" && !b.is_opening && canWrite ? <p className="mt-2 text-sm"><Link className="text-accent hover:underline" href={`/purchases/credit-notes/new?bill=${id}`}>Record a supplier credit note against this bill</Link></p> : null}
 
       <div className="mt-4 border border-line bg-surface p-5">
         <Proofs entityType="supplier_bill" entityId={id} readOnly={!canWrite} kind="bill" label="Supplier's bill (proof)" hint="Take a photo or pick one from the gallery." />

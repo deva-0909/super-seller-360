@@ -12,16 +12,16 @@ export type Line = {
   line_id: string; gstin: string; name: string | null; type: string; doc_no: string; doc_date: string | null;
   taxable: number; igst: number; cgst: number; sgst: number; itc_available: boolean; reverse_charge: boolean;
   status: string; resolution: string | null; resolution_note: string | null;
-  bill_id: string | null; bill_no: string | null; bill_taxable: number | null; bill_igst: number | null; bill_cgst: number | null; bill_sgst: number | null;
+  bill_id: string | null; note_id?: string | null; bill_no: string | null; bill_taxable: number | null; bill_igst: number | null; bill_cgst: number | null; bill_sgst: number | null;
 };
 
 export const STATUS_TEXT: Record<string, { label: string; cls: string; help: string }> = {
   mismatch: { label: "Amounts differ", cls: "text-danger", help: "Same invoice, different amounts. Ask the supplier, or correct your bill." },
-  not_in_books: { label: "Not in your books", cls: "text-warning", help: "The supplier reported it but you have no bill. Book it, or ignore it if it is not yours." },
+  not_in_books: { label: "Not in your books", cls: "text-warning", help: "The supplier reported it but you have no bill or credit note for it. Book it, or ignore it if it is not yours." },
   blocked_in_2b: { label: "Credit not allowed in 2B", cls: "text-danger", help: "You claimed credit on this bill but GSTR-2B says it is not available. Reverse it." },
   bill_pending: { label: "Bill awaiting approval", cls: "text-warning", help: "Matched to a bill that is not approved yet." },
   rcm: { label: "Reverse charge", cls: "text-ink-muted", help: "Reverse-charge invoice. Not claimed as ordinary credit." },
-  note: { label: "Credit/debit note", cls: "text-ink-muted", help: "Review by hand. Supplier notes are not yet recorded in the books." },
+  note: { label: "Credit/debit note", cls: "text-ink-muted", help: "A debit note from the supplier. Review by hand; it is not recorded in the books." },
   accepted: { label: "Accepted", cls: "text-success", help: "Difference accepted with a reason." },
   ignored: { label: "Ignored", cls: "text-ink-muted", help: "Marked as not relevant." },
   matched: { label: "Matched", cls: "text-success", help: "" },
@@ -69,7 +69,7 @@ export function Gstr2bLines({ lines, canWrite }: { lines: Line[]; canWrite: bool
                   <td className="px-3 py-2.5"><div className="text-ink">{l.name ?? "—"}</div><div className="font-data text-xs text-ink-muted">{l.gstin}</div></td>
                   <td className={td}>{l.doc_no}<div className="text-xs text-ink-muted">{l.doc_date ?? ""}</div></td>
                   <td className={`${td} text-right`}>{inr(Number(l.taxable)) === "—" ? "0.00" : inr(Number(l.taxable))}<div className="text-xs text-ink-muted">tax {inr(tax2b) === "—" ? "0.00" : inr(tax2b)}</div></td>
-                  <td className={`${td} text-right`}>{l.bill_id ? (<><Link href={`/purchases/bills/${l.bill_id}`} className="text-accent hover:underline">{l.bill_no}</Link><div className="text-xs text-ink-muted">{inr(Number(l.bill_taxable)) === "—" ? "0.00" : inr(Number(l.bill_taxable))} · tax {inr(taxBk) === "—" ? "0.00" : inr(taxBk)}</div></>) : <span className="text-ink-muted">—</span>}</td>
+                  <td className={`${td} text-right`}>{l.bill_id || l.note_id ? (<><Link href={l.note_id ? `/purchases/credit-notes/${l.note_id}` : `/purchases/bills/${l.bill_id}`} className="text-accent hover:underline">{l.bill_no}</Link><div className="text-xs text-ink-muted">{inr(Number(l.bill_taxable)) === "—" ? "0.00" : inr(Number(l.bill_taxable))} · tax {inr(taxBk) === "—" ? "0.00" : inr(taxBk)}</div></>) : <span className="text-ink-muted">—</span>}</td>
                   <td className="px-3 py-2.5"><span className={`font-medium ${st.cls}`}>{st.label}</span>{st.help ? <div className="max-w-xs text-xs text-ink-muted">{st.help}</div> : null}{l.resolution_note ? <div className="text-xs text-ink-muted">“{l.resolution_note}”</div> : null}</td>
                   <td className="px-3 py-2.5 text-right">
                     {canWrite ? (l.resolution ? <button className={smallBtn} onClick={() => act(l.line_id, null)}>Undo</button> : ["mismatch", "not_in_books", "blocked_in_2b", "bill_pending"].includes(l.status) ? (

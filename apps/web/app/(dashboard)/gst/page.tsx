@@ -12,6 +12,7 @@ type W = {
   outward: { taxable: number; igst: number; cgst: number; sgst: number; nil_taxable: number };
   inter_unreg: { pos: string; taxable: number; igst: number }[];
   itc_bills: { igst: number; cgst: number; sgst: number; ineligible: number; bills: number };
+  itc_notes: { igst: number; cgst: number; sgst: number; notes: number };
   itc_adj: { other_igst: number; other_cgst: number; other_sgst: number; rev_igst: number; rev_cgst: number; rev_sgst: number };
   books_marketplace_itc: number; books_tcs_credit: number;
 };
@@ -41,9 +42,9 @@ export default async function Gstr3bPage({ searchParams }: { searchParams: Promi
 
   const liability: Heads = { igst: Number(w.outward.igst), cgst: Number(w.outward.cgst), sgst: Number(w.outward.sgst) };
   const credit: Heads = {
-    igst: Number(w.itc_bills.igst) + Number(w.itc_adj.other_igst) - Number(w.itc_adj.rev_igst),
-    cgst: Number(w.itc_bills.cgst) + Number(w.itc_adj.other_cgst) - Number(w.itc_adj.rev_cgst),
-    sgst: Number(w.itc_bills.sgst) + Number(w.itc_adj.other_sgst) - Number(w.itc_adj.rev_sgst),
+    igst: Number(w.itc_bills.igst) + Number(w.itc_adj.other_igst) - Number(w.itc_adj.rev_igst) - Number(w.itc_notes?.igst ?? 0),
+    cgst: Number(w.itc_bills.cgst) + Number(w.itc_adj.other_cgst) - Number(w.itc_adj.rev_cgst) - Number(w.itc_notes?.cgst ?? 0),
+    sgst: Number(w.itc_bills.sgst) + Number(w.itc_adj.other_sgst) - Number(w.itc_adj.rev_sgst) - Number(w.itc_notes?.sgst ?? 0),
   };
   const so = setOff(liability, { igst: Math.max(credit.igst, 0), cgst: Math.max(credit.cgst, 0), sgst: Math.max(credit.sgst, 0) });
   const cashTotal = so.cash.igst + so.cash.cgst + so.cash.sgst;
@@ -59,6 +60,7 @@ export default async function Gstr3bPage({ searchParams }: { searchParams: Promi
     ["4 Input tax credit", "IGST", "CGST", "SGST"],
     ["From purchase bills", w.itc_bills.igst, w.itc_bills.cgst, w.itc_bills.sgst],
     ["Credit from GSTR-2B entered", w.itc_adj.other_igst, w.itc_adj.other_cgst, w.itc_adj.other_sgst],
+    ["Credit reversed on supplier credit notes", w.itc_notes?.igst ?? 0, w.itc_notes?.cgst ?? 0, w.itc_notes?.sgst ?? 0],
     ["Credit reversed", w.itc_adj.rev_igst, w.itc_adj.rev_cgst, w.itc_adj.rev_sgst],
     ["Net credit", credit.igst, credit.cgst, credit.sgst],
     ["6.1 Tax paid in cash", so.cash.igst, so.cash.cgst, so.cash.sgst],
@@ -109,6 +111,7 @@ export default async function Gstr3bPage({ searchParams }: { searchParams: Promi
           <tbody>
             <tr><td className="px-4 py-2.5 text-ink-muted">Purchase bills booked this month ({w.itc_bills.bills}), credit claimed</td><td className={cell}>{m(w.itc_bills.igst)}</td><td className={cell}>{m(w.itc_bills.cgst)}</td><td className={cell}>{m(w.itc_bills.sgst)}</td></tr>
             <tr><td className="px-4 py-2.5 text-ink-muted">Credit from GSTR-2B entered below</td><td className={cell}>{m(w.itc_adj.other_igst)}</td><td className={cell}>{m(w.itc_adj.other_cgst)}</td><td className={cell}>{m(w.itc_adj.other_sgst)}</td></tr>
+            <tr><td className="px-4 py-2.5 text-ink-muted">Less: supplier credit notes this month ({w.itc_notes?.notes ?? 0}), credit reversed</td><td className={cell}>{m(Number(w.itc_notes?.igst ?? 0))}</td><td className={cell}>{m(Number(w.itc_notes?.cgst ?? 0))}</td><td className={cell}>{m(Number(w.itc_notes?.sgst ?? 0))}</td></tr>
             <tr><td className="px-4 py-2.5 text-ink-muted">Less: credit reversed</td><td className={cell}>{m(w.itc_adj.rev_igst)}</td><td className={cell}>{m(w.itc_adj.rev_cgst)}</td><td className={cell}>{m(w.itc_adj.rev_sgst)}</td></tr>
           </tbody>
           <tfoot><tr className="border-t border-line-strong text-sm font-medium"><td className="px-4 py-2.5 text-ink">Net credit available</td><td className={cell}>{m(credit.igst)}</td><td className={cell}>{m(credit.cgst)}</td><td className={cell}>{m(credit.sgst)}</td></tr></tfoot>

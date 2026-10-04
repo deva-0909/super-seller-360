@@ -21,6 +21,7 @@ export function Lbl({ label, hint, children, className }: { label: string; hint?
 const TABS = [
   { href: "/purchases/bills", label: "Bills" },
   { href: "/purchases/payments", label: "Payments" },
+  { href: "/purchases/credit-notes", label: "Credit notes" },
   { href: "/purchases/suppliers", label: "Suppliers" },
   { href: "/purchases/ageing", label: "Creditors ageing" },
   { href: "/purchases/tds", label: "TDS" },
