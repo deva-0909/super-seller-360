@@ -1097,3 +1097,10 @@ Caveats: all rates, limits and section rules are working figures and must be con
 - **Record a deposit**: BSR code (7 digits), challan serial (5 digits), date, bank account, tax, optional interest and late fee, and the receipt photo or PDF. The tax cannot exceed what is still undeposited for that month and section, and the same BSR, serial and date cannot be entered twice. A second person (Super Admin or Finance Manager) approves it; posting is Dr TDS Payable, Dr TDS Interest, Dr TDS Late Fee, Cr Bank. An approved challan is undone only by a reversal voucher.
 - **Deductions list** (`/purchases/tds/deductions`): every deduction in a date range with supplier PAN, base, rate, TDS and the challan it was deposited with, plus a CSV. Suppliers with no PAN are flagged. These are working papers for the quarterly return; the return itself is not generated here.
 - Interest and late fee are typed in, not worked out. Due dates and the interest rule are working figures to confirm with your CA.
+
+## Supplier opening balances (migration 0064)
+
+- **Purchases, Bills, Opening balances** (`/purchases/bills/opening`): enter each unpaid supplier invoice as it stood on the day you started using the app, either by typing rows or loading a CSV (Supplier name or GSTIN, Invoice Number, Invoice Date, Due Date, Amount). A blank due date uses the supplier's payment terms.
+- They are ordinary bills flagged as opening: they show in creditors ageing (with their original due dates and the MSME watch), and payments can be allocated to them. No GST and no TDS is booked on them.
+- Same maker-checker as other bills. Approval (from the bill screen as usual) posts Dr Opening Balance Equity, Cr Sundry Creditors on the "balances as on" date. Cancelling an approved opening bill posts a reversal, and is blocked while payments exist against it.
+- Not covered: advances paid to suppliers (debit balances) and customer opening balances. Check that the total equals what your old books showed as owed to suppliers.

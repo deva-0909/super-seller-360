@@ -70,7 +70,7 @@ function parseJson(text: string): Parsed {
   return { rows, problems, period };
 }
 
-function splitCsvLine(line: string): string[] {
+export function splitCsvLine(line: string): string[] {
   const out: string[] = []; let cur = ""; let q = false;
   for (let i = 0; i < line.length; i++) {
     const c = line[i];

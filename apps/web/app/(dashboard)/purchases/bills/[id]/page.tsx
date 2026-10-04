@@ -27,7 +27,7 @@ export default async function BillPage({ params, searchParams }: { params: Promi
       <Link href="/purchases/bills" className="text-sm text-ink-muted hover:text-ink">← Bills</Link>
       <div className="mt-3 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-lg font-semibold tracking-tight text-ink">{b.bill_no} <StatusTag status={b.status} /></h1>
+          <h1 className="text-lg font-semibold tracking-tight text-ink">{b.bill_no} <StatusTag status={b.status} />{b.is_opening ? <span className="ml-2 text-sm font-normal text-ink-muted">Opening balance</span> : null}</h1>
           <p className="mt-1 text-sm text-ink-muted">
             <Link href={`/purchases/suppliers/${b.supplier_id}`} className="text-accent hover:underline">{sup.name}</Link> · invoice {b.supplier_invoice_no} dated {new Date(b.supplier_invoice_date).toLocaleDateString("en-IN")} · due {new Date(b.due_date).toLocaleDateString("en-IN")}
           </p>

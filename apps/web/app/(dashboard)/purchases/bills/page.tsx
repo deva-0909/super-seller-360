@@ -14,7 +14,7 @@ export default async function BillsPage({ searchParams }: { searchParams: Promis
   const supabase = await createClient();
   let q = supabase
     .from("purchase_bills")
-    .select("bill_id, bill_no, supplier_invoice_no, bill_date, due_date, total, tds_amount, net_payable, status, suppliers(name)")
+    .select("bill_id, bill_no, supplier_invoice_no, bill_date, due_date, total, tds_amount, net_payable, status, is_opening, suppliers(name)")
     .order("created_at", { ascending: false })
     .limit(300);
   if (status !== "all") q = q.eq("status", status);
@@ -28,7 +28,12 @@ export default async function BillsPage({ searchParams }: { searchParams: Promis
           <h1 className="text-lg font-semibold tracking-tight text-ink">Purchase bills</h1>
           <p className="mt-1 text-sm text-ink-muted">{waiting ? `${waiting} bill${waiting === 1 ? "" : "s"} waiting for approval.` : "Nothing waiting for approval."}</p>
         </div>
-        {canWrite ? <Link href="/purchases/bills/new" className="inline-flex h-10 items-center rounded-lg bg-accent px-4 text-sm font-semibold text-white hover:bg-accent-hover">Enter a bill</Link> : null}
+        {canWrite ? (
+          <div className="flex gap-2">
+            <Link href="/purchases/bills/opening" className="inline-flex h-10 items-center rounded-lg border border-line bg-surface px-4 text-sm font-semibold text-ink hover:bg-surface-sunken">Opening balances</Link>
+            <Link href="/purchases/bills/new" className="inline-flex h-10 items-center rounded-lg bg-accent px-4 text-sm font-semibold text-white hover:bg-accent-hover">Enter a bill</Link>
+          </div>
+        ) : null}
       </div>
       <div className="mt-4 flex gap-4 text-sm">
         {FILTERS.map((f) => (
@@ -51,7 +56,7 @@ export default async function BillsPage({ searchParams }: { searchParams: Promis
           <tbody>
             {(bills ?? []).map((b, i) => (
               <tr key={b.bill_id} className={i % 2 === 1 ? "bg-surface-sunken/50" : undefined}>
-                <td className="px-4 py-3"><Link className="text-accent hover:underline" href={`/purchases/bills/${b.bill_id}`}>{b.bill_no}</Link></td>
+                <td className="px-4 py-3"><Link className="text-accent hover:underline" href={`/purchases/bills/${b.bill_id}`}>{b.bill_no}</Link>{b.is_opening ? <span className="ml-2 text-xs text-ink-muted">opening</span> : null}</td>
                 <td className="px-4 py-3 text-ink">{(b.suppliers as unknown as { name: string } | null)?.name}</td>
                 <td className="px-4 py-3 text-ink-muted">{b.supplier_invoice_no}</td>
                 <td className="px-4 py-3 font-data text-ink-muted">{new Date(b.due_date).toLocaleDateString("en-IN")}</td>
