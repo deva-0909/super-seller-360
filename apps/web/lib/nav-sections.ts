@@ -40,6 +40,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { label: "Settlements", href: "/settlements", status: "live", hiddenFor: NO_SETTLEMENTS_BANKCOD },
       { label: "Bank / COD", href: "/bank", status: "live", hiddenFor: NO_SETTLEMENTS_BANKCOD },
       { label: "COD Collections", href: "/cod", status: "live", hiddenFor: NO_SETTLEMENTS_BANKCOD },
+      { label: "Expense Claims", href: "/expenses", status: "live" },
       { label: "Claims", href: "/claims", status: "live", hiddenFor: NO_INVENTORY_RETURNS_CLAIMS },
       { label: "Tax", href: "/tax", status: "live", hiddenFor: NO_TAX },
       { label: "Accounting", href: "/accounting/ledgers", status: "live", hiddenFor: NO_ACCOUNTING },

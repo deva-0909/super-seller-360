@@ -1062,3 +1062,14 @@ Migration `0059_purchases.sql`. Screens under `/purchases`.
 **Confirm with your CA before relying on it:** the TDS sections, rates and thresholds in `tds_sections`, the allowed GST rates in `pb_calc`, the 45-day MSME rule, and the cash-payment note. They are starting values, not advice.
 
 Not in this step: remitting TDS to the government, reverse charge, debit notes to suppliers, and supplier opening balances (enter those as dated bills or a journal).
+
+## Staff expense claims
+
+Migration `0060_expense_claims.sql`. Screens under `/expenses` (visible to every role).
+
+- Anyone with an active login claims an out-of-pocket expense: date, category, what it was for, amount, and a receipt photo (phone camera or gallery) or PDF. A claim cannot be submitted without a receipt.
+- Flow: submitted, then a manager (Operations Manager, Finance Manager or Super Admin) reviews, then finance (Finance Manager or Super Admin) gives the final approval, which posts Dr expense ledgers / Cr Staff Reimbursements Payable, then an accountant records the payment (Dr Staff Reimbursements Payable / Cr bank or cash).
+- Nobody can review or approve their own claim, and finance cannot give the final approval on a claim the same person reviewed, unless `purchase_settings.allow_self_approval` is on. `expense_settings.require_manager_step = false` lets finance approve straight from "submitted".
+- Categories (`expense_categories`) map to ledgers and can carry a per-item limit. Claims older than `max_age_days` (90) are refused. A claimant sees only their own claims; managers, finance and accountants see all. Receipts follow the same visibility.
+- Cancelling an approved claim posts a reversal voucher. A paid claim cannot be cancelled.
+- GST input credit on staff expenses is not claimed (the full amount is expensed). If a bill carries a supplier GSTIN and credit is wanted, enter it as a purchase bill instead.
