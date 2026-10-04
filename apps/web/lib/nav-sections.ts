@@ -43,6 +43,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { label: "Claims", href: "/claims", status: "live", hiddenFor: NO_INVENTORY_RETURNS_CLAIMS },
       { label: "Tax", href: "/tax", status: "live", hiddenFor: NO_TAX },
       { label: "Accounting", href: "/accounting/ledgers", status: "live", hiddenFor: NO_ACCOUNTING },
+      { label: "Rule Book", href: "/accounting/rule-book", status: "live", hiddenFor: NO_ACCOUNTING },
       { label: "Profit & Loss", href: "/accounting/profit-and-loss", status: "live", hiddenFor: NO_ACCOUNTING },
       { label: "Balance Sheet", href: "/accounting/balance-sheet", status: "live", hiddenFor: NO_ACCOUNTING },
       { label: "Cash Flow", href: "/accounting/cash-flow", status: "live", hiddenFor: NO_SETTLEMENTS_BANKCOD },
