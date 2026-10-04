@@ -872,6 +872,72 @@ was. Verified afterward: reads still work normally, deletion is now consistently
 Super Admin specifically, and all dependent data confirmed exactly correct (8 products, 3
 channels, 2 warehouses, 18 orders) — nothing disturbed by the investigation.
 
+## GST correctness overhaul — interstate/intrastate, ITC, and month-end filing prep
+
+Direct response to a real, significant gap: the accounting system had exactly **one pooled "GST
+Payable (Output)" ledger**, with zero CGST/SGST/IGST split and no state data anywhere — meaning it
+was structurally impossible to determine interstate vs intrastate for any transaction, something
+Indian GST law requires to be tracked and reported separately. Every one of the 10 previously
+posted invoices had been treated as generic "GST," which isn't how GST actually works.
+
+**What was built:**
+- `companies.state` + `gstin`, `orders.ship_to_state` — the data needed to even make the
+  interstate/intrastate determination. Backfilled realistic states for all 18 seeded orders (6
+  Gujarat/intrastate, 12 across 7 other states/interstate)
+- Split the ledger into **CGST Payable (Output)**, **SGST Payable (Output)**, **IGST Payable
+  (Output)**, plus a real **GST Input Tax Credit (ITC)** asset ledger and **Marketplace Commission
+  Expense** — none of which existed before
+- Rewrote `post_sales_voucher()` to correctly split tax going forward: same state as the company
+  = CGST+SGST (split evenly, remainder to SGST so they always sum exactly); different state = full
+  amount to IGST. **Found and fixed a real edge case while testing this**: a ₹0.01 tax amount
+  split into a zero-value SGST line, violating an existing constraint — fixed to skip zero lines
+  rather than crash
+- **Reclassified the 10 already-posted invoices** via a proper accounting technique — one clean
+  reclassification journal entry moving the pooled balance into the correct CGST/SGST/IGST split,
+  rather than rewriting immutable posted history. Verified the exact current balance (₹879.39) via
+  SQL before posting, and confirmed after that the old ledger nets to zero, the new ones hold the
+  correct amounts, and the overall trial balance stayed exactly balanced
+- **Real ITC modeling**: `reconcile_settlement()` now recognizes that marketplaces charge 18% GST
+  on their commission — a legitimately claimable credit, not just a cost. Verified live on the
+  actual pending Flipkart September settlement: ₹427.50 in deductions correctly split into
+  ₹362.29 commission expense + ₹65.21 claimable ITC
+- **A dedicated month-end GST Summary screen** (`/tax/gst-summary`) built specifically for an
+  accounts person to work from when filing: output tax by CGST/SGST/IGST, ITC available, net
+  payable, a state-wise breakdown (GSTR-1 place-of-supply), and an HSN-wise breakdown (GSTR-1
+  Table 12) — computed live from posted invoices, not a separate record that could drift
+- **Found and fixed a real correctness bug before shipping this screen**: the first design
+  reconstructed figures from ledger entries tagged by order, which silently missed every
+  pre-reclassification invoice (the reclassification is one pooled entry, not per-order lines).
+  Redesigned to compute directly from invoiced orders instead — more robust and immune to how the
+  underlying voucher happens to be structured
+- **Found and fixed a second correctness bug**: the redesigned version didn't net out credit
+  notes, meaning a returned & credit-noted order (FLIP-1010, confirmed live) would have overstated
+  output tax by including revenue that was fully reversed. Fixed to net credit notes issued in the
+  period against the correct state bucket, with the gross-vs-net figures both shown for
+  transparency. The HSN-wise table has a narrower, honestly-flagged version of this same
+  limitation — credit notes don't record which specific line items they cover, so exact netting
+  isn't possible there; noted directly in the UI rather than silently wrong
+
+## Manual entry vs API automation — a real, significant gap
+
+Direct response to user feedback: **Returns, RTOs, Settlements, COD, and Claims have zero
+automated ingestion** — every single one is manual-entry-only today, when in reality marketplaces
+and couriers provide APIs/webhooks for exactly this data. Only Shopify order ingestion has a
+webhook at all, and it isn't connected to a real store yet.
+
+Built `returns-rto-webhook`, a new Edge Function following the exact same proven pattern as the
+Shopify order webhook (normalized payload shape, signature verification, fails closed until a
+secret is configured) — so once a real marketplace/courier integration exists, Returns and RTOs
+stop being manual-only. Added a `source` column (`manual` vs `webhook`) to both tables so the UI
+visibly distinguishes automated entries from the fallback, and reframed both screens' copy: the
+manual "Log a return"/"Log an RTO" forms are now explicitly the safety-net fallback, not the
+primary path.
+
+**Honest deployment status**: the Edge Function deployment tool didn't confirm success this
+session (same intermittent blocker hit earlier with `invite-user`) — the code is written and
+saved, but treat it as **not yet verified live** rather than assume it deployed. The Integrations
+screen reflects this uncertainty directly rather than claiming "Deployed" with false confidence.
+
 ## Next steps
 
 1. Actually connect a Shopify store and register the webhook — still genuinely untested
@@ -887,3 +953,13 @@ channels, 2 warehouses, 18 orders) — nothing disturbed by the investigation.
 | 3 | Returns/RTO + inventory state machine | 4 wks |
 | 4 | Settlements, bank, COD reconciliation | 5 wks |
 | 5 | Claims, tax (GST/TDS/TCS), profitability, dashboards | 4–5 wks |
+
+## Round: garment-retail demo dataset (Surat)
+
+Seed data re-themed for a men / women / boys / girls garment retailer. Generated by `supabase/seed/gen_garment_seed.py` (deterministic).
+
+- **0045** - 166 garment SKUs (54 men, 50 women, 30 boys, 32 girls; 159 active, 4 inactive, 3 discontinued), EAN-13 barcodes, HSN codes, GST slab by price (5% up to Rs2,500/pc, 18% above), 390 channel listings (Shopify / Amazon / Flipkart), October 2026 accounting period. The 8 legacy non-garment SKUs are marked discontinued (their orders and posted invoices are preserved).
+- **0046** - opening stock (Surat own + Mumbai 3PL), 72 orders (Sep 2 - Oct 3) incl. COD, cancelled and RTO, 56 invoices posted through `post_sales_voucher` (CGST+SGST for Gujarat, IGST elsewhere), order timelines, 22 COD collections, 15 returns across every stage, 8 RTOs, 5 credit notes with proper GST reversal, 9 settlements (reconciled / short-pay / pending) with fee lines and ITC, bank lines, 11 claims across every status. Stock is built as closing profile + dispatched units, so balances equal the movement ledger exactly. Includes 9 low-stock and 5 out-of-stock SKUs.
+- **0047** - bug fix found while seeding: `reconcile_settlement` numbered its commission voucher from `now()`, so two settlements reconciled in one transaction collided on the unique voucher number. Now numbered from the settlement id.
+
+Note: 0046 runs as the Super Admin (sets `request.jwt.claims`) so the real engine functions execute.

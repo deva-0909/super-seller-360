@@ -22,7 +22,7 @@ export default async function RtoPage() {
     await Promise.all([
       supabase
         .from("rtos")
-        .select("rto_id, status, reason, awb, received_date, orders(external_order_id)")
+        .select("rto_id, status, reason, awb, received_date, source, orders(external_order_id)")
         .order("created_at", { ascending: false }),
       supabase
         .from("orders")
@@ -43,7 +43,9 @@ export default async function RtoPage() {
       <h1 className="text-lg font-semibold tracking-tight text-ink">RTO</h1>
       <p className="mt-1 text-sm text-ink-muted">
         Delivery failures returning to origin — tracked completely separately
-        from customer returns.
+        from customer returns. RTOs come in automatically once a courier
+        integration is connected — the form on the right is the manual
+        fallback, not the primary path.
       </p>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
@@ -55,6 +57,7 @@ export default async function RtoPage() {
                 <th className="px-4 py-3 font-medium">AWB</th>
                 <th className="px-4 py-3 font-medium">Reason</th>
                 <th className="px-4 py-3 font-medium">Status</th>
+                <th className="px-4 py-3 font-medium">Source</th>
               </tr>
             </thead>
             <tbody>
@@ -83,12 +86,19 @@ export default async function RtoPage() {
                       {r.status}
                     </StatusPill>
                   </td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={`text-xs ${r.source === "webhook" ? "text-success" : "text-ink-faint"}`}
+                    >
+                      {r.source === "webhook" ? "Auto (API)" : "Manual"}
+                    </span>
+                  </td>
                 </tr>
               ))}
               {!rtos?.length ? (
                 <tr>
                   <td
-                    colSpan={4}
+                    colSpan={5}
                     className="px-4 py-8 text-center text-sm text-ink-muted"
                   >
                     No RTOs yet.

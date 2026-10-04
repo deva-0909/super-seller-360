@@ -18,8 +18,9 @@ export default async function IntegrationsPage() {
         Integrations
       </h1>
       <p className="mt-1 text-sm text-ink-muted">
-        Channel connections and the webhook endpoints that bring orders in
-        automatically.
+        Channel connections and the webhook endpoints that bring orders,
+        returns, and RTOs in automatically — manual entry is the fallback
+        for what these haven&apos;t captured, not the primary path.
       </p>
 
       <h2 className="mt-6 text-sm font-semibold text-ink">
@@ -87,6 +88,33 @@ export default async function IntegrationsPage() {
           <code className="font-data">orders/updated</code> topics, then set
           the <code className="font-data">SHOPIFY_WEBHOOK_SECRET</code> for
           this function to the signing secret Shopify gives you.
+        </p>
+      </div>
+
+      <div className="mt-3 border border-line bg-surface p-5">
+        <div className="flex items-start justify-between">
+          <div>
+            <p className="text-sm font-medium text-ink">
+              Returns/RTO ingestion webhook
+            </p>
+            <p className="mt-1 font-data text-xs text-ink-muted break-all">
+              {`${supabaseUrl}/functions/v1/returns-rto-webhook`}
+            </p>
+          </div>
+          <StatusPill status="warning">Deployment unconfirmed</StatusPill>
+        </div>
+        <p className="mt-3 text-xs text-ink-muted">
+          Built so Returns and RTOs stop being manual-entry-only, the same
+          way orders already can be — the deployment tool didn&apos;t
+          confirm success this session, so treat this as not-yet-verified
+          live rather than assume it is. Not yet connected to a real
+          marketplace or courier API either way. Each marketplace/courier
+          has its own payload shape, so connecting one means a small
+          adapter that maps their format into this endpoint&apos;s
+          normalized shape (documented in the function source), the same
+          way the Shopify webhook is Shopify&apos;s own adapter for orders.
+          Until connected, the &quot;Log a return&quot;/&quot;Log an
+          RTO&quot; forms are the fallback, not the primary path.
         </p>
       </div>
 

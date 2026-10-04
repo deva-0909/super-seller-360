@@ -25,7 +25,7 @@ export default async function ReturnsPage() {
     await Promise.all([
       supabase
         .from("returns")
-        .select("return_id, status, return_reason, received_date, orders(external_order_id)")
+        .select("return_id, status, return_reason, received_date, source, orders(external_order_id)")
         .order("created_at", { ascending: false }),
       supabase
         .from("orders")
@@ -49,6 +49,10 @@ export default async function ReturnsPage() {
       <p className="mt-1 text-sm text-ink-muted">
         Every stage is tracked separately — saleable stock only increases
         after a return is received, inspected, and dispositioned as good.
+        Returns come in automatically once a marketplace/courier
+        integration is connected — the form on the right is the manual
+        fallback for anything the automated feed hasn't captured yet, not
+        the primary way returns should get logged.
       </p>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
@@ -60,6 +64,7 @@ export default async function ReturnsPage() {
                 <th className="px-4 py-3 font-medium">Reason</th>
                 <th className="px-4 py-3 font-medium">Status</th>
                 <th className="px-4 py-3 font-medium">Received</th>
+                <th className="px-4 py-3 font-medium">Source</th>
               </tr>
             </thead>
             <tbody>
@@ -90,12 +95,19 @@ export default async function ReturnsPage() {
                       ? new Date(r.received_date).toLocaleDateString()
                       : "—"}
                   </td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={`text-xs ${r.source === "webhook" ? "text-success" : "text-ink-faint"}`}
+                    >
+                      {r.source === "webhook" ? "Auto (API)" : "Manual"}
+                    </span>
+                  </td>
                 </tr>
               ))}
               {!returns?.length ? (
                 <tr>
                   <td
-                    colSpan={4}
+                    colSpan={5}
                     className="px-4 py-8 text-center text-sm text-ink-muted"
                   >
                     No returns yet.

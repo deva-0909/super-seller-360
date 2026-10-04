@@ -7,24 +7,23 @@ export default async function TaxPage() {
   const currentUser = await getCurrentUser();
   const supabase = await createClient();
 
-  const [{ data: txns }, { data: gstLedger }] = await Promise.all([
+  const [{ data: txns }, { data: gstLedgers }] = await Promise.all([
     supabase
       .from("tax_transactions")
       .select("tax_txn_id, tax_type, period, source, taxable_value, tax_amount, matched_status")
       .order("created_at", { ascending: false }),
     supabase
       .from("ledgers")
-      .select("ledger_id")
-      .eq("name", "GST Payable (Output)")
-      .single(),
+      .select("ledger_id, name")
+      .in("name", ["CGST Payable (Output)", "SGST Payable (Output)", "IGST Payable (Output)"]),
   ]);
 
   let bookGst = 0;
-  if (gstLedger) {
+  if (gstLedgers?.length) {
     const { data: entries } = await supabase
       .from("journal_entries")
       .select("debit, credit")
-      .eq("account_id", gstLedger.ledger_id);
+      .in("account_id", gstLedgers.map((l) => l.ledger_id));
     bookGst = (entries ?? []).reduce(
       (sum, e) => sum + Number(e.credit) - Number(e.debit),
       0,
@@ -45,8 +44,16 @@ export default async function TaxPage() {
       <h1 className="text-lg font-semibold tracking-tight text-ink">Tax</h1>
       <p className="mt-1 text-sm text-ink-muted">
         GST/TDS/TCS records reconciled against the accounting books — not
-        just a log of tax paid.
+        just a log of tax paid. GST is tracked as CGST + SGST (intrastate)
+        or IGST (interstate) per Indian GST law, not pooled into one figure.
       </p>
+
+      <a
+        href="/tax/gst-summary"
+        className="mt-3 inline-block border border-accent bg-accent-tint px-4 py-2 text-sm font-medium text-accent hover:bg-accent hover:text-white"
+      >
+        Open month-end GST summary →
+      </a>
 
       <div className="mt-6 border border-line bg-surface p-5">
         <h2 className="text-sm font-semibold text-ink">
