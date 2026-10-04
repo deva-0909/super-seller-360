@@ -3,38 +3,21 @@ import { createClient } from "@/lib/supabase/server";
 export default async function BalanceSheetPage() {
   const supabase = await createClient();
 
-  const { data: ledgers } = await supabase
-    .from("ledgers")
-    .select("ledger_id, name, nature")
-    .in("nature", ["asset", "liability", "equity", "income", "expense"])
-    .eq("status", "active");
+  const { data } = await supabase.rpc("trial_balance", { p_from: null, p_to: new Date().toISOString().slice(0, 10) });
+  // closing is debit-positive; each ledger is shown on the side of its own nature
+  const ledgers: { name: string; nature: string; net: number }[] = (data ?? []).map((r: Record<string, unknown>) => ({
+    name: String(r.ledger_name), nature: String(r.nature), net: Number(r.closing),
+  }));
 
-  const { data: entries } = await supabase
-    .from("journal_entries")
-    .select("account_id, debit, credit");
-
-  const totals = new Map<string, { debit: number; credit: number }>();
-  for (const e of entries ?? []) {
-    const t = totals.get(e.account_id) ?? { debit: 0, credit: 0 };
-    t.debit += Number(e.debit);
-    t.credit += Number(e.credit);
-    totals.set(e.account_id, t);
+  function rowsFor(nature: string, sign: 1 | -1) {
+    return ledgers.filter((l) => l.nature === nature).map((l) => ({ name: l.name, amount: sign * l.net }));
   }
 
-  function rowsFor(nature: string, balanceFn: (d: number, c: number) => number) {
-    return (ledgers ?? [])
-      .filter((l) => l.nature === nature)
-      .map((l) => {
-        const t = totals.get(l.ledger_id) ?? { debit: 0, credit: 0 };
-        return { name: l.name, amount: balanceFn(t.debit, t.credit) };
-      });
-  }
-
-  const assetRows = rowsFor("asset", (d, c) => d - c);
-  const liabilityRows = rowsFor("liability", (d, c) => c - d);
-  const equityRows = rowsFor("equity", (d, c) => c - d);
-  const incomeTotal = rowsFor("income", (d, c) => c - d).reduce((s, r) => s + r.amount, 0);
-  const expenseTotal = rowsFor("expense", (d, c) => d - c).reduce((s, r) => s + r.amount, 0);
+  const assetRows = rowsFor("asset", 1);
+  const liabilityRows = rowsFor("liability", -1);
+  const equityRows = rowsFor("equity", -1);
+  const incomeTotal = rowsFor("income", -1).reduce((s, r) => s + r.amount, 0);
+  const expenseTotal = rowsFor("expense", 1).reduce((s, r) => s + r.amount, 0);
   const unclosedProfit = incomeTotal - expenseTotal;
 
   const totalAssets = assetRows.reduce((s, r) => s + r.amount, 0);

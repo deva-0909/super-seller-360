@@ -46,6 +46,8 @@ export const NAV_SECTIONS: NavSection[] = [
       { label: "Journal Entries", href: "/accounting/journal", status: "live", hiddenFor: NO_ACCOUNTING },
       { label: "Cash Settlement", href: "/accounting/cash-settlement", status: "live", hiddenFor: NO_SETTLEMENTS_BANKCOD },
       { label: "Rule Book", href: "/accounting/rule-book", status: "live", hiddenFor: NO_ACCOUNTING },
+      { label: "Trial Balance", href: "/accounting/trial-balance", status: "live", hiddenFor: NO_ACCOUNTING },
+      { label: "Day Book", href: "/accounting/day-book", status: "live", hiddenFor: NO_ACCOUNTING },
       { label: "Profit & Loss", href: "/accounting/profit-and-loss", status: "live", hiddenFor: NO_ACCOUNTING },
       { label: "Balance Sheet", href: "/accounting/balance-sheet", status: "live", hiddenFor: NO_ACCOUNTING },
       { label: "Cash Flow", href: "/accounting/cash-flow", status: "live", hiddenFor: NO_SETTLEMENTS_BANKCOD },

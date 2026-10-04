@@ -1036,3 +1036,13 @@ Still to wire to the same `<Proofs>` component (one line each): COD collections,
 The whole dashboard is responsive: the side menu becomes a slide-in drawer opened from the top bar, forms use 16 px text (no iPhone
 zoom), buttons and fields are at least 44 px high on touch screens, wide tables scroll sideways inside themselves, tab bars scroll, and
 page padding shrinks on phones. Not yet converted to stacked cards on phones: the 9-13 column tables (GST summary, products, COD, orders).
+
+## Accounting reports
+
+Migration `0058_report_functions.sql` adds `trial_balance(from, to)` and `ledger_statement(ledger, from, to)`. They run with the caller's own access (row-level security still applies), include each ledger's opening balance, and are calculated in the database so no report is cut short by the API's 1,000-row limit.
+
+- **Trial Balance** (`/accounting/trial-balance`): opening, period debit and credit, closing Dr/Cr for every ledger, with a balanced check.
+- **Ledger** (`/accounting/ledgers/<id>`): date-ranged statement with opening row and running balance. Every voucher links to its detail page.
+- **Day Book** (`/accounting/day-book`) and **Voucher** (`/accounting/vouchers/<id>`): all vouchers by date; a voucher shows its lines and proofs.
+- Every report has a **Download Excel (CSV)** button. Dates default to the current Indian financial year (1 April) up to today.
+- The Ledgers list and Balance Sheet now include opening balances.
