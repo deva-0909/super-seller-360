@@ -3,12 +3,16 @@ import { createClient } from "@/lib/supabase/server";
 import { parseMonth } from "@/lib/report-utils";
 import { MonthForm } from "@/components/ui/month-form";
 import { SectionTable } from "@/components/gst/section-table";
+import { getCurrentUser } from "@/lib/current-user";
+import { FilingPanel, type Filing } from "@/components/gst/filing-panel";
 
 type R = Record<string, unknown>;
 
 export default async function Gstr1Page({ searchParams }: { searchParams: Promise<{ month?: string }> }) {
   const { month, from, to } = parseMonth((await searchParams).month);
+  const user = await getCurrentUser();
   const supabase = await createClient();
+  const { data: filingData } = await supabase.rpc("gst_filing_status", { p_period: month });
   const args = { p_from: from, p_to: to };
   const [inv, b2cs, cdn, hsn, docs, checks] = await Promise.all([
     supabase.rpc("gstr1_invoices", args), supabase.rpc("gstr1_b2cs", args), supabase.rpc("gstr1_cdn", args),
@@ -66,6 +70,9 @@ export default async function Gstr1Page({ searchParams }: { searchParams: Promis
       <SectionTable title="Documents issued" note="Table 13."
         cols={[{ key: "doc_type", label: "Document" }, { key: "first_no", label: "From" }, { key: "last_no", label: "To" }, { key: "issued", label: "Issued", align: "right" }, { key: "cancelled", label: "Cancelled", align: "right" }]}
         rows={(docs.data ?? []) as R[]} csvName={`gstr1-documents-${month}`} />
+      <FilingPanel month={month} type="GSTR1" filings={(filingData ?? []) as unknown as Filing[]}
+        canWrite={["Super Admin", "Finance Manager", "Accountant", "Tax Manager"].includes(user.roleName)}
+        canWithdraw={["Super Admin", "Finance Manager", "Tax Manager"].includes(user.roleName)} />
       <p className="mt-8 text-xs text-ink-muted">Tax collected at source by marketplaces and TDS under section 194-O are not in GSTR-1; see the GSTR-3B workings for the TCS credit. <Link href="/gst" className="text-accent hover:underline">GSTR-3B workings</Link></p>
     </div>
   );

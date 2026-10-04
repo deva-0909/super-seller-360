@@ -1084,3 +1084,9 @@ Adds a **GST Returns** area (`/gst`) for the monthly filing workings. Everything
 - Orders gain customer GSTIN and ship-to state code; credit notes gain a number and a reason.
 
 Caveats: all rates, limits and section rules are working figures and must be confirmed by your CA before filing. ECO supplies (Table 14/15), portal JSON export and GSTR-2B reconciliation are not included. Marketplace ITC is a lump sum in the books and must be split by head from GSTR-2B using the ITC adjustment entries.
+
+## GSTR-2B check and filing record (migration 0062)
+
+- **GSTR-2B check** (`/gst/gstr2b`): upload the GSTR-2B JSON downloaded from the GST portal (or a simple CSV). Each supplier invoice is matched to an approved purchase bill by supplier GSTIN and invoice number (case, spaces, dashes, slashes and leading zeros ignored; amounts may differ by up to ₹1). Results: matched, amounts differ, not in your books, blocked in 2B but claimed, bill awaiting approval, reverse charge, credit/debit note. Bills with credit claimed that are missing from the file are listed separately. A mismatch can be accepted, and any line ignored, but only with a written reason. Uploading again replaces the earlier file for the month (history is kept). The check is worked out live, so it follows later changes to bills.
+- **Filing record**: on the GSTR-1 and GSTR-3B pages, record the ARN, date and cash paid after filing on the portal. A copy of the figures is saved. Once GSTR-3B is recorded for a month, credit adjustments and GSTR-2B uploads for that month are blocked, and the page shows "changed since filing" if the books move afterwards. A record can be withdrawn only by a Super Admin, Finance Manager or Tax Manager, with a reason.
+- Not included: supplier credit/debit notes in the books (2B notes are listed for manual review), reverse-charge entries, portal-format JSON upload for returns. Matching tolerances and the lock rule are working choices to confirm with your CA.

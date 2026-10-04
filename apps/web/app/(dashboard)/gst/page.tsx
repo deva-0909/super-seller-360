@@ -6,6 +6,7 @@ import { setOff, type Heads } from "@/lib/gst-setoff";
 import { MonthForm } from "@/components/ui/month-form";
 import { CsvButton } from "@/components/ui/csv-button";
 import { ItcAdjustments, type Adj } from "@/components/gst/itc-adjustments";
+import { FilingPanel, type Filing } from "@/components/gst/filing-panel";
 
 type W = {
   outward: { taxable: number; igst: number; cgst: number; sgst: number; nil_taxable: number };
@@ -22,12 +23,15 @@ export default async function Gstr3bPage({ searchParams }: { searchParams: Promi
   const user = await getCurrentUser();
   const canWrite = ["Super Admin", "Finance Manager", "Accountant", "Tax Manager"].includes(user.roleName);
   const supabase = await createClient();
-  const [{ data, error }, { data: adjRows }, { data: states }, { data: checks }] = await Promise.all([
+  const [{ data, error }, { data: adjRows }, { data: states }, { data: checks }, { data: filingData }] = await Promise.all([
     supabase.rpc("gstr3b_workings", { p_month: month }),
     supabase.from("gst_itc_adjustments").select("adj_id, kind, igst, cgst, sgst, note, voided").eq("period", month).order("created_at"),
     supabase.from("gst_states").select("code, name"),
     supabase.rpc("gst_data_checks", { p_from: from, p_to: to }),
+    supabase.rpc("gst_filing_status", { p_period: month }),
   ]);
+  const filings = (filingData ?? []) as unknown as Filing[];
+  const locked = filings.some((f) => f.return_type === "GSTR3B" && !f.withdrawn);
   if (error || !data) {
     return <div className="px-4 md:px-8 py-8"><h1 className="text-lg font-semibold tracking-tight text-ink">GSTR-3B workings</h1><p className="mt-3 text-sm text-danger">{error?.message ?? "Could not load."}</p></div>;
   }
@@ -117,7 +121,7 @@ export default async function Gstr3bPage({ searchParams }: { searchParams: Promi
         </p>
       ) : null}
       <h3 className="mt-6 text-xs font-semibold uppercase tracking-wide text-ink-muted">Credit from GSTR-2B and reversals</h3>
-      <ItcAdjustments month={month} items={adj} canWrite={canWrite} />
+      <ItcAdjustments month={month} items={adj} canWrite={canWrite && !locked} />
 
       <h2 className="mt-8 text-sm font-semibold text-ink">6.1 Payment of tax</h2>
       <div className="mt-2 border border-line bg-surface">
@@ -137,6 +141,7 @@ export default async function Gstr3bPage({ searchParams }: { searchParams: Promi
       </div>
       <p className="mt-3 text-sm font-medium text-ink">Cash to pay for the month: {m(cashTotal)}</p>
       {Number(w.books_tcs_credit) !== 0 ? <p className="mt-2 text-xs text-ink-muted">Marketplaces collected tax at source of {m(Number(w.books_tcs_credit))} this month. That credit sits in your cash ledger on the GST portal and is not part of the set-off above.</p> : null}
+      <FilingPanel month={month} type="GSTR3B" filings={filings} canWrite={canWrite} canWithdraw={["Super Admin", "Finance Manager", "Tax Manager"].includes(user.roleName)} suggestedCash={cashTotal} />
       <p className="mt-6 text-xs text-ink-muted">Interest, late fee and the 1% cash rule are not worked out here. Credit is set off in the order the law requires: integrated credit against integrated tax first, then central, then state; central and state credit against their own tax, then integrated tax.</p>
     </div>
   );

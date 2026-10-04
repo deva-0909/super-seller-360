@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 const TABS = [
   { href: "/gst", label: "GSTR-3B workings", exact: true },
   { href: "/gst/gstr1", label: "GSTR-1 workings" },
+  { href: "/gst/gstr2b", label: "GSTR-2B check" },
   { href: "/gst/settings", label: "Settings" },
 ];
 
