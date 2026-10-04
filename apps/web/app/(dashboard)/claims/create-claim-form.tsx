@@ -6,6 +6,8 @@ import { createClient } from "@/lib/supabase/client";
 import { Field } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { friendlyError } from "@/lib/friendly-error";
+import { Proofs } from "@/components/ui/proofs";
+import { linkProofs, type Proof } from "@/lib/attachments";
 
 type Order = { order_id: string; external_order_id: string };
 
@@ -19,6 +21,7 @@ export function CreateClaimForm({ orders }: { orders: Order[] }) {
   const [deadline, setDeadline] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [proofs, setProofs] = useState<Proof[]>([]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -34,21 +37,25 @@ export function CreateClaimForm({ orders }: { orders: Order[] }) {
       data: { user },
     } = await supabase.auth.getUser();
 
-    const { error } = await supabase.from("claims").insert({
+    const { data: created, error } = await supabase.from("claims").insert({
       order_id: orderId,
       claim_type: claimType,
       potential_amount: Number(amount) || 0,
       deadline: deadline || null,
       owner: user?.id ?? null,
-    });
-
-    setLoading(false);
+    }).select("claim_id").single();
 
     if (error) {
+      setLoading(false);
       setError(friendlyError(error.message));
       return;
     }
-
+    if (proofs.length && created) {
+      try { await linkProofs(proofs.map((p) => p.attachment_id), "claim", created.claim_id as string); }
+      catch (e) { setLoading(false); setError(`Claim logged, but the attachments could not be linked: ${(e as Error).message}`); setProofs([]); router.refresh(); return; }
+    }
+    setLoading(false);
+    setProofs([]);
     setAmount("");
     setDeadline("");
     router.refresh();
@@ -103,6 +110,8 @@ export function CreateClaimForm({ orders }: { orders: Order[] }) {
           value={deadline}
           onChange={(e) => setDeadline(e.target.value)}
         />
+
+        <Proofs entityType="claim" pending={proofs} onPending={setProofs} kind="photo" label="Evidence (optional)" hint="POD, unboxing photos, courier mail. Camera or gallery." />
 
         {error ? (
           <p role="alert" className="text-sm text-danger">

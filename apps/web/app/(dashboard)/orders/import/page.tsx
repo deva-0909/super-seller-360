@@ -10,7 +10,7 @@ export default async function ImportOrdersPage() {
     .order("name");
 
   return (
-    <div className="mx-auto max-w-2xl px-8 py-8">
+    <div className="mx-auto max-w-2xl px-4 md:px-8 py-8">
       <Link href="/orders" className="text-sm text-ink-muted hover:text-ink">
         ← All orders
       </Link>

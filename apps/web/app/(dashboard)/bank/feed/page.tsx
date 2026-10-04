@@ -8,7 +8,7 @@ export default async function FeedPage({ searchParams }: { searchParams: Promise
   const { data: accountsRaw } = await supabase.from("bank_accounts").select("bank_account_id, bank_name, account_number_last4").eq("status", "active").order("bank_name");
   const accounts = accountsRaw ?? [];
   const acct = accounts.find((a) => a.bank_account_id === account) ?? accounts[0];
-  if (!acct) return <div className="px-8 py-8"><p className="text-sm text-ink-muted">Add a bank account first.</p></div>;
+  if (!acct) return <div className="px-4 md:px-8 py-8"><p className="text-sm text-ink-muted">Add a bank account first.</p></div>;
 
   const [{ data: feedRaw }, { data: canEditRaw }] = await Promise.all([
     supabase.from("bank_feeds").select("*").eq("bank_account_id", acct.bank_account_id).maybeSingle(),
@@ -19,7 +19,7 @@ export default async function FeedPage({ searchParams }: { searchParams: Promise
   const fn = `${base}/functions/v1/bank-statement-sync`;
 
   return (
-    <div className="px-8 py-8">
+    <div className="px-4 md:px-8 py-8">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-lg font-semibold tracking-tight text-ink">Bank statement feed</h1>

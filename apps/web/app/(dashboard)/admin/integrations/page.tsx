@@ -13,7 +13,7 @@ export default async function IntegrationsPage() {
   const webhookUrl = `${supabaseUrl}/functions/v1/shopify-order-webhook`;
 
   return (
-    <div className="px-8 py-8">
+    <div className="px-4 md:px-8 py-8">
       <h1 className="text-lg font-semibold tracking-tight text-ink">
         Integrations
       </h1>
@@ -67,7 +67,7 @@ export default async function IntegrationsPage() {
         Webhook endpoints
       </h2>
       <div className="mt-3 border border-line bg-surface p-5">
-        <div className="flex items-start justify-between">
+        <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <p className="text-sm font-medium text-ink">
               Shopify order webhook
@@ -92,7 +92,7 @@ export default async function IntegrationsPage() {
       </div>
 
       <div className="mt-3 border border-line bg-surface p-5">
-        <div className="flex items-start justify-between">
+        <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <p className="text-sm font-medium text-ink">
               Returns/RTO ingestion webhook
@@ -119,7 +119,7 @@ export default async function IntegrationsPage() {
       </div>
 
       <div className="mt-3 border border-line bg-surface p-5">
-        <div className="flex items-start justify-between">
+        <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <p className="text-sm font-medium text-ink">
               User invite function

@@ -25,7 +25,7 @@ function cellStyle(value: string): string {
 
 export default function PermissionsPage() {
   return (
-    <div className="px-8 py-8">
+    <div className="px-4 md:px-8 py-8">
       <h1 className="text-lg font-semibold tracking-tight text-ink">
         Permissions
       </h1>

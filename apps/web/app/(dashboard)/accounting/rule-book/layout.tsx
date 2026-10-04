@@ -9,7 +9,7 @@ export default async function RuleBookLayout({ children }: { children: React.Rea
     .eq("status", "draft");
 
   return (
-    <div className="px-8 py-8">
+    <div className="px-4 md:px-8 py-8">
       <h1 className="text-lg font-semibold tracking-tight text-ink">Accounting Rule Book</h1>
       <p className="mt-1 max-w-3xl text-sm text-ink-muted">
         How the app turns business events — a return received, an RTO, COD cash, a settlement, a bank line — into journal entries.

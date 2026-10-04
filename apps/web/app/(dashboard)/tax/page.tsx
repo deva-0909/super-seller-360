@@ -40,7 +40,7 @@ export default async function TaxPage() {
   );
 
   return (
-    <div className="px-8 py-8">
+    <div className="px-4 md:px-8 py-8">
       <h1 className="text-lg font-semibold tracking-tight text-ink">Tax</h1>
       <p className="mt-1 text-sm text-ink-muted">
         GST/TDS/TCS records reconciled against the accounting books — not
@@ -59,7 +59,7 @@ export default async function TaxPage() {
         <h2 className="text-sm font-semibold text-ink">
           GST reconciliation — books vs. logged tax transactions
         </h2>
-        <dl className="mt-3 grid grid-cols-3 gap-x-6 gap-y-2 text-sm">
+        <dl className="mt-3 grid grid-cols-1 gap-x-6 sm:grid-cols-3 gap-y-2 text-sm">
           <dt className="text-ink-muted">GST per books (ledger)</dt>
           <dd className="col-span-2 font-data text-ink">
             ₹{bookGst.toLocaleString("en-IN")}

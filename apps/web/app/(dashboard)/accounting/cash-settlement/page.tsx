@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { StatusPill } from "@/components/ui/status-pill";
+import { Proofs } from "@/components/ui/proofs";
 import { RescanButton, SettingsForm, SettleForm, type LedgerOpt } from "./cash-client";
 
 type Movement = {
@@ -38,7 +39,7 @@ export default async function CashSettlementPage() {
   const write = canWrite === true;
 
   return (
-    <div className="px-8 py-6">
+    <div className="px-4 md:px-8 py-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-xl font-semibold text-ink">Cash settlement</h1>
@@ -103,6 +104,7 @@ export default async function CashSettlementPage() {
                         <p key={k}>{KIND[l.kind] ?? l.kind} {inr(Number(l.amount))}{l.ledgers?.name ? ` on ${l.ledgers.name}` : ""}{l.narration ? ` — ${l.narration}` : ""}</p>
                       ))}
                       {r.note ? <p className="italic">“{r.note}”</p> : null}
+                      <div className="mt-2"><Proofs entityType="cash_settlement_report" entityId={r.report_id} readOnly label="Proofs" /></div>
                     </div>
                   ) : null}
                 </div>

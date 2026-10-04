@@ -17,11 +17,11 @@ export function AuthShell({
   footer?: ReactNode;
 }) {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-canvas px-6 py-12">
+    <div className="flex min-h-dvh flex-col items-center justify-center bg-canvas px-6 py-12">
       <div className="w-full max-w-sm">
         <Wordmark />
 
-        <div className="mt-8 border border-line bg-surface p-8">
+        <div className="mt-8 border border-line bg-surface p-6 sm:p-8">
           <h1 className="text-xl font-semibold tracking-tight text-ink">
             {title}
           </h1>

@@ -27,7 +27,7 @@ export default async function SettlementsPage() {
     currentUser.roleName === "Super Admin" || currentUser.roleName === "Finance Manager";
 
   return (
-    <div className="px-8 py-8">
+    <div className="px-4 md:px-8 py-8">
       <h1 className="text-lg font-semibold tracking-tight text-ink">
         Settlements
       </h1>

@@ -151,7 +151,7 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
   const watch = [...overdue, ...nearing].slice(0, 14);
 
   return (
-    <div className="px-8 py-8">
+    <div className="px-4 md:px-8 py-8">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-lg font-semibold tracking-tight text-ink">Business Insights</h1>

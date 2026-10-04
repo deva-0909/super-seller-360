@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { friendlyError } from "@/lib/friendly-error";
 import { FREQUENCIES, occurrence, type Frequency } from "@/lib/recurring";
+import { Proofs } from "@/components/ui/proofs";
+import { linkProofs, type Proof } from "@/lib/attachments";
 
 export type LedgerOpt = { ledger_id: string; name: string; group: string };
 type Line = { ledger_id: string; debit: string; credit: string; narration: string };
@@ -22,6 +24,7 @@ export function JournalForm({ ledgers, canWrite }: { ledgers: LedgerOpt[]; canWr
   const [recurring, setRecurring] = useState(false);
   const [freq, setFreq] = useState<Frequency>("monthly");
   const [endDate, setEndDate] = useState("");
+  const [proofs, setProofs] = useState<Proof[]>([]);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
@@ -43,8 +46,13 @@ export function JournalForm({ ledgers, canWrite }: { ledgers: LedgerOpt[]; canWr
     });
     setBusy(false);
     if (error) { setErr(friendlyError(error.message)); return; }
-    const d = data as { voucher_no: string };
-    router.push(`/accounting/journal?posted=${encodeURIComponent(d.voucher_no)}`);
+    const d = data as { voucher_no: string; voucher_id: string };
+    let attach = "";
+    if (proofs.length) {
+      try { await linkProofs(proofs.map((p) => p.attachment_id), "voucher", d.voucher_id); }
+      catch { attach = "&attach=failed"; }
+    }
+    router.push(`/accounting/journal?posted=${encodeURIComponent(d.voucher_no)}${attach}`);
     router.refresh();
   }
 
@@ -81,6 +89,10 @@ export function JournalForm({ ledgers, canWrite }: { ledgers: LedgerOpt[]; canWr
             <span className={`ml-3 ${balanced ? "text-success" : "text-warning"}`}>{balanced ? "Balanced ✓" : diff === 0 ? "Enter amounts" : `Out by ${inr(Math.abs(diff))}`}</span>
           </span>
         </div>
+      </div>
+
+      <div className="mt-5 border border-line bg-surface p-4">
+        <Proofs entityType="voucher" pending={proofs} onPending={setProofs} label="Bill / receipt (proof)" hint="Photograph the bill with the phone camera or pick it from the gallery." />
       </div>
 
       <div className="mt-5 border border-line bg-surface p-4">

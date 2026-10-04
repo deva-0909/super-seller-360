@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { friendlyError } from "@/lib/friendly-error";
+import { Proofs } from "@/components/ui/proofs";
+import { linkProofs, type Proof } from "@/lib/attachments";
 
 export type LedgerOpt = { ledger_id: string; name: string };
 
@@ -28,6 +30,7 @@ export function SettleForm({ movementId, openAmount, ledgers }: { movementId: st
   const [lines, setLines] = useState<Line[]>([{ kind: "spent", amount: String(openAmount), ledger_id: "", narration: "" }]);
   const [note, setNote] = useState("");
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [proofs, setProofs] = useState<Proof[]>([]);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
@@ -37,14 +40,19 @@ export function SettleForm({ movementId, openAmount, ledgers }: { movementId: st
 
   async function submit() {
     setBusy(true); setErr(null);
-    const { error } = await supabase.rpc("submit_cash_settlement", {
+    const { data, error } = await supabase.rpc("submit_cash_settlement", {
       p_movement: movementId,
       p_lines: lines.map((l) => ({ kind: l.kind, amount: Number(l.amount), ledger_id: l.kind === "spent" ? l.ledger_id || null : null, narration: l.narration })),
       p_note: note || null,
       p_date: date,
     });
+    if (error) { setBusy(false); setErr(friendlyError(error.message)); return; }
+    const reportId = (data as { report_id?: string } | null)?.report_id;
+    if (proofs.length && reportId) {
+      try { await linkProofs(proofs.map((p) => p.attachment_id), "cash_settlement_report", reportId); }
+      catch (e) { setBusy(false); setErr(`Report submitted, but the attachments could not be linked: ${(e as Error).message}`); router.refresh(); return; }
+    }
     setBusy(false);
-    if (error) { setErr(friendlyError(error.message)); return; }
     setOpen(false);
     router.refresh();
   }
@@ -82,6 +90,7 @@ export function SettleForm({ movementId, openAmount, ledgers }: { movementId: st
           Accounted {inr(total)} of {inr(openAmount)}{Math.abs(gap) < 0.005 ? " ✓" : ` · ${inr(Math.abs(gap))} ${gap > 0 ? "left" : "too much"}`}
         </span>
       </div>
+      <div className="mt-3"><Proofs entityType="cash_settlement_report" pending={proofs} onPending={setProofs} label="Proof of spend (bills, receipts, deposit slip)" hint="Photograph each bill with the phone camera or pick from the gallery." /></div>
       <textarea className="mt-3 w-full border border-line bg-surface p-2 text-sm text-ink outline-none focus:border-accent" rows={2} placeholder="Remarks for the owner (optional)" value={note} onChange={(e) => setNote(e.target.value)} />
       {err ? <p className="mt-2 text-sm text-danger">{err}</p> : null}
       <div className="mt-3 flex gap-2">

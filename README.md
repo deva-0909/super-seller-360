@@ -1018,3 +1018,21 @@ Accounting > Journal Entries > "New journal entry": a balanced multi-line entry.
 weekly, fortnightly, monthly, quarterly, half-yearly or annually (optional stop date). The entry you post is the first occurrence;
 later ones post automatically with the same lines when they fall due. Due entries are posted whenever someone opens the app, and by the
 same scheduled call as above if you set it up. Nothing is skipped: a closed period makes the schedule wait and show why.
+
+## Proof attachments (migration 0057)
+
+Photo or PDF proof can be attached on: manual journal / expense entries, cash settlement reports, claims (at logging and later), returns,
+RTOs and settlements. "Take photo" opens the phone camera; "Gallery or files" opens the gallery / file picker (a computer shows its file
+dialog for both). Photos are shrunk to 1600 px before upload so they are quick on mobile data. Files go to a private storage bucket
+(`proofs`, 15 MB limit, JPG/PNG/WebP/HEIC/PDF) and are shown through one-hour signed links. Who can add or see a file follows the record's
+own role helper and row-level security (a Warehouse Manager only sees proofs of returns in their own warehouses). A file is "pending"
+until the form is saved, can be removed by whoever took it until then, and is frozen once linked. Run `select cleanup_pending_attachments();`
+now and then (or schedule it) to discard files that were uploaded but never saved with a record.
+
+Still to wire to the same `<Proofs>` component (one line each): COD collections, manual bank booking / exclusion, tax transactions.
+
+## Mobile
+
+The whole dashboard is responsive: the side menu becomes a slide-in drawer opened from the top bar, forms use 16 px text (no iPhone
+zoom), buttons and fields are at least 44 px high on touch screens, wide tables scroll sideways inside themselves, tab bars scroll, and
+page padding shrinks on phones. Not yet converted to stacked cards on phones: the 9-13 column tables (GST summary, products, COD, orders).

@@ -74,7 +74,7 @@ export function RoleSwitcher({
       <button
         onClick={() => setOpen((v) => !v)}
         disabled={loading}
-        className={`flex items-center gap-2 border px-2.5 py-1 text-xs font-medium transition-colors ${
+        className={`flex items-center gap-2 border px-2.5 py-2 text-xs font-medium md:py-1 transition-colors ${
           isPreviewing
             ? "border-warning/40 bg-warning-tint text-warning"
             : "border-line text-ink-muted hover:bg-surface-sunken"
@@ -84,12 +84,12 @@ export function RoleSwitcher({
       </button>
 
       {open ? (
-        <div className="absolute right-0 top-full z-10 mt-1 w-56 border border-line bg-surface py-1 shadow-sm">
+        <div className="absolute right-0 top-full z-50 mt-1 w-56 max-w-[calc(100vw-1.5rem)] border border-line bg-surface py-1 shadow-sm">
           {ROLES.map((role) => (
             <button
               key={role}
               onClick={() => setPreview(role)}
-              className={`block w-full px-3 py-1.5 text-left text-sm hover:bg-surface-sunken ${
+              className={`block w-full px-3 py-2.5 text-left text-sm md:py-1.5 hover:bg-surface-sunken ${
                 role === currentRoleName
                   ? "font-medium text-accent"
                   : "text-ink"

@@ -26,7 +26,7 @@ export default async function ReconcilePage({ searchParams }: { searchParams: Pr
 
   if (!acct) {
     return (
-      <div className="px-8 py-8">
+      <div className="px-4 md:px-8 py-8">
         <h1 className="text-lg font-semibold tracking-tight text-ink">Bank reconciliation</h1>
         <p className="mt-3 text-sm text-ink-muted">Add a bank account first (Bank transactions tab, “Add bank account”), then come back here.</p>
       </div>
@@ -55,7 +55,7 @@ export default async function ReconcilePage({ searchParams }: { searchParams: Pr
   const q = (p: Record<string, string>) => `/bank/reconcile?${new URLSearchParams({ account: acct.bank_account_id, view, ...p })}`;
 
   return (
-    <div className="px-8 py-8">
+    <div className="px-4 md:px-8 py-8">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-lg font-semibold tracking-tight text-ink">Bank reconciliation</h1>

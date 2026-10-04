@@ -14,7 +14,7 @@ export default async function NewReconRulePage() {
     book_source_types: null, book_voucher_types: null, exclude_reason: null,
   };
   return (
-    <div className="px-8 py-8">
+    <div className="px-4 md:px-8 py-8">
       <h1 className="text-lg font-semibold tracking-tight text-ink">New matching rule</h1>
       <p className="mb-5 mt-1 text-sm text-ink-muted">Start with “suggest” until you trust a rule, then switch it to automatic.</p>
       <ReconRuleEditor initial={blank} canEdit={canEdit === true} accounts={(acc ?? []).map((a) => ({ bank_account_id: a.bank_account_id, label: `${a.bank_name} •• ${a.account_number_last4}` }))} />

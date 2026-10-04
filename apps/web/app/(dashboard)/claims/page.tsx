@@ -36,8 +36,8 @@ export default async function ClaimsPage() {
     .reduce((sum, c) => sum + (Number(c.approved_amount) - Number(c.recovered_amount)), 0);
 
   return (
-    <div className="px-8 py-8">
-      <div className="flex items-baseline justify-between">
+    <div className="px-4 md:px-8 py-8">
+      <div className="flex flex-wrap items-baseline justify-between gap-3">
         <div>
           <h1 className="text-lg font-semibold tracking-tight text-ink">
             Claims

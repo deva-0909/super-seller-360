@@ -28,7 +28,7 @@ export default async function CashFlowPage() {
   const unmatchedCount = rows.filter((t) => t.match_status === "unmatched").length;
 
   return (
-    <div className="mx-auto max-w-2xl px-8 py-8">
+    <div className="mx-auto max-w-2xl px-4 md:px-8 py-8">
       <h1 className="text-lg font-semibold tracking-tight text-ink">
         Cash Flow
       </h1>

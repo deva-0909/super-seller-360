@@ -4,11 +4,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NAV_SECTIONS } from "@/lib/nav-sections";
 
-export function Sidebar({ roleName }: { roleName: string }) {
+export function Sidebar({ roleName, onNavigate }: { roleName: string; onNavigate?: () => void }) {
   const pathname = usePathname();
 
   return (
-    <nav className="flex h-full w-60 flex-col gap-6 overflow-y-auto bg-sidebar-bg px-4 py-6">
+    <nav className="flex h-full w-full flex-col gap-6 overflow-y-auto bg-sidebar-bg px-4 py-6">
       {NAV_SECTIONS.map((section) => {
         const visibleItems = section.items.filter(
           (item) => !item.hiddenFor?.includes(roleName),
@@ -37,7 +37,8 @@ export function Sidebar({ roleName }: { roleName: string }) {
                   <li key={item.label}>
                     <Link
                       href={item.href}
-                      className={`block rounded-lg px-2 py-1.5 text-sm transition-colors ${
+                      onClick={onNavigate}
+                      className={`block rounded-lg px-2 py-2.5 text-sm md:py-1.5 transition-colors ${
                         active
                           ? "bg-sidebar-bg-active font-medium text-sidebar-text-active"
                           : "text-sidebar-text hover:bg-white/5 hover:text-sidebar-text-active"

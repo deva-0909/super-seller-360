@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/current-user";
 import { StatusPill } from "@/components/ui/status-pill";
 import { ReconcileForm } from "./reconcile-form";
+import { Proofs } from "@/components/ui/proofs";
 
 export default async function SettlementDetailPage({
   params,
@@ -45,7 +46,7 @@ export default async function SettlementDetailPage({
       : null;
 
   return (
-    <div className="mx-auto max-w-2xl px-8 py-8">
+    <div className="mx-auto max-w-2xl px-4 md:px-8 py-8">
       <Link href="/settlements" className="text-sm text-ink-muted hover:text-ink">
         ← All settlements
       </Link>
@@ -75,7 +76,7 @@ export default async function SettlementDetailPage({
       </div>
 
       <div className="mt-6 border border-line bg-surface p-5">
-        <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
+        <dl className="grid grid-cols-1 gap-x-6 sm:grid-cols-2 sm:gap-x-6 gap-y-3 text-sm">
           <dt className="text-ink-muted">Gross</dt>
           <dd className="font-data text-ink">
             ₹{Number(settlement.gross).toLocaleString("en-IN")}
@@ -126,6 +127,11 @@ export default async function SettlementDetailPage({
             Your role can view this settlement but not reconcile it.
           </p>
         )}
+      </div>
+
+      <h2 className="mt-8 text-sm font-semibold text-ink">Proof and documents</h2>
+      <div className="mt-3 border border-line bg-surface p-5">
+        <Proofs entityType="settlement" entityId={settlement.settlement_id} readOnly={!(canReconcile)} kind="other" label="Settlement report or dispute proof" hint="Take a photo with the phone camera or pick one from the gallery. PDFs are fine too." />
       </div>
     </div>
   );

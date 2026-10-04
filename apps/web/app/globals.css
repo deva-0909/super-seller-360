@@ -104,3 +104,20 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+
+
+/* ---------- Mobile (phones) ---------- */
+/* iOS Safari zooms the page when a field under 16px is focused - keep every field at 16px on small screens. */
+@media (max-width: 767px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), select, textarea { font-size: 16px !important; }
+  /* wide tables scroll sideways inside themselves instead of pushing the whole page wider */
+  table { display: block; max-width: 100%; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; }
+  table td, table th { white-space: nowrap; }
+}
+/* comfortable thumb targets on touch screens (switches keep their own size) */
+@media (pointer: coarse) {
+  button:not([role="switch"]), select, input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]) { min-height: 44px; }
+  a[class*="rounded"], a[class*="px-"] { min-height: 40px; }
+}
+/* never let the page itself scroll sideways */
+html, body { max-width: 100%; overflow-x: hidden; }

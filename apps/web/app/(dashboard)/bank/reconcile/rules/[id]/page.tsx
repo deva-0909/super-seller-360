@@ -15,7 +15,7 @@ export default async function ReconRulePage({ params }: { params: Promise<{ id: 
   if (!rule) notFound();
   const r = rule as unknown as ReconRule;
   return (
-    <div className="px-8 py-8">
+    <div className="px-4 md:px-8 py-8">
       <p className="text-xs text-ink-muted">{r.rule_code}{r.is_system ? " · accountant's default" : " · your rule"} · version {r.version}</p>
       <h1 className="mb-5 text-lg font-semibold tracking-tight text-ink">{r.name}</h1>
       <ReconRuleEditor key={`${r.recon_rule_id}-${r.version}`} initial={r} canEdit={canEdit === true} accounts={(acc ?? []).map((a) => ({ bank_account_id: a.bank_account_id, label: `${a.bank_name} •• ${a.account_number_last4}` }))} />

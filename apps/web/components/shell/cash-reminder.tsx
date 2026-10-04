@@ -65,12 +65,12 @@ export function CashReminder() {
 
   return (
     <>
-      <div role="alert" className="flex flex-wrap items-center justify-between gap-2 border-b border-danger/40 bg-danger-tint px-6 py-2 text-sm text-danger">
+      <div role="alert" className="flex flex-wrap items-center justify-between gap-2 border-b border-danger/40 bg-danger-tint px-4 py-2 md:px-6 text-sm text-danger">
         <span className="font-semibold">
           Cash settlement pending: {inr(summary.total ?? 0)} taken from the bank is not yet accounted for ({summary.count} {summary.count === 1 ? "item" : "items"}).
         </span>
         {!onSettlePage ? (
-          <Link href="/accounting/cash-settlement" className="rounded-md bg-danger px-3 py-1 text-xs font-semibold text-white hover:opacity-90">
+          <Link href="/accounting/cash-settlement" className="rounded-md bg-danger px-3 py-2 text-xs font-semibold text-white hover:opacity-90">
             Settle now
           </Link>
         ) : null}
@@ -95,7 +95,7 @@ export function CashReminder() {
               </ul>
             ) : null}
             <p className="mt-3 text-xs text-ink-muted">This reminder returns every {mins} minutes until the settlement report is submitted.</p>
-            <div className="mt-4 flex justify-end gap-2">
+            <div className="mt-4 flex flex-wrap justify-end gap-2">
               <button type="button" onClick={() => setPopup(false)} className="h-9 rounded-lg border border-line bg-surface px-3 text-sm font-semibold text-ink hover:bg-surface-sunken">
                 Remind me in {mins} min
               </button>

@@ -43,7 +43,7 @@ export default async function BalanceSheetPage() {
   const balanced = Math.abs(totalAssets - (totalLiabilities + totalEquity)) < 0.01;
 
   return (
-    <div className="mx-auto max-w-2xl px-8 py-8">
+    <div className="mx-auto max-w-2xl px-4 md:px-8 py-8">
       <h1 className="text-lg font-semibold tracking-tight text-ink">
         Balance Sheet
       </h1>

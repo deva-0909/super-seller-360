@@ -12,8 +12,8 @@ type Schedule = {
 
 const inr = (n: number) => "₹" + Number(n).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-export default async function JournalPage({ searchParams }: { searchParams: Promise<{ posted?: string }> }) {
-  const { posted } = await searchParams;
+export default async function JournalPage({ searchParams }: { searchParams: Promise<{ posted?: string; attach?: string }> }) {
+  const { posted, attach } = await searchParams;
   const supabase = await createClient();
   const [{ data: en }, { data: sc }, { data: canWrite }] = await Promise.all([
     supabase.from("vouchers").select("voucher_id, voucher_no, voucher_date, narration, total_debit, source_type, status, voucher_types!inner(code)")
@@ -26,7 +26,7 @@ export default async function JournalPage({ searchParams }: { searchParams: Prom
   const write = canWrite === true;
 
   return (
-    <div className="px-8 py-6">
+    <div className="px-4 md:px-8 py-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-xl font-semibold text-ink">Journal entries</h1>
@@ -35,6 +35,7 @@ export default async function JournalPage({ searchParams }: { searchParams: Prom
         {write ? <Link href="/accounting/journal/new" className="h-10 rounded-lg bg-accent px-4 text-sm font-semibold leading-10 text-white shadow-sm hover:bg-accent-hover">+ New journal entry</Link> : null}
       </div>
       {posted ? <p className="mt-4 border border-success/30 bg-success-tint p-3 text-sm text-success">Posted {posted}.</p> : null}
+      {attach === "failed" ? <p className="mt-2 border border-warning/30 bg-warning-tint p-3 text-sm text-warning">The entry was posted, but the attachment could not be linked to it. Re-upload it from the entry.</p> : null}
 
       <section className="mt-8">
         <div className="flex flex-wrap items-center justify-between gap-3">

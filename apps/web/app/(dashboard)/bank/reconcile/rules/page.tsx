@@ -15,7 +15,7 @@ export default async function MatchRulesPage() {
   const canEdit = canEditRaw === true;
 
   return (
-    <div className="px-8 py-8">
+    <div className="px-4 md:px-8 py-8">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-lg font-semibold tracking-tight text-ink">Bank matching rules</h1>

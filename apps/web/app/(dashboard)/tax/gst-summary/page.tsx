@@ -23,7 +23,7 @@ export default async function GstSummaryPage({
 
   if (!selectedPeriod) {
     return (
-      <div className="px-8 py-8">
+      <div className="px-4 md:px-8 py-8">
         <h1 className="text-lg font-semibold tracking-tight text-ink">GST Summary</h1>
         <p className="mt-2 text-sm text-ink-muted">No accounting periods exist yet.</p>
       </div>
@@ -169,7 +169,7 @@ export default async function GstSummaryPage({
   const inr = (n: number) => `₹${n.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   return (
-    <div className="px-8 py-8">
+    <div className="px-4 md:px-8 py-8">
       <a href="/tax" className="text-sm text-ink-muted hover:text-ink">
         ← Tax
       </a>

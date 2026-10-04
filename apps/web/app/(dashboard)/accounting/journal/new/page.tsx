@@ -11,7 +11,7 @@ export default async function NewJournalPage() {
     ledger_id: l.ledger_id, name: l.name, group: l.account_groups?.name ?? "Other",
   }));
   return (
-    <div className="px-8 py-6">
+    <div className="px-4 md:px-8 py-6">
       <h1 className="text-xl font-semibold text-ink">New journal entry</h1>
       <p className="mb-5 mt-1 text-sm text-ink-muted">Debits must equal credits. Tick “recurring” for rent, subscriptions, depreciation and other entries that repeat.</p>
       <JournalForm ledgers={ledgers} canWrite={canWrite === true} />

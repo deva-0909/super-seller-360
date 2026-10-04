@@ -88,7 +88,7 @@ export default async function OrderDetailPage({
   ].sort((a, b) => new Date(a.at).getTime() - new Date(b.at).getTime());
 
   return (
-    <div className="mx-auto max-w-3xl px-8 py-8">
+    <div className="mx-auto max-w-3xl px-4 md:px-8 py-8">
       <Link href="/orders" className="text-sm text-ink-muted hover:text-ink">
         ← All orders
       </Link>
@@ -114,7 +114,7 @@ export default async function OrderDetailPage({
       </div>
 
       <div className="mt-6 border border-line bg-surface p-5">
-        <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
+        <dl className="grid grid-cols-1 gap-x-6 sm:grid-cols-2 sm:gap-x-6 gap-y-3 text-sm">
           <dt className="text-ink-muted">Customer reference</dt>
           <dd className="font-data text-ink">{order.customer_ref ?? "—"}</dd>
           <dt className="text-ink-muted">Payment type</dt>
