@@ -1199,3 +1199,9 @@ The menu now comes from `my_nav_access()`, computed from the same `has_*()` func
 ## Ask a question (`/ask`)
 
 Type a question in plain words (sales, top products, low stock, pending orders, returns, unusual orders, work queue). A fixed keyword matcher (`apps/web/lib/ask/intents.ts`) picks the question type and reads your own data, so each person only sees what their role allows. No AI key and no database change needed. Add a new question type by adding a keyword entry and a `case` in `ask-box.tsx`.
+
+## Invoice timing and ship-from warehouse
+
+- **Admin → Channels**: Super Admin picks, per channel, when the invoice is made automatically (order shipped, order delivered, or a person creates it).
+- **Order page → Ships from**: pick the warehouse for an order that is still pending or processing. Left on Automatic, the app picks the warehouse that has the stock.
+- No database change.

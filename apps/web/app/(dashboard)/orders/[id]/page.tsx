@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/current-user";
 import { StatusPill } from "@/components/ui/status-pill";
 import { PostInvoiceButton } from "./post-invoice-button";
+import { WarehousePick } from "./warehouse-pick";
 import { ConnectedActions, type Shipment } from "./connected-actions";
 
 export default async function OrderDetailPage({
@@ -18,7 +19,7 @@ export default async function OrderDetailPage({
   const { data: order } = await supabase
     .from("orders")
     .select(
-      "order_id, external_order_id, order_date, customer_ref, payment_type, gross_amount, discount, tax_amount, net_amount, fulfilment_status, payment_status, channels(name), order_lines(order_line_id, quantity, unit_price, discount, tax, products(name, sku)), invoices(invoice_id, invoice_number, total, taxable_value, gst_amount)",
+      "order_id, warehouse_id, external_order_id, order_date, customer_ref, payment_type, gross_amount, discount, tax_amount, net_amount, fulfilment_status, payment_status, channels(name), order_lines(order_line_id, quantity, unit_price, discount, tax, products(name, sku)), invoices(invoice_id, invoice_number, total, taxable_value, gst_amount)",
     )
     .eq("order_id", id)
     .single();
@@ -40,7 +41,8 @@ export default async function OrderDetailPage({
       | null
   )?.[0];
 
-  const [{ data: conns }, { data: cats }, { data: shipRows }] = await Promise.all([
+  const [{ data: whs }, { data: conns }, { data: cats }, { data: shipRows }] = await Promise.all([
+    supabase.from("warehouses").select("warehouse_id, name").eq("status", "active").order("name"),
     supabase.from("connector_instances").select("instance_id, connector_code, label, mode").eq("enabled", true).neq("status", "not_configured"),
     supabase.from("connector_catalog").select("code, category"),
     supabase.from("shipments").select("awb, courier, status, mode, charge, instance_id").eq("order_id", id).order("created_at"),
@@ -191,6 +193,8 @@ export default async function OrderDetailPage({
           </tbody>
         </table>
       </div>
+
+      <WarehousePick orderId={order.order_id} current={(order as unknown as { warehouse_id: string | null }).warehouse_id} warehouses={whs ?? []} canEdit={canPost && ["pending", "processing"].includes(order.fulfilment_status)} />
 
       <ConnectedActions orderId={order.order_id} invoiceId={invoiceId} courier={pick("courier")} gst={pick("gst")} whatsapp={pick("whatsapp")}
         shipments={(shipRows ?? []) as unknown as Shipment[]} einvoice={einv as { irn: string; mode: string } | null} canShip={canPost} canEinvoice={canEinvoice} />

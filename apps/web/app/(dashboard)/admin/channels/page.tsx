@@ -3,6 +3,7 @@ import { getCurrentUser } from "@/lib/current-user";
 import { StatusPill } from "@/components/ui/status-pill";
 import { CreateChannelForm } from "./create-channel-form";
 import { ChannelStatusToggle } from "./channel-status-toggle";
+import { InvoiceModeSelect } from "./invoice-mode-select";
 
 export default async function ChannelsPage() {
   const currentUser = await getCurrentUser();
@@ -10,7 +11,7 @@ export default async function ChannelsPage() {
 
   const { data: channels } = await supabase
     .from("channels")
-    .select("channel_id, name, type, api_status, settlement_cycle, status")
+    .select("channel_id, name, type, api_status, settlement_cycle, status, auto_invoice_on")
     .order("name");
 
   const canCreate = currentUser.roleName === "Super Admin";
@@ -39,6 +40,7 @@ export default async function ChannelsPage() {
                 <th className="px-4 py-3 font-medium">Type</th>
                 <th className="px-4 py-3 font-medium">API status</th>
                 <th className="px-4 py-3 font-medium">Settlement cycle</th>
+                <th className="px-4 py-3 font-medium">Invoice is made when</th>
                 <th className="px-4 py-3 font-medium">Active</th>
                 {canCreate ? <th className="px-4 py-3 font-medium"></th> : null}
               </tr>
@@ -65,6 +67,7 @@ export default async function ChannelsPage() {
                   <td className="px-4 py-3 text-ink-muted">
                     {c.settlement_cycle ?? "—"}
                   </td>
+                  <td className="px-4 py-3"><InvoiceModeSelect channelId={c.channel_id} value={c.auto_invoice_on} canEdit={canCreate} /></td>
                   <td className="px-4 py-3">
                     <StatusPill status={c.status === "active" ? "success" : "neutral"}>
                       {c.status}
