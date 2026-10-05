@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
 
 export default function PurchasesIndex() {
-  redirect("/purchases/bills");
+  redirect("/purchases/orders");
 }

@@ -1,6 +1,6 @@
 export type Gate =
   | "accounting_view" | "accounting_write" | "bankcod_view" | "settlements_view" | "returns_view" | "claims_view" | "tax_view" | "gst_view"
-  | "inventory_view" | "users_view" | "roles_view" | "audit_view" | "integrations_view" | "channels_view" | "warehouses_view" | "uploads" | "automation_view" | "connectors_manage";
+  | "inventory_view" | "users_view" | "roles_view" | "audit_view" | "integrations_view" | "channels_view" | "warehouses_view" | "uploads" | "automation_view" | "connectors_manage" | "purchasing_view";
 
 export type NavItem = {
   label: string;
@@ -42,6 +42,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { label: "Tax", href: "/tax", status: "live", gate: "tax_view" },
       { label: "GST Returns", href: "/gst", status: "live", gate: "gst_view" },
       { label: "Accounting", href: "/accounting/ledgers", status: "live", gate: "accounting_view" },
+      { label: "Purchase Orders", href: "/purchases/orders", status: "live", gate: "purchasing_view" },
       { label: "Purchases", href: "/purchases/bills", status: "live", gate: "accounting_view" },
       { label: "Opening Balances", href: "/accounting/opening-balances", status: "live", gate: "accounting_view" },
       { label: "Journal Entries", href: "/accounting/journal", status: "live", gate: "accounting_view" },

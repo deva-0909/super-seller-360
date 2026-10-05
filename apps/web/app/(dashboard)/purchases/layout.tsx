@@ -5,7 +5,7 @@ export default function PurchasesLayout({ children }: { children: React.ReactNod
   return (
     <div>
       <PurchasesTabs />
-      <AccessGuard gate="accounting_view">{children}</AccessGuard>
+      <AccessGuard gate="purchasing_view">{children}</AccessGuard>
     </div>
   );
 }

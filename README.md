@@ -1172,3 +1172,7 @@ The menu now comes from `my_nav_access()`, computed from the same `has_*()` func
 - To use LIVE keys from non-Super-Admin roles (e.g. Ops books a courier), set `SUPABASE_SERVICE_ROLE_KEY` in Vercel (server-only, never `NEXT_PUBLIC_`).
 - To add a provider: add a row in `connector_catalog` (fields + which are secret), then one file in `apps/web/lib/connectors/live/<code>.ts` and register it in `lib/connectors/live.ts`. Until then LIVE mode says "adapter not installed".
 - Order actions (book courier, track, register e-invoice, WhatsApp) appear on the order page when a matching connection exists.
+
+## Purchase orders, goods receipt and re-order (migration 0071)
+
+`/purchases/orders`, `/purchases/reorder`. Order → (approval above the limit, `purchase_settings.po_approval_limit`, default ₹50,000) → goods received at a warehouse (only good quantity adds stock; up to 10% over-receipt) → supplier bill created from what was received and not yet billed (price differences are flagged) → the existing bill approval and payment flow. Re-order suggestions use stock, promised-to-orders, on-order and 30-day sales; per-product rules (level, fixed quantity, lead time, usual supplier). The Work queue shows POs waiting, late POs, received-but-unbilled goods and products below their level.

@@ -19,6 +19,8 @@ export function Lbl({ label, hint, children, className }: { label: string; hint?
 }
 
 const TABS = [
+  { href: "/purchases/orders", label: "Orders" },
+  { href: "/purchases/reorder", label: "Re-order" },
   { href: "/purchases/bills", label: "Bills" },
   { href: "/purchases/payments", label: "Payments" },
   { href: "/purchases/credit-notes", label: "Credit notes" },
@@ -45,7 +47,7 @@ export function PurchasesTabs() {
 
 const PILL: Record<string, string> = {
   pending: "bg-warning-tint text-warning", approved: "bg-accent-tint text-success", active: "bg-accent-tint text-success",
-  rejected: "bg-danger-tint text-danger", cancelled: "bg-surface-sunken text-ink-muted", blocked: "bg-danger-tint text-danger",
+  rejected: "bg-danger-tint text-danger", cancelled: "bg-surface-sunken text-ink-muted", part_received: "bg-warning-tint text-warning", received: "bg-accent-tint text-success", closed: "bg-surface-sunken text-ink-muted", blocked: "bg-danger-tint text-danger",
 };
 export function StatusTag({ status }: { status: string }) {
   return <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${PILL[status] ?? "bg-surface-sunken text-ink-muted"}`}>{status}</span>;
