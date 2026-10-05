@@ -1187,3 +1187,11 @@ The menu now comes from `my_nav_access()`, computed from the same `has_*()` func
 ## Payment runs (migration 0073)
 
 `/purchases/payment-runs`. Pick the approved bills that are due (MSME suppliers first), download a bank bulk-payment CSV (one line per supplier, needs the supplier's account number and IFSC), enter the UTRs after the bank pays, and a Finance Manager approves all the resulting payments in one click (the person who recorded them cannot approve them). A supplier the bank did not pay is left out and its bills become payable again. Bank-statement categorisation already exists (bank reconciliation rules, 0054).
+
+## Fixed assets (migration 0074)
+
+- **Accounting → Fixed Assets** (`/accounting/assets`): register of assets with cost, depreciation so far and book value; add an asset, post depreciation for a month, sell/scrap an asset, and edit category rates.
+- Depreciation is posted automatically on the 2nd of each month (scheduled job `asset_depreciation`) for the previous month: one journal, Dr Depreciation Expense, Cr Accumulated Depreciation. Re-running a month never double-posts.
+- Selling an asset posts the proceeds, clears cost and accumulated depreciation, and books the gain or loss.
+- Starting rates (straight line: Furniture 9.5%, Computers 31.67%, Office equipment 19%, Plant 6.33%, Vehicles 11.88%, 5% residual) are placeholders. **Confirm with your CA** and edit them on the page.
+- Adding an asset does not post the purchase; record it through a bill or journal.
