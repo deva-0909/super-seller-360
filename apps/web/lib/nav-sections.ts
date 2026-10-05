@@ -1,6 +1,6 @@
 export type Gate =
   | "accounting_view" | "accounting_write" | "bankcod_view" | "settlements_view" | "returns_view" | "claims_view" | "tax_view" | "gst_view"
-  | "inventory_view" | "users_view" | "roles_view" | "audit_view" | "integrations_view" | "channels_view" | "warehouses_view" | "uploads";
+  | "inventory_view" | "users_view" | "roles_view" | "audit_view" | "integrations_view" | "channels_view" | "warehouses_view" | "uploads" | "automation_view";
 
 export type NavItem = {
   label: string;
@@ -26,6 +26,7 @@ export const NAV_SECTIONS: NavSection[] = [
   {
     label: "Workspace",
     items: [
+      { label: "Work Queue", href: "/work-queue", status: "live" },
       { label: "Dashboards", href: "/dashboard", status: "live" },
       { label: "Business Insights", href: "/insights", status: "live" },
       { label: "Orders", href: "/orders", status: "live" },
@@ -66,6 +67,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { label: "Warehouses", href: "/admin/warehouses", status: "live", gate: "warehouses_view" },
       { label: "Permissions", href: "/admin/permissions", status: "live", gate: "roles_view" },
       { label: "Integrations", href: "/admin/integrations", status: "live", gate: "integrations_view" },
+      { label: "Automation", href: "/admin/automation", status: "live", gate: "automation_view" },
       { label: "Audit Trail", href: "/admin/audit-trail", status: "live", gate: "audit_view" },
     ],
   },
@@ -73,6 +75,7 @@ export const NAV_SECTIONS: NavSection[] = [
     label: "Settings",
     items: [
       { label: "Sessions", href: "/settings/sessions", status: "live" },
+      { label: "Security (2-step)", href: "/settings/security", status: "live" },
     ],
   },
 ];

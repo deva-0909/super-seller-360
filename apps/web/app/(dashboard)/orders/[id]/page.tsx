@@ -192,7 +192,10 @@ export default async function OrderDetailPage({
                 Posted — ₹{Number(invoice.total).toLocaleString("en-IN")}
               </p>
             </div>
-            <StatusPill status="success">Posted</StatusPill>
+            <div className="flex items-center gap-3">
+              <Link href={`/orders/${order.order_id}/invoice`} className="text-sm font-medium text-accent hover:underline">Print invoice</Link>
+              <StatusPill status="success">Posted</StatusPill>
+            </div>
           </div>
         ) : canPost ? (
           <PostInvoiceButton orderId={order.order_id} />

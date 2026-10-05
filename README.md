@@ -1153,3 +1153,12 @@ The templates are my own designs; when you send your real catalogue, Tally and p
 
 ### Left menu by role
 The menu now comes from `my_nav_access()`, computed from the same `has_*()` functions the row-level security uses, so a screen shows only for roles that can use it (and follows "preview as role").
+
+## Automation (migrations 0068 and 0069)
+
+- **0068**: an order marked *shipped* takes its stock out by itself (best-stocked warehouse) and posts the tax invoice (per channel: on shipped or on delivered). What cannot finish becomes an item in the Work queue with a *Try again* button. Switch each automation on/off at **Automation** (`/admin/automation`).
+- **0069**: timed jobs (recurring journals, retries, clean-up, daily owner digest), the **Work queue** (`/work-queue`, number on the "Work" button in the top bar), in-app notices.
+  The timer needs **pg_cron**: Supabase → Database → Extensions → switch on `pg_cron`, then run `select register_job_timers();` once. *Run now* works without it.
+- Page guard: a role that lacks a feature sees "No access" even if it types the address (`components/shell/access-guard.tsx`).
+- Two-step sign-in (TOTP) at `/settings/security`. Set `REQUIRE_MFA=on` in Vercel to force it for Super Admin, CEO/Owner, Finance Manager and Accountant.
+- Printable tax invoice: `/orders/<id>/invoice`.

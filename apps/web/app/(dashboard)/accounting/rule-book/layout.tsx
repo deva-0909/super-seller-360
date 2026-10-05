@@ -1,3 +1,4 @@
+import { AccessGuard } from "@/components/shell/access-guard";
 import { createClient } from "@/lib/supabase/server";
 import { RuleBookTabs } from "./rule-book-tabs";
 
@@ -19,7 +20,7 @@ export default async function RuleBookLayout({ children }: { children: React.Rea
       <div className="mt-5">
         <RuleBookTabs reviewCount={count ?? 0} />
       </div>
-      <div className="mt-6">{children}</div>
+      <div className="mt-6"><AccessGuard gate="accounting_view">{children}</AccessGuard></div>
     </div>
   );
 }

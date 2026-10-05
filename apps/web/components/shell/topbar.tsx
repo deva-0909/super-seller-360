@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { CurrentUser } from "@/lib/current-user";
 import { RoleSwitcher } from "./role-switcher";
 import { MenuButton } from "./app-shell";
+import { Bell } from "./bell";
 
 export function Topbar({ user }: { user: CurrentUser }) {
   return (
@@ -18,6 +19,7 @@ export function Topbar({ user }: { user: CurrentUser }) {
       </div>
 
       <div className="flex min-w-0 items-center gap-2 md:gap-3">
+        <Bell />
         <RoleSwitcher
           realRoleName={user.realRoleName}
           currentRoleName={user.roleName}

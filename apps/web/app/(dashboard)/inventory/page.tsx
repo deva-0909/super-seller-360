@@ -8,8 +8,11 @@ export default async function InventoryPage() {
 
   const { data: balances } = await supabase
     .from("inventory_balances")
-    .select("quantity, updated_at, products(name, sku), warehouses(name)")
+    .select("quantity, updated_at, product_id, products(name, sku), warehouses(name)")
     .order("updated_at", { ascending: false });
+
+  const { data: resRows } = await supabase.from("inventory_reserved").select("product_id, reserved");
+  const reserved = new Map((resRows ?? []).map((r) => [r.product_id as string, Number(r.reserved)]));
 
   const { data: agingRows } = await supabase
     .from("sku_stock_aging")
@@ -57,6 +60,7 @@ export default async function InventoryPage() {
               <th className="px-4 py-3 font-medium">SKU</th>
               <th className="px-4 py-3 font-medium">Warehouse</th>
               <th className="px-4 py-3 font-medium text-right">Quantity</th>
+              <th className="px-4 py-3 font-medium text-right" title="Total across warehouses, on orders not yet shipped">Promised to orders</th>
               <th className="px-4 py-3 font-medium">Stock time-out</th>
               <th className="px-4 py-3 font-medium">Last movement</th>
             </tr>
@@ -87,6 +91,7 @@ export default async function InventoryPage() {
                 <td className="px-4 py-3 text-right font-data font-medium text-ink">
                   {b.quantity}
                 </td>
+                <td className="px-4 py-3 text-right font-data text-ink-muted">{reserved.get(b.product_id as string) ?? 0}</td>
                 <td className="px-4 py-3">
                   {(() => {
                     const a = aging.get((b.products as unknown as { sku: string } | null)?.sku ?? "");

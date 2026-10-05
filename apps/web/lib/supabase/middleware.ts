@@ -9,6 +9,8 @@ const PUBLIC_PATHS = [
 ];
 
 export async function updateSession(request: NextRequest) {
+  // lets server layouts know which page is being opened (used by the optional two-step enforcement)
+  request.headers.set("x-pathname", request.nextUrl.pathname);
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
