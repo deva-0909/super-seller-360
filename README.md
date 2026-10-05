@@ -1250,3 +1250,13 @@ Run `0078_marketplace_tax_credits.sql`. New screen: **Settlements > Marketplace 
 - Individual or HUF sellers: tick the option and 194-O is expected only on sales beyond the yearly limit (₹5,00,000 by default).
 - Missing or short credit and wrong deductions appear in the Work Queue. CSV export for your CA.
 - Marketplace Managers see only channels they are assigned to. Posting of TCS/TDS receivables to ledgers stays with the Rule Book (this screen is a control, it does not post entries).
+
+## Forecasts (migration 0079)
+
+Two screens under the Purchases and Accounting sections of the left menu.
+
+**Demand Forecast** (`/forecast/demand`, anyone who can see purchasing): for every active product, the weekly sales forecast, days of stock left, the date it runs out, and how many to order now. Method: last 12 weeks (since the first sale), recent weeks weigh more, part of the recent rise or fall is carried forward (editable "trend carry" 0 to 1), cancelled and RTO orders excluded. A 4-week back-test gives the "off by about X%" figure and a High / Medium / Low confidence. A manual **season boost** per month (for Diwali etc.) is added on top, because there is not yet enough history to learn seasons. Click a product to see its chart.
+
+**Cash Forecast** (`/forecast/cash`, accounting view): 13 weeks from the bank and cash ledger balance. In: pending marketplace payouts (timed by each channel's actual past delay), COD collected but not yet remitted, delivered marketplace orders not yet in a payout, forecast sales. Out: supplier bills by due date, approved payroll plus salary statutory dues (PF, ESI, PT, TDS) and projected future months, and your own planned items. "What if" buttons scale forecast sales (70% to 120%). Weeks that fall below the minimum cash you set are flagged. Click a week to see every line.
+
+Not added automatically: GST payment, non-salary TDS, rent, loans, drawings. Add them as planned items. All settings are editable and should be reviewed with your CA.

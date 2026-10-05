@@ -45,6 +45,8 @@ export const NAV_SECTIONS: NavSection[] = [
       { label: "GST Returns", href: "/gst", status: "live", gate: "gst_view" },
       { label: "Accounting", href: "/accounting/ledgers", status: "live", gate: "accounting_view" },
       { label: "Purchase Orders", href: "/purchases/orders", status: "live", gate: "purchasing_view" },
+      { label: "Demand Forecast", href: "/forecast/demand", status: "live", gate: "purchasing_view" },
+      { label: "Cash Forecast", href: "/forecast/cash", status: "live", gate: "accounting_view" },
       { label: "Purchases", href: "/purchases/bills", status: "live", gate: "accounting_view" },
       { label: "Opening Balances", href: "/accounting/opening-balances", status: "live", gate: "accounting_view" },
       { label: "Fixed Assets", href: "/accounting/assets", status: "live", gate: "accounting_view" },
