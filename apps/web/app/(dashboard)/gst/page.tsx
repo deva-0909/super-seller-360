@@ -6,6 +6,7 @@ import { setOff, type Heads } from "@/lib/gst-setoff";
 import { MonthForm } from "@/components/ui/month-form";
 import { CsvButton } from "@/components/ui/csv-button";
 import { ItcAdjustments, type Adj } from "@/components/gst/itc-adjustments";
+import { GstOverview } from "@/components/gst/gst-overview";
 import { FilingPanel, type Filing } from "@/components/gst/filing-panel";
 
 type W = {
@@ -80,6 +81,7 @@ export default async function Gstr3bPage({ searchParams }: { searchParams: Promi
         <CsvButton rows={csv} filename={`gstr3b-workings-${month}`} />
       </div>
       <MonthForm month={month} />
+      <div className="mt-6"><GstOverview month={month} /></div>
       {flags ? <p className="mt-4 border border-warning/40 bg-warning-tint p-3 text-sm text-ink">Some invoices in this month have data problems (state, HSN or rate). <Link href={`/gst/gstr1?month=${month}`} className="text-accent hover:underline">See them in the GSTR-1 workings</Link>.</p> : null}
 
       <h2 className="mt-8 text-sm font-semibold text-ink">3.1 Outward supplies, net of credit notes</h2>

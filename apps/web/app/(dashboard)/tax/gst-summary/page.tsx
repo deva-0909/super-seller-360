@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { GstOverview } from "@/components/gst/gst-overview";
 
 type SearchParams = { period?: string };
 
@@ -207,6 +208,8 @@ export default async function GstSummaryPage({
         computed live from posted invoices and reconciled settlements — not a separate manually
         maintained record that could drift from the books.
       </p>
+
+      <div className="mt-6"><GstOverview month={selectedPeriod.start_date.slice(0, 7)} /></div>
 
       {/* Output vs Input summary */}
       <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
