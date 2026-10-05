@@ -1,5 +1,7 @@
 "use client";
 
+// DEV POINTER: TAN/PAN must be entered here before TDS returns work; tick "turnover over 10 crore" only if it applies. See docs/DEVELOPER_HANDOVER.md section 4.
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";

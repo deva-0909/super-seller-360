@@ -1,5 +1,7 @@
 "use client";
 
+// DEV POINTER: PF, ESI, Gujarat PT, LWF and salary-TDS values are seeded defaults (migration 0076). CA must confirm; LWF notification is old. See docs/DEVELOPER_HANDOVER.md section 2.
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";

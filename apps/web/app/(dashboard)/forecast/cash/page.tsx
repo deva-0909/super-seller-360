@@ -1,3 +1,4 @@
+// DEV POINTER: GST payment, non-salary TDS, rent and loans are NOT auto-included; users add them as planned items. See docs/DEVELOPER_HANDOVER.md section 5.
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { CsvButton } from "@/components/ui/csv-button";

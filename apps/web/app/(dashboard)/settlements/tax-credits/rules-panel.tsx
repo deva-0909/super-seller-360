@@ -1,5 +1,7 @@
 "use client";
 
+// DEV POINTER: GST TCS and 194-O rates and dates are seeded from the law as known (migration 0078); CA must confirm, and the marketplace GSTIN/TAN must be entered. See docs/DEVELOPER_HANDOVER.md sections 2 and 4.
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";

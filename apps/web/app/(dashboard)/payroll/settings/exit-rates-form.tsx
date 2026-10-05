@@ -1,5 +1,7 @@
 "use client";
 
+// DEV POINTER: bonus, gratuity and leave rates are seeded defaults (migration 0080). They must be confirmed by the CA / labour consultant. See docs/DEVELOPER_HANDOVER.md section 2.
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";

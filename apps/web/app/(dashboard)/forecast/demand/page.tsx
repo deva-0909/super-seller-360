@@ -1,3 +1,4 @@
+// DEV POINTER: simple weighted average + damped trend + manual month uplift (not enough history to learn seasons). See docs/DEVELOPER_HANDOVER.md section 5.
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { CsvButton } from "@/components/ui/csv-button";

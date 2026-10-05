@@ -1,5 +1,9 @@
 import type { CourierAdapter, GstAdapter, MarketplaceAdapter, WhatsAppAdapter } from "./types";
 
+// DEV POINTER: no live adapter is installed yet. The business owner has no marketplace, courier, GST e-invoice, WhatsApp or bank accounts as of now.
+// When keys exist: add lib/connectors/live/<code>.ts, register it below, test in a sandbox account, then switch the connection from Dummy to Live.
+// See docs/DEVELOPER_HANDOVER.md section 1.
+
 /**
  * LIVE adapters, one per provider code. Keys entered by the Super Admin on the Connection centre are handed to these.
  * To switch a provider on for a client: add a file under lib/connectors/live/<code>.ts exporting the matching adapter and register it below.

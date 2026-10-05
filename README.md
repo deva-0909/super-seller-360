@@ -1270,3 +1270,6 @@ Not added automatically: GST payment, non-salary TDS, rent, loans, drawings. Add
 - Not automated: PF/ESI/PT on the final salary (run the last month through a normal pay run first and use the settlement only for the leftover days), tax on bonus and settlement (entered by hand), gratuity provision in the books. Confirm every rate with your CA.
 
 Cash forecast (migration 0081): approved but unpaid bonus and final settlements now show as money going out in the 13-week cash forecast (drafts are not counted until approved).
+
+## For the developer
+See docs/DEVELOPER_HANDOVER.md for what is still open (live connection keys, CA review of rates, real sample files, one-time setup, known gaps). Search the code for `DEV POINTER`.

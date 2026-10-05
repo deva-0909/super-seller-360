@@ -1,3 +1,5 @@
+// DEV POINTER: these headings and formats were built from published marketplace/bank formats, NOT from real files (none were available).
+// When a real settlement report, SKU sheet, COD remittance or bank statement arrives, test it here and adjust headings. See docs/DEVELOPER_HANDOVER.md section 3.
 /**
  * The uploads that plug into the shared importer. Each one is described here (headings, sample row, drop-down lists, who may use it);
  * the checking and saving of the rows is done in the database (import_run, migration 0067) so the preview always matches what the import does.
