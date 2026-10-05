@@ -1330,4 +1330,24 @@ One coherent garment-business story from **1 April to 5 October 2026**, loaded t
 
 **Checked in the sandbox** over the whole load: the trial balance sums to nil; Inventory ledger equals stock quantity x cost; model stock equals database stock for every SKU and warehouse; no negative stock; every shipped or delivered order has its invoice; no draft or stray bank entries; Data Health has no failures (the GST filing warning clears when the GST filings step is loaded).
 
-Not in part 1 (next steps): rent, utilities, courier and packaging bills with TDS, payroll, fixed assets and depreciation, GST filings and GSTR-2B, expense claims, bank charges and interest, recurring journals, closing the earlier periods.
+Part 2 (below) adds that cost side. Not in part 1 (next steps, now done in part 2): rent, utilities, courier and packaging bills with TDS, payroll, fixed assets and depreciation, GST filings and GSTR-2B, expense claims, bank charges and interest, recurring journals, closing the earlier periods.
+
+## Demo dataset, part 2: costs, payroll, assets and tax filings (migration 0089 and `supabase/demo/20_...29_`)
+
+The cost side of the same story, 1 April to 5 October 2026, entered by the Accountant (Vikram Rao) and approved by the Finance Manager (Rohan Mehta) through the real screens' functions, so maker/checker is honoured and nothing is self-approved.
+
+**What is in it**
+- Twelve new suppliers (landlords, electricity, broadband, software, 3PL, courier, advertising agency, CA, computer and furniture vendors, packaging), each with GSTIN and PAN, and TDS sections where they apply.
+- Monthly cycle: rent bills and payment, packaging, electricity, internet, software, a Mumbai 3PL bill and a courier bill worked out from the previous month's real orders, agency advertising and CA retainer at month end, paid in the following month. TDS (194C on the agency, one 194J on the CA's audit fee) is deducted when the annual threshold is crossed, and deposited by challan (August's a few days late, with interest).
+- Payroll for five people from April, a joiner on 15 July (pro-rated by the engine), a resignation at the end of August with a final settlement, leave taken and accrued, one LOP case, PF/ESI/PT/TDS remitted on the 15th. September's dues are still open (due 15 October). A bonus run for FY 2026 is left as a draft.
+- Five fixed assets bought on supplier bills (laptops, racks, label printer, sealing machine) with monthly depreciation.
+- GST: GSTR-1 on the 11th, GSTR-2B loaded on the 14th (one supplier invoice missing from the portal, one invoice on the portal that is not in the books and is ignored), credits set off and GSTR-3B filed on the 20th. September's returns are not yet due. Marketplace GST TCS and 194-O TDS credits are matched to what the portals show, with a Flipkart shortfall in June and an Amazon income-tax credit still missing for September.
+- Eight staff expense claims in every state: paid, rejected, awaiting final approval, awaiting review, and one draft. Receipts are placeholder attachment rows (no file is stored).
+- Bank charges each month on both accounts, and funds moved from the ICICI collections account to HDFC as needed (statement lines for every one). All bank lines are matched.
+- Open items left on purpose: one packing bill waiting for approval, supplier dues, September's statutory dues, four journal entries waiting for review.
+
+**Order of loading:** apply `supabase/migrations/0089_health_gst_checks.sql` (fixes two Data Health GST checks), then `20_setup`, `21_Apr26` ... `27_Oct26`, `29_finish`. Part 1 must already be loaded. Accounting periods are left open (closing a period moves its profit into Retained Earnings and locks it, so it is better demonstrated by hand).
+
+**Checked in the sandbox** over parts 1 and 2: the trial balance sums to nil; all 47 Data Health checks are green; neither bank account goes below nil on any day (opening balances included); every statement line is matched; depreciation ties to the register; profit for the half-year is about Rs 1.3 lakh.
+
+Generators: `supabase/seed/demo/gen_costs.py` with `helpers_costs.py`.
