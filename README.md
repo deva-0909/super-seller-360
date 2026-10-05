@@ -1280,3 +1280,14 @@ See docs/DEVELOPER_HANDOVER.md for what is still open (live connection keys, CA 
 - GST slabs were typed into several database functions; they now all read the `gst_allowed_rates` table (`gst_slabs()`).
 - **Change log tab**: every change to any of these tables is recorded by a database trigger with who, when, old value and new value (`rate_change_log`), whichever screen made the change. Finance Managers, Accountants, Auditors, CEO and Super Admin can read it.
 - **Compact layout**: a block at the end of `apps/web/app/globals.css` tightens padding, tables, headings and the side menu on screens 1024 px wide and up, so most screens fit without scrolling. The long intro text under each title shows two lines and opens in full when you point at it. Phones and tablets keep the roomier layout. To adjust the density, edit only that block.
+
+## Balance Sheet and Profit & Loss in the Tally two-column layout (migration 0083)
+
+Modelled on the CleanCar finance screens, in this app's own look.
+
+- **Balance Sheet** (`/accounting/balance-sheet`): liabilities (with equity and the current unclosed profit) on the left, assets on the right, grouped by account group. Click a group to see its ledgers, or use Expand all. Pick any "As on" date. A balanced / out-of-balance bar sits at the top. Ledger names link to the ledger statement. Download Excel (CSV) and Print / PDF.
+- **Profit & Loss** (`/accounting/profit-and-loss`): expenditure on the left, income on the right, then Net Profit or Net Loss with the margin. Any from / to date, same grouping, export and print.
+- `0083_pnl_report.sql` adds `profit_and_loss(from, to)`. It leaves out period-close vouchers, so a closed period still shows its real result (the trial balance shows nil after a close, so it cannot be used for this).
+- Shared pieces: `components/accounting/tally.tsx`, `components/ui/print-button.tsx`; printing hides the menu and top bar (`globals.css`).
+
+Run `0083_pnl_report.sql` in the Supabase SQL Editor before pushing, otherwise the P&L screen shows an error.
