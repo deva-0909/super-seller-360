@@ -1413,3 +1413,6 @@ Built with suggested defaults. **Confirm each with your CA.** Nothing here posts
 - **Trial Balance** (`/accounting/trial-balance`): Financial Year + As-on date; six columns (Opening Dr/Cr, Period Dr/Cr, Closing Dr/Cr); ledgers grouped by account head with coloured section rows and "Subtotal — group"; dark Grand Total row; red out-of-balance banner at top; CSV export. Old `?from=&to=` links still work.
 - **Accounts home** (`/accounting`, new; the "Accounting" menu item now opens it): Today / This week / This month / This FY / Custom filter; sales and expenses (today, month, period), net profit for the FY, debtors, GST collected / input / net payable, TDS payable, cash and bank balances, quick actions.
 - **GST screens** (`/gst` and `/tax/gst-summary`): new overview block with four summary cards, the "GST payable − Input credit = Net liability" strip, 6-month collected-vs-credit chart (real data), GSTR-1 (11th) and GSTR-3B (20th) due dates with days left, CSV reports, and an input credit ledger by month.
+
+## Round 6: CA confirmations
+See `docs/ca-confirmations.md`. New migration `0095_gujarat_pt_update.sql` (run in the Supabase SQL Editor).
