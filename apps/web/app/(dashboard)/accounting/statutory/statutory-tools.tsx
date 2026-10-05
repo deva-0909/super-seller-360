@@ -79,7 +79,7 @@ export function StatutoryTools({ items, settings, canWrite }: { items: CalItem[]
             <select className={inputCls} value={s.pt_frequency} onChange={(e) => f("pt_frequency", e.target.value)}><option value="monthly">Professional tax paid monthly</option><option value="annual">Professional tax paid yearly</option></select>
           </div>
           <label className="mt-3 flex items-start gap-2 text-sm text-ink"><input type="checkbox" className="mt-1" checked={s.turnover_over_10cr} onChange={(e) => f("turnover_over_10cr", e.target.checked)} /><span>My turnover last year was over Rs 10 crore. (Switches on TDS on goods purchases, section 194Q: 0.1% on a supplier&apos;s purchases above Rs 50 lakh a year.)</span></label>
-          <label className="mt-2 flex items-start gap-2 text-sm text-ink"><input type="checkbox" className="mt-1" checked={s.has_employees} onChange={(e) => f("has_employees", e.target.checked)} /><span>I have employees. (Adds PF, ESI, professional tax, labour welfare and salary TDS dates to the calendar.)</span></label>
+          <label className="mt-2 flex items-start gap-2 text-sm text-ink"><input type="checkbox" className="mt-1" checked={s.has_employees} onChange={(e) => f("has_employees", e.target.checked)} /><span>I have employees. (Payroll dates appear in the calendar automatically once you approve a payroll run.)</span></label>
           <button className={`${primaryBtn} mt-3`} disabled={busy} onClick={() => run(() => supabase.rpc("statutory_settings_save", { p: s }), "Settings saved.")}>Save settings</button>
         </div>
       ) : null}

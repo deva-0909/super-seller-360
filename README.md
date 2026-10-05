@@ -1215,3 +1215,16 @@ From 1 April 2026 the 1961 Act is replaced. Non-salary TDS is section 393, salar
 - **Returns** (`/purchases/tds/returns`): Form 140 working papers per quarter (CSV), Form 131 certificate data (CSV), interest on late deposit (1.5% a month or part), late filing fee, and pre-filing checks (no TAN, no PAN, wrong 1%/2% contractor rate by PAN type, tax not deposited, late deposit, missing payment code, suppliers that may need a TDS section, statement overdue). Record the acknowledgement number once filed.
 - **Statutory calendar** (`/accounting/statutory`): TDS deposits and returns, certificates, advance tax, GST dates and, once you tick "I have employees", PF, ESI, Gujarat professional tax, labour welfare, Form 138 and Form 130. Anything due within 5 days or late appears in the work queue.
 - All rates and dates are working rules from published guidance. Your CA must confirm each one. The payment codes are left blank on purpose: enter them from the Form 140 utility.
+
+## Statutory compliance, part 2: Gujarat payroll (migration 0076)
+
+Run `0076_payroll.sql` in the Supabase SQL Editor. A new **Payroll** item appears in the left menu for Super Admin, CEO/Owner, Finance Manager and Accountant (the first two can view; Finance Manager, Accountant and Super Admin can draft; only Finance Manager and Super Admin approve, and never their own draft).
+
+- **Employees**: code, PAN, UAN, ESIC number, salary history (basic, DA, HRA, other), bank details, yearly income-tax declaration (regime, 80C, 80D, HRA, home loan, previous employer), last working day.
+- **Monthly run**: draft, adjust days without pay, extra earnings (flag whether they count as PF/ESI wages) and recoveries, approve (posts the salary journal), record salary paid, cancel (reverses the entry).
+- **Worked out for each person**: PF (12%, ₹15,000 ceiling unless full-basic PF is ticked, EPS 8.33%, EDLI, admin with ₹500 minimum), ESI (0.75% + 3.25%, ₹21,000 ceiling, cover continues to the end of the contribution period), Gujarat professional tax (₹200 above ₹12,000), labour welfare (June and December), salary TDS under the new or old regime with 87A rebate, cess, standard deduction and declarations.
+- **Dues**: PF, ESI, professional tax, TDS and LWF per month, with due dates and a payment form that posts the bank entry. The Statutory Calendar shows these dates automatically.
+- **Returns data**: Form 138 (24Q) quarter rows and Form 130 (Form 16) year rows, as CSV. Bank transfer file, PF return (ECR) file and payslips (print or save as PDF) from the run.
+- **Settings**: every rate is editable by Finance Manager or Super Admin. Rates are standard values, to be confirmed by your CA.
+
+Not covered yet: bonus, gratuity, leave encashment, full-and-final settlement, surcharge marginal relief, employee self-service payslips.

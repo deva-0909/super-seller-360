@@ -1,6 +1,6 @@
 export type Gate =
   | "accounting_view" | "accounting_write" | "bankcod_view" | "settlements_view" | "returns_view" | "claims_view" | "tax_view" | "gst_view"
-  | "inventory_view" | "users_view" | "roles_view" | "audit_view" | "integrations_view" | "channels_view" | "warehouses_view" | "uploads" | "automation_view" | "connectors_manage" | "purchasing_view";
+  | "inventory_view" | "users_view" | "roles_view" | "audit_view" | "integrations_view" | "channels_view" | "warehouses_view" | "uploads" | "automation_view" | "connectors_manage" | "purchasing_view" | "payroll_view";
 
 export type NavItem = {
   label: string;
@@ -48,6 +48,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { label: "Opening Balances", href: "/accounting/opening-balances", status: "live", gate: "accounting_view" },
       { label: "Fixed Assets", href: "/accounting/assets", status: "live", gate: "accounting_view" },
       { label: "Statutory Calendar", href: "/accounting/statutory", status: "live", gate: "accounting_view" },
+      { label: "Payroll", href: "/payroll", status: "live", gate: "payroll_view" },
       { label: "Journal Entries", href: "/accounting/journal", status: "live", gate: "accounting_view" },
       { label: "Cash Settlement", href: "/accounting/cash-settlement", status: "live", gate: "bankcod_view" },
       { label: "Rule Book", href: "/accounting/rule-book", status: "live", gate: "accounting_view" },
