@@ -1,19 +1,26 @@
+import { Fragment } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/current-user";
 import { StatusPill } from "@/components/ui/status-pill";
 import { InviteUserForm } from "./invite-user-form";
 import { UserRoleControl, UserStatusToggle } from "./user-controls";
+import { ScopeEditor } from "./scope-editor";
 
 export default async function UsersPage() {
   const currentUser = await getCurrentUser();
   const supabase = await createClient();
 
-  const [{ data: users }, { data: roles }] = await Promise.all([
+  const canScope = ["Super Admin", "Operations Manager"].includes(currentUser.roleName);
+  const [{ data: users }, { data: roles }, { data: chs }, { data: whs }, { data: cScope }, { data: wScope }] = await Promise.all([
     supabase
       .from("user_profiles")
       .select("user_id, name, email, status, role_id, roles(name)")
       .order("name"),
     supabase.from("roles").select("role_id, name").order("name"),
+    canScope ? supabase.from("channels").select("channel_id, name").order("name") : Promise.resolve({ data: [] }),
+    canScope ? supabase.from("warehouses").select("warehouse_id, name").order("name") : Promise.resolve({ data: [] }),
+    canScope ? supabase.from("user_channel_scope").select("user_id, channel_id") : Promise.resolve({ data: [] }),
+    canScope ? supabase.from("user_warehouse_scope").select("user_id, warehouse_id") : Promise.resolve({ data: [] }),
   ]);
 
   const isSuperAdmin = currentUser.roleName === "Super Admin";
@@ -43,9 +50,10 @@ export default async function UsersPage() {
             <tbody>
               {users?.map((u, i) => {
                 const isSelf = u.user_id === currentUser.id;
+                const roleName = (u.roles as unknown as { name: string } | null)?.name;
                 return (
+                  <Fragment key={u.user_id}>
                   <tr
-                    key={u.user_id}
                     className={i % 2 === 1 ? "bg-surface-sunken/50" : undefined}
                   >
                     <td className="px-4 py-3 text-ink">
@@ -92,6 +100,20 @@ export default async function UsersPage() {
                       </td>
                     ) : null}
                   </tr>
+                  {canScope && (roleName === "Marketplace Manager" || roleName === "Warehouse Manager") ? (
+                    <tr className={i % 2 === 1 ? "bg-surface-sunken/50" : undefined}>
+                      <td colSpan={isSuperAdmin ? 5 : 4} className="px-4 pb-3">
+                        {roleName === "Marketplace Manager" ? (
+                          <ScopeEditor userId={u.user_id} kind="channel" options={(chs ?? []).map((c) => ({ id: c.channel_id, name: c.name }))}
+                            selected={(cScope ?? []).filter((x) => x.user_id === u.user_id).map((x) => x.channel_id)} />
+                        ) : (
+                          <ScopeEditor userId={u.user_id} kind="warehouse" options={(whs ?? []).map((w) => ({ id: w.warehouse_id, name: w.name }))}
+                            selected={(wScope ?? []).filter((x) => x.user_id === u.user_id).map((x) => x.warehouse_id)} />
+                        )}
+                      </td>
+                    </tr>
+                  ) : null}
+                  </Fragment>
                 );
               })}
               {!users?.length ? (

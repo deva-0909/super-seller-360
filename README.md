@@ -1120,3 +1120,36 @@ One month was run end to end in a test database (sales and credit notes, purchas
 - Housekeeping: attachment helper functions are no longer callable by anonymous visitors.
 
 Not changed, for awareness: the older `/tax/gst-summary` page still exists beside the new GST Returns area; the new area is the one to use for filing workings.
+
+## Excel uploads (migration 0067)
+
+One shared importer for every bulk upload: **Excel uploads** in the left menu (`/imports`).
+
+1. Download the template (headings, drop-down lists, an Example sheet, a Read me sheet).
+2. Upload .xlsx or .csv (the portal or Tally file works as it is when its headings match; a title row above the headings is skipped).
+3. A preview shows OK / Warning / Error against every row with the reason. Nothing is saved yet.
+4. Import the good rows, or fix the file and upload again. Rows are matched on SKU, SKU + warehouse, channel + listing id, ledger name or channel + order id, so a re-upload updates and never duplicates.
+5. Every import is logged (who, when, file, added / updated / rejected, per-row result) and the original file is kept in the private `imports` bucket.
+6. Who may upload follows who may do the same by hand (`import_can`). A Warehouse Manager can only load their own warehouses; a Marketplace Manager only their own channels.
+
+| Upload | Screen | Roles |
+|---|---|---|
+| SKU master | Admin > Products | Super Admin, Operations Manager |
+| Opening stock | Inventory | Super Admin, Operations Manager, Warehouse Manager |
+| Stock count (adjustment) | Inventory | same |
+| Marketplace listing map | Admin > Channels > Listing map (new) | Super Admin, Operations Manager, Marketplace Manager |
+| Ledger opening balances | Accounting > Opening balances (new) | Super Admin, Finance Manager, Accountant |
+| Orders | Orders > Import (upgraded) | Super Admin, Operations Manager, Marketplace Manager |
+
+Rules worth knowing: a blank cell keeps the saved value; barcodes / ids turned into 8.9E+12 by Excel are rejected with a clear message; unknown SKU, missing or unknown ship-to state (when there is tax) and invalid GSTIN are errors on orders, and an order with any bad line is held back whole; an existing order is never rewritten (only a missing state / GSTIN is filled in); opening balances are all-or-nothing and must balance; supplier balances stay in Purchases > Opening balances.
+The templates are my own designs; when you send your real catalogue, Tally and portal files the headings can be matched to them (aliases are in `lib/importer/kinds.ts`).
+
+### Gaps closed in the same migration
+- **Create the financial year**: Accounting > Periods now has a button that adds April to March (`create_financial_year`).
+- **Ship-to state on imported orders**: the orders import reads it, names it the way GST needs, and refuses tax without it.
+- **Manager scopes**: Admin > Users shows channel / warehouse ticks under each Marketplace / Warehouse Manager.
+- **Super Admin cannot close a period**: kept on purpose (separation of duties, migration 0016). Finance Manager or Accountant closes.
+- **Settlement fee lines**: not in this step; they come with the marketplace settlement upload (P2).
+
+### Left menu by role
+The menu now comes from `my_nav_access()`, computed from the same `has_*()` functions the row-level security uses, so a screen shows only for roles that can use it (and follows "preview as role").

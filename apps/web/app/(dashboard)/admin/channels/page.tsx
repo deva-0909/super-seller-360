@@ -25,6 +25,11 @@ export default async function ChannelsPage() {
         ingested from. Each order and ledger is scoped to one of these.
       </p>
 
+      <p className="mt-3 text-sm">
+        <a href="/admin/channels/listing-map" className="font-medium text-accent hover:underline">Marketplace listing map</a>
+        <span className="text-ink-muted"> links our SKUs to each marketplace&apos;s listing ids.</span>
+      </p>
+
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
         <div className="border border-line bg-surface">
           <table className="w-full text-left text-sm">

@@ -1,29 +1,23 @@
+export type Gate =
+  | "accounting_view" | "accounting_write" | "bankcod_view" | "settlements_view" | "returns_view" | "claims_view" | "tax_view" | "gst_view"
+  | "inventory_view" | "users_view" | "roles_view" | "audit_view" | "integrations_view" | "channels_view" | "warehouses_view" | "uploads";
+
 export type NavItem = {
   label: string;
   href?: string;
   status: "live" | "soon";
   /**
-   * Roles that would see zero rows if they opened this screen — matches
-   * the exact has_*_view() RLS function behind each screen's main query,
-   * not a looser "Admin tier" guess. Screens with no restriction here
-   * (Users, Roles, Channels, Products, Warehouses, Permissions,
-   * Integrations, Audit Trail) are intentionally omitted: every role sees
-   * at least some real rows there (even if just their own), so hiding them
-   * would misrepresent genuine "limited" access as "zero" access.
+   * Which part of the app this screen belongs to. The flag comes from my_nav_access() in the database, which is computed from the same
+   * has_*() helpers the row-level security uses, so the menu shows a screen only when the signed-in role (or the role being previewed)
+   * can actually use it. Left out = visible to everyone.
    */
-  hiddenFor?: string[];
+  gate?: Gate;
 };
 
 export type NavSection = {
   label: string;
   items: NavItem[];
 };
-
-const NO_INVENTORY_RETURNS_CLAIMS = ["Accountant", "Tax Manager"]; // has_returns_view / has_claims_view
-const NO_SETTLEMENTS_BANKCOD = ["Warehouse Manager"]; // has_settlements_view / has_bankcod_view
-const NO_ACCOUNTING = ["Warehouse Manager", "Marketplace Manager"]; // has_accounting_view
-const NO_GST = ["Warehouse Manager", "Claims Manager", "Operations Manager", "Marketplace Manager"]; // has_gst_view
-const NO_TAX = ["Warehouse Manager", "Claims Manager"]; // has_tax_view
 
 // Mirrors the Screen Master module list. Phase 1 ships Admin + Settings;
 // everything else lights up module-by-module as later phases land, so the
@@ -35,41 +29,44 @@ export const NAV_SECTIONS: NavSection[] = [
       { label: "Dashboards", href: "/dashboard", status: "live" },
       { label: "Business Insights", href: "/insights", status: "live" },
       { label: "Orders", href: "/orders", status: "live" },
-      { label: "Inventory", href: "/inventory", status: "live", hiddenFor: NO_INVENTORY_RETURNS_CLAIMS },
-      { label: "Returns", href: "/returns", status: "live", hiddenFor: NO_INVENTORY_RETURNS_CLAIMS },
-      { label: "RTO", href: "/rto", status: "live", hiddenFor: NO_INVENTORY_RETURNS_CLAIMS },
-      { label: "Settlements", href: "/settlements", status: "live", hiddenFor: NO_SETTLEMENTS_BANKCOD },
-      { label: "Bank / COD", href: "/bank", status: "live", hiddenFor: NO_SETTLEMENTS_BANKCOD },
-      { label: "COD Collections", href: "/cod", status: "live", hiddenFor: NO_SETTLEMENTS_BANKCOD },
+      { label: "Excel Uploads", href: "/imports", status: "live", gate: "uploads" },
+      { label: "Inventory", href: "/inventory", status: "live", gate: "inventory_view" },
+      { label: "Returns", href: "/returns", status: "live", gate: "returns_view" },
+      { label: "RTO", href: "/rto", status: "live", gate: "returns_view" },
+      { label: "Settlements", href: "/settlements", status: "live", gate: "settlements_view" },
+      { label: "Bank / COD", href: "/bank", status: "live", gate: "bankcod_view" },
+      { label: "COD Collections", href: "/cod", status: "live", gate: "bankcod_view" },
       { label: "Expense Claims", href: "/expenses", status: "live" },
-      { label: "Claims", href: "/claims", status: "live", hiddenFor: NO_INVENTORY_RETURNS_CLAIMS },
-      { label: "Tax", href: "/tax", status: "live", hiddenFor: NO_TAX },
-      { label: "GST Returns", href: "/gst", status: "live", hiddenFor: NO_GST },
-      { label: "Accounting", href: "/accounting/ledgers", status: "live", hiddenFor: NO_ACCOUNTING },
-      { label: "Purchases", href: "/purchases/bills", status: "live", hiddenFor: NO_ACCOUNTING },
-      { label: "Journal Entries", href: "/accounting/journal", status: "live", hiddenFor: NO_ACCOUNTING },
-      { label: "Cash Settlement", href: "/accounting/cash-settlement", status: "live", hiddenFor: NO_SETTLEMENTS_BANKCOD },
-      { label: "Rule Book", href: "/accounting/rule-book", status: "live", hiddenFor: NO_ACCOUNTING },
-      { label: "Trial Balance", href: "/accounting/trial-balance", status: "live", hiddenFor: NO_ACCOUNTING },
-      { label: "Day Book", href: "/accounting/day-book", status: "live", hiddenFor: NO_ACCOUNTING },
-      { label: "Profit & Loss", href: "/accounting/profit-and-loss", status: "live", hiddenFor: NO_ACCOUNTING },
-      { label: "Balance Sheet", href: "/accounting/balance-sheet", status: "live", hiddenFor: NO_ACCOUNTING },
-      { label: "Cash Flow", href: "/accounting/cash-flow", status: "live", hiddenFor: NO_SETTLEMENTS_BANKCOD },
-      { label: "Periods", href: "/accounting/periods", status: "live", hiddenFor: NO_ACCOUNTING },
-      { label: "Reports", status: "soon" },
+      { label: "Claims", href: "/claims", status: "live", gate: "claims_view" },
+      { label: "Tax", href: "/tax", status: "live", gate: "tax_view" },
+      { label: "GST Returns", href: "/gst", status: "live", gate: "gst_view" },
+      { label: "Accounting", href: "/accounting/ledgers", status: "live", gate: "accounting_view" },
+      { label: "Purchases", href: "/purchases/bills", status: "live", gate: "accounting_view" },
+      { label: "Opening Balances", href: "/accounting/opening-balances", status: "live", gate: "accounting_view" },
+      { label: "Journal Entries", href: "/accounting/journal", status: "live", gate: "accounting_view" },
+      { label: "Cash Settlement", href: "/accounting/cash-settlement", status: "live", gate: "bankcod_view" },
+      { label: "Rule Book", href: "/accounting/rule-book", status: "live", gate: "accounting_view" },
+      { label: "Trial Balance", href: "/accounting/trial-balance", status: "live", gate: "accounting_view" },
+      { label: "Day Book", href: "/accounting/day-book", status: "live", gate: "accounting_view" },
+      { label: "Profit & Loss", href: "/accounting/profit-and-loss", status: "live", gate: "accounting_view" },
+      { label: "Balance Sheet", href: "/accounting/balance-sheet", status: "live", gate: "accounting_view" },
+      { label: "Cash Flow", href: "/accounting/cash-flow", status: "live", gate: "bankcod_view" },
+      { label: "Periods", href: "/accounting/periods", status: "live", gate: "accounting_view" },
+      { label: "Reports", status: "soon", gate: "accounting_view" },
     ],
   },
   {
     label: "Administration",
     items: [
-      { label: "Users", href: "/admin/users", status: "live" },
-      { label: "Roles", href: "/admin/roles", status: "live" },
-      { label: "Channels", href: "/admin/channels", status: "live" },
+      { label: "Users", href: "/admin/users", status: "live", gate: "users_view" },
+      { label: "Roles", href: "/admin/roles", status: "live", gate: "roles_view" },
+      { label: "Channels", href: "/admin/channels", status: "live", gate: "channels_view" },
       { label: "Products", href: "/admin/products", status: "live" },
-      { label: "Warehouses", href: "/admin/warehouses", status: "live" },
-      { label: "Permissions", href: "/admin/permissions", status: "live" },
-      { label: "Integrations", href: "/admin/integrations", status: "live" },
-      { label: "Audit Trail", href: "/admin/audit-trail", status: "live" },
+      { label: "Listing Map", href: "/admin/channels/listing-map", status: "live", gate: "channels_view" },
+      { label: "Warehouses", href: "/admin/warehouses", status: "live", gate: "warehouses_view" },
+      { label: "Permissions", href: "/admin/permissions", status: "live", gate: "roles_view" },
+      { label: "Integrations", href: "/admin/integrations", status: "live", gate: "integrations_view" },
+      { label: "Audit Trail", href: "/admin/audit-trail", status: "live", gate: "audit_view" },
     ],
   },
   {

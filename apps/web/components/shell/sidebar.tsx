@@ -4,14 +4,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NAV_SECTIONS } from "@/lib/nav-sections";
 
-export function Sidebar({ roleName, onNavigate }: { roleName: string; onNavigate?: () => void }) {
+export function Sidebar({ access, onNavigate }: { access: Record<string, boolean> | null; onNavigate?: () => void }) {
   const pathname = usePathname();
 
   return (
     <nav className="flex h-full w-full flex-col gap-6 overflow-y-auto bg-sidebar-bg px-4 py-6">
       {NAV_SECTIONS.map((section) => {
         const visibleItems = section.items.filter(
-          (item) => !item.hiddenFor?.includes(roleName),
+          (item) => !item.gate || access === null || access[item.gate] === true,
         );
         if (!visibleItems.length) return null;
 

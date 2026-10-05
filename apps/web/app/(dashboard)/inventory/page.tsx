@@ -4,6 +4,7 @@ import { TimeoutPill, type TimeoutState } from "@/components/ui/timeout-pill";
 
 export default async function InventoryPage() {
   const supabase = await createClient();
+  const { data: canUpload } = await supabase.rpc("import_can", { p_kind: "stock_count" }).then((r) => ({ data: r.data === true }));
 
   const { data: balances } = await supabase
     .from("inventory_balances")
@@ -27,6 +28,14 @@ export default async function InventoryPage() {
         Current saleable stock per warehouse — only updated by a confirmed
         receipt and inspection, never by a return or RTO being logged.
       </p>
+
+      {canUpload ? (
+        <p className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm">
+          <Link href="/imports/opening_stock" className="font-medium text-accent hover:underline">Upload opening stock</Link>
+          <Link href="/imports/stock_count" className="font-medium text-accent hover:underline">Upload a stock count</Link>
+          <a href="/api/import-template/stock_count" className="text-accent hover:underline">Download the count sheet</a>
+        </p>
+      ) : null}
 
       {overdueCount + nearingCount > 0 ? (
         <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border border-warning/40 bg-warning-tint px-4 py-3 text-sm text-ink">

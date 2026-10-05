@@ -16,6 +16,11 @@ type Product = {
   cost_price: number | null;
   stock_timeout_days: number | null;
   status: string;
+  size: string | null;
+  colour: string | null;
+  barcode: string | null;
+  brand: string | null;
+  packaging_cost: number | null;
 };
 
 export function ProductRow({
@@ -35,6 +40,11 @@ export function ProductRow({
 
   const [name, setName] = useState(product.name);
   const [category, setCategory] = useState(product.category ?? "");
+  const [size, setSize] = useState(product.size ?? "");
+  const [colour, setColour] = useState(product.colour ?? "");
+  const [barcode, setBarcode] = useState(product.barcode ?? "");
+  const [brand, setBrand] = useState(product.brand ?? "");
+  const [packCost, setPackCost] = useState(product.packaging_cost?.toString() ?? "");
   const [hsn, setHsn] = useState(product.hsn ?? "");
   const [gstRate, setGstRate] = useState(product.gst_rate?.toString() ?? "");
   const [costPrice, setCostPrice] = useState(product.cost_price?.toString() ?? "");
@@ -48,6 +58,12 @@ export function ProductRow({
       .update({
         name,
         category: category || null,
+        size: size || null,
+        colour: colour || null,
+        variant: [size, colour].filter(Boolean).join(" / ") || null,
+        barcode: barcode || null,
+        brand: brand || null,
+        packaging_cost: packCost ? Number(packCost) : null,
         hsn: hsn || null,
         gst_rate: gstRate ? Number(gstRate) : null,
         cost_price: costPrice ? Number(costPrice) : null,
@@ -80,6 +96,7 @@ export function ProductRow({
 
   if (editing) {
     return (
+      <>
       <tr className={rowClass}>
         <td className="px-4 py-2">
           <input
@@ -149,12 +166,25 @@ export function ProductRow({
           </div>
         </td>
       </tr>
+      <tr className={rowClass}>
+        <td colSpan={9} className="px-4 pb-3">
+          <div className="grid grid-cols-2 gap-2 md:grid-cols-5">
+            {([["Size", size, setSize], ["Colour", colour, setColour], ["Brand", brand, setBrand], ["Barcode", barcode, setBarcode], ["Packing cost", packCost, setPackCost]] as const).map(([label, val, set]) => (
+              <label key={label} className="flex flex-col gap-1 text-xs text-ink-muted">
+                {label}
+                <input value={val} onChange={(e) => set(e.target.value)} className="h-8 border border-line bg-surface px-2 text-sm text-ink outline-none focus:border-accent" />
+              </label>
+            ))}
+          </div>
+        </td>
+      </tr>
+      </>
     );
   }
 
   return (
     <tr className={rowClass}>
-      <td className="px-4 py-3 text-ink">{product.name}</td>
+      <td className="px-4 py-3 text-ink">{product.name}{product.size || product.colour ? <span className="ml-1.5 text-xs text-ink-faint">{[product.size, product.colour].filter(Boolean).join(" / ")}</span> : null}</td>
       <td className="px-4 py-3 font-data text-ink-muted">{product.sku}</td>
       <td className="px-4 py-3 text-ink-muted">{product.category ?? "—"}</td>
       <td className="px-4 py-3 font-data text-ink-muted">{product.hsn ?? "—"}</td>

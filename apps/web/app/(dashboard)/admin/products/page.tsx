@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/current-user";
 import { CreateProductForm } from "./create-product-form";
@@ -9,7 +10,7 @@ export default async function ProductsPage() {
 
   const { data: products } = await supabase
     .from("products")
-    .select("product_id, sku, name, category, hsn, gst_rate, cost_price, stock_timeout_days, status")
+    .select("product_id, sku, name, category, hsn, gst_rate, cost_price, stock_timeout_days, status, size, colour, barcode, brand, packaging_cost")
     .order("name");
 
   const canCreate = ["Super Admin", "Operations Manager"].includes(currentUser.roleName);
@@ -24,6 +25,13 @@ export default async function ProductsPage() {
         Channels → SKU mapping). Click a status pill to toggle active/inactive,
         or Edit to change details.
       </p>
+
+      {canCreate ? (
+        <p className="mt-3 flex gap-4 text-sm">
+          <Link href="/imports/products" className="font-medium text-accent hover:underline">Upload the SKU master from Excel</Link>
+                    <a href={`/api/import-template/${"products"}`} className="text-accent hover:underline">Download the template</a>
+        </p>
+      ) : null}
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
         <div className="border border-line bg-surface">

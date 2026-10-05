@@ -27,7 +27,7 @@ export function MenuButton() {
  * The page frame. On a phone the menu is a drawer that slides in over the page (closes when a link is tapped or the
  * dark area is tapped); from tablet width up it is the fixed side column as before.
  */
-export function AppShell({ topbar, reminder, roleName, children }: { topbar: React.ReactNode; reminder: React.ReactNode; roleName: string; children: React.ReactNode }) {
+export function AppShell({ topbar, reminder, access, children }: { topbar: React.ReactNode; reminder: React.ReactNode; access: Record<string, boolean> | null; children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   return (
     <NavContext.Provider value={{ open, setOpen }}>
@@ -41,7 +41,7 @@ export function AppShell({ topbar, reminder, roleName, children }: { topbar: Rea
               open ? "translate-x-0" : "-translate-x-full"
             }`}
           >
-            <Sidebar roleName={roleName} onNavigate={() => setOpen(false)} />
+            <Sidebar access={access} onNavigate={() => setOpen(false)} />
           </div>
           <main className="min-w-0 flex-1 overflow-y-auto">{children}</main>
         </div>

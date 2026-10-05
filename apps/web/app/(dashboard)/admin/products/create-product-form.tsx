@@ -14,6 +14,11 @@ export function CreateProductForm() {
   const [sku, setSku] = useState("");
   const [name, setName] = useState("");
   const [category, setCategory] = useState("");
+  const [size, setSize] = useState("");
+  const [colour, setColour] = useState("");
+  const [barcode, setBarcode] = useState("");
+  const [brand, setBrand] = useState("");
+  const [packCost, setPackCost] = useState("");
   const [hsn, setHsn] = useState("");
   const [gstRate, setGstRate] = useState("");
   const [costPrice, setCostPrice] = useState("");
@@ -37,6 +42,12 @@ export function CreateProductForm() {
       sku,
       name,
       category: category || null,
+      size: size || null,
+      colour: colour || null,
+      variant: [size, colour].filter(Boolean).join(" / ") || null,
+      barcode: barcode || null,
+      brand: brand || null,
+      packaging_cost: packCost ? Number(packCost) : null,
       hsn: hsn || null,
       gst_rate: gstRate ? Number(gstRate) : null,
       cost_price: costPrice ? Number(costPrice) : null,
@@ -53,6 +64,11 @@ export function CreateProductForm() {
     setSku("");
     setName("");
     setCategory("");
+    setSize("");
+    setColour("");
+    setBarcode("");
+    setBrand("");
+    setPackCost("");
     setHsn("");
     setGstRate("");
     setCostPrice("");
@@ -87,6 +103,15 @@ export function CreateProductForm() {
           onChange={(e) => setCategory(e.target.value)}
           placeholder="Apparel"
         />
+        <div className="grid grid-cols-2 gap-3">
+          <Field id="product-size" label="Size" value={size} onChange={(e) => setSize(e.target.value)} placeholder="M" />
+          <Field id="product-colour" label="Colour" value={colour} onChange={(e) => setColour(e.target.value)} placeholder="Black" />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <Field id="product-brand" label="Brand" value={brand} onChange={(e) => setBrand(e.target.value)} />
+          <Field id="product-barcode" label="Barcode" value={barcode} onChange={(e) => setBarcode(e.target.value)} />
+        </div>
+        <Field id="product-pack" label="Packing cost (₹)" type="number" value={packCost} onChange={(e) => setPackCost(e.target.value)} />
         <Field
           id="product-hsn"
           label="HSN code"

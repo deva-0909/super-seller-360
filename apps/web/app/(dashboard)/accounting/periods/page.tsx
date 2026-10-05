@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/current-user";
 import { StatusPill } from "@/components/ui/status-pill";
 import { ClosePeriodButton } from "./close-period-button";
+import { CreateYearForm } from "./create-year-form";
 
 export default async function PeriodsPage() {
   const currentUser = await getCurrentUser();
@@ -12,6 +13,9 @@ export default async function PeriodsPage() {
     .select("accounting_period_id, period_name, start_date, end_date, status, locked_at")
     .order("start_date", { ascending: false });
 
+  const canCreate = ["Super Admin", "Finance Manager", "Accountant"].includes(currentUser.roleName);
+  const lastStart = periods?.[0]?.start_date ? new Date(periods[0].start_date) : new Date();
+  const suggested = lastStart.getMonth() >= 3 ? lastStart.getFullYear() + 1 : lastStart.getFullYear();
   const canClose = ["Finance Manager", "Accountant"].includes(currentUser.roleName);
 
   return (
@@ -31,6 +35,8 @@ export default async function PeriodsPage() {
           deliberate separation of duties, not a bug.
         </p>
       ) : null}
+
+      {canCreate ? <CreateYearForm suggested={suggested} /> : null}
 
       <div className="mt-6 border border-line bg-surface">
         <table className="w-full text-left text-sm">

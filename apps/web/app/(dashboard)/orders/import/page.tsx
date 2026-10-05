@@ -1,62 +1,40 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { ImportForm } from "./import-form";
+import { KINDS } from "@/lib/importer/kinds";
+import { Importer } from "@/components/importer/importer";
 
 export default async function ImportOrdersPage() {
   const supabase = await createClient();
-  const { data: channels } = await supabase
-    .from("channels")
-    .select("channel_id, name")
-    .order("name");
-
+  const cfg = KINDS.orders;
+  const [{ data: channels }, { data: allowed }] = await Promise.all([
+    supabase.from("channels").select("channel_id, name").order("name"),
+    supabase.rpc("import_can", { p_kind: "orders" }),
+  ]);
   return (
-    <div className="mx-auto max-w-2xl px-4 md:px-8 py-8">
-      <Link href="/orders" className="text-sm text-ink-muted hover:text-ink">
-        ← All orders
-      </Link>
-
-      <h1 className="mt-4 text-lg font-semibold tracking-tight text-ink">
-        Import orders from CSV
-      </h1>
-      <p className="mt-1 text-sm text-ink-muted">
-        Every portal integration in the BRD lists CSV/XLS as the fallback
-        method when the live API isn&apos;t connected yet — this is that
-        fallback, so you can bring in real orders before Shopify/Amazon/etc.
-        API access is set up.
-      </p>
-
-      {!channels?.length ? (
+    <div className="mx-auto max-w-4xl px-4 md:px-8 py-8">
+      <Link href="/orders" className="text-sm text-ink-muted hover:text-ink">← All orders</Link>
+      <h1 className="mt-4 text-lg font-semibold tracking-tight text-ink">{cfg.title}</h1>
+      <p className="mt-1 text-sm text-ink-muted">{cfg.intro} Use this when the live portal connection is not set up yet.</p>
+      {allowed !== true ? (
+        <p className="mt-6 border border-line bg-surface p-4 text-sm text-ink-muted">Your role cannot import orders.</p>
+      ) : !channels?.length ? (
         <p className="mt-6 border border-line bg-surface p-4 text-sm text-ink-muted">
-          No channels yet.{" "}
-          <a href="/admin/channels" className="text-accent hover:underline">
-            Add one first
-          </a>
-          .
+          No channels available to you yet. <a href="/admin/channels" className="text-accent hover:underline">Channels</a>
         </p>
       ) : (
-        <ImportForm channels={channels} />
+        <Importer kind="orders" channels={channels} />
       )}
-
       <div className="mt-8 border border-line bg-surface p-5">
-        <h2 className="text-sm font-semibold text-ink">Expected columns</h2>
-        <p className="mt-2 text-xs text-ink-muted">
-          One row per line item — order-level fields repeated on every row for
-          that order, matching how portal exports actually look. Rows are
-          grouped by <code className="font-data">external_order_id</code>;
-          amounts are computed from the line items, not read from the file.
-          Header row required, columns in any order:
-        </p>
-        <code className="font-data mt-3 block text-xs text-ink-muted">
-          external_order_id, order_date, customer_ref, payment_type,
-          fulfilment_status, payment_status, sku, quantity, unit_price,
-          discount, tax
-        </code>
-        <p className="mt-3 text-xs text-ink-muted">
-          Note: re-importing the same file skips orders that already exist
-          (matched on channel + order ID), but doesn&apos;t currently
-          dedupe line items if you import overlapping files twice for a
-          brand-new order — best used for a clean, one-time batch per file.
-        </p>
+        <h2 className="text-sm font-semibold text-ink">Columns</h2>
+        <table className="mt-3 w-full text-left text-xs"><tbody>
+          {cfg.columns.map((c) => (
+            <tr key={c.key} className="border-t border-line">
+              <td className="py-1.5 pr-4 font-medium text-ink">{c.heading}{c.required ? " *" : ""}</td>
+              <td className="py-1.5 text-ink-muted">{[c.hint, c.list ? `One of: ${c.list.join(", ")}` : null].filter(Boolean).join(" ")}</td>
+            </tr>
+          ))}
+        </tbody></table>
+        <ul className="mt-4 list-disc pl-5 text-xs text-ink-muted">{cfg.notes.map((n) => <li key={n}>{n}</li>)}</ul>
       </div>
     </div>
   );
