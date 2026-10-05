@@ -834,7 +834,7 @@ select o.order_id, v.cr, o.net_amount, 0, 0, 'pending', o.order_date from (value
 ) v(ext, cr) join orders o on o.external_order_id = v.ext;
 select pg_temp.ret_recv('FLIP-1080');
 select pg_temp.ret_recv('FLIP-1092');
-select pg_temp.settle_pay('AMZ-STL-20260525', 320.0);
+select pg_temp.settle_pay('AMZ-STL-20260525', 0.0);
 select pg_temp.claim_recover('AMAZ-1015', 'lost_shipment', 'CLAIM-CR-AMAZ-1015');
 select pg_temp.retime();
 
@@ -923,7 +923,6 @@ select pg_temp.ret_set('AMAZ-1118', 'approved');
 select pg_temp.ret_new('SHOP-1117', 'Fabric quality not as expected', 'manual');
 select pg_temp.cod_collect(array['AMAZ-1139']::text[]);
 select pg_temp.settle_pay('FLK-STL-20260525', 0.0);
-select pg_temp.claim_new('AMAZ-1099', 'incorrect_deduction', 320.0, '2026-07-09');
 select pg_temp.retime();
 
 -- Wed 10 Jun 2026
@@ -1084,7 +1083,6 @@ select pg_temp.pay_due('Rajdhani Shirting Mills', '2026-06-15', 'ICIC00000088351
 select pg_temp.pay_due('Little Stitch Garments', '2026-06-15', 'ICIC000000883564', 1);
 select pg_temp.claim_recover('FLIP-1048', 'damaged_return', 'CLAIM-CR-FLIP-1048');
 select pg_temp.claim_new('AMAZ-1104', 'damaged_return', 1402.38, '2026-07-12');
-select pg_temp.claim_step('AMAZ-1099', 'incorrect_deduction', 'claimed', null);
 select pg_temp.retime();
 
 -- Sat 13 Jun 2026
@@ -1176,7 +1174,7 @@ select pg_temp.ret_set('AMAZ-1128', 'in_transit');
 select pg_temp.ret_set('SHOP-1121', 'approved');
 select pg_temp.ret_set('AMAZ-1140', 'approved');
 select pg_temp.rto_set('SHOP-1133', 'in_transit');
-select pg_temp.settle_pay('AMZ-STL-20260601', 0.0);
+select pg_temp.settle_pay('AMZ-STL-20260601', 320.0);
 select pg_temp.claim_new('AMAZ-1116', 'damaged_return', 1886.41, '2026-07-14');
 select pg_temp.retime();
 
@@ -1296,6 +1294,7 @@ select pg_temp.cod_collect(array['AMAZ-1165']::text[]);
 select pg_temp.settle_pay('FLK-STL-20260601', 0.0);
 select pg_temp.claim_step('FLIP-1066', 'damaged_return', 'approved', null);
 select pg_temp.claim_step('AMAZ-1086', 'other', 'rejected', null);
+select pg_temp.claim_new('AMAZ-1111', 'incorrect_deduction', 320.0, '2026-07-16');
 select pg_temp.retime();
 
 -- Wed 17 Jun 2026

@@ -348,6 +348,7 @@ select pg_temp.pay_due('Krishna Denim Works', '2026-06-22', 'ICIC000000883792', 
 select pg_temp.pay_due('Rajdhani Shirting Mills', '2026-06-22', 'ICIC000000883809', 1);
 select pg_temp.pay_due('Little Stitch Garments', '2026-06-22', 'ICIC000000883847', 1);
 select pg_temp.claim_step('AMAZ-1064', 'lost_shipment', 'approved', null);
+select pg_temp.claim_step('AMAZ-1111', 'incorrect_deduction', 'claimed', null);
 select pg_temp.retime();
 
 -- Sat 20 Jun 2026
@@ -560,7 +561,6 @@ select pg_temp.cod_collect(array['FLIP-1142']::text[]);
 select pg_temp.cod_collect(array['FLIP-1144']::text[]);
 select pg_temp.cod_collect(array['SHOP-1150']::text[]);
 select pg_temp.settle_pay('FLK-STL-20260608', 0.0);
-select pg_temp.claim_step('AMAZ-1099', 'incorrect_deduction', 'approved', 256.0);
 select pg_temp.retime();
 
 -- Wed 24 Jun 2026
@@ -922,6 +922,7 @@ select pg_temp.cod_collect(array['SHOP-1159']::text[]);
 select pg_temp.cod_collect(array['FLIP-1155']::text[]);
 select pg_temp.settle_pay('FLK-STL-20260615', 140.0);
 select pg_temp.claim_recover('AMAZ-1064', 'lost_shipment', 'CLAIM-CR-AMAZ-1064');
+select pg_temp.claim_step('AMAZ-1111', 'incorrect_deduction', 'approved', 256.0);
 select pg_temp.claim_step('AMAZ-1160', 'other', 'claimed', null);
 select pg_temp.claim_new('AMAZ-1166', 'damaged_return', 660.24, '2026-07-30');
 select pg_temp.retime();
@@ -1026,7 +1027,7 @@ select pg_temp.ret_recv('AMAZ-1161');
 select pg_temp.ret_set('AMAZ-1183', 'pickup');
 select pg_temp.ret_set('FLIP-1148', 'in_transit');
 select pg_temp.ret_set('AMAZ-1199', 'pickup');
-select pg_temp.claim_step('AMAZ-1128', 'damaged_return', 'approved', null);
+select pg_temp.claim_step('AMAZ-1128', 'damaged_return', 'approved', 611.91);
 select pg_temp.claim_new('FLIP-1115', 'incorrect_deduction', 140.0, '2026-08-01');
 select pg_temp.retime();
 
@@ -1143,7 +1144,6 @@ select pg_temp.cod_collect(array['SHOP-1163']::text[]);
 select pg_temp.cod_collect(array['FLIP-1160']::text[]);
 select pg_temp.cod_collect(array['SHOP-1166']::text[]);
 select pg_temp.cod_collect(array['FLIP-1164']::text[]);
-select pg_temp.claim_recover('AMAZ-1099', 'incorrect_deduction', 'CLAIM-CR-AMAZ-1099');
 select pg_temp.claim_new('AMAZ-1161', 'damaged_return', 1374.76, '2026-08-03');
 select pg_temp.retime();
 
@@ -1189,7 +1189,7 @@ select pg_temp.rto_new('SHOP-1172', 'AWB31000533', 'Delivery attempts exhausted'
 select pg_temp.cod_collect(array['AMAZ-1219']::text[]);
 select pg_temp.cod_collect(array['AMAZ-1222']::text[]);
 select pg_temp.settle_pay('AMZ-STL-20260622', 0.0);
-select pg_temp.claim_step('AMAZ-1140', 'lost_shipment', 'approved', 1636.32);
+select pg_temp.claim_step('AMAZ-1140', 'lost_shipment', 'approved', null);
 select pg_temp.claim_step('FLIP-1115', 'incorrect_deduction', 'claimed', null);
 select pg_temp.retime();
 

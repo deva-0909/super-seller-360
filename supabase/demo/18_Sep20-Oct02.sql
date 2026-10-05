@@ -1003,6 +1003,7 @@ select pg_temp.ret_set('AMAZ-1527', 'approved');
 select pg_temp.rto_set('FLIP-1412', 'in_transit');
 select pg_temp.cod_collect(array['SHOP-1469']::text[]);
 select pg_temp.settle_pay('FLK-STL-20260914', 0.0);
+select pg_temp.claim_recover('AMAZ-1383', 'damaged_return', 'CLAIM-CR-AMAZ-1383');
 select pg_temp.claim_new('FLIP-1389', 'damaged_return', 1479.24, '2026-10-29');
 select pg_temp.retime();
 
@@ -1258,7 +1259,7 @@ select pg_temp.pay_due('Ludhiana Winter Wear Co', '2026-10-05', 'ICIC00000088841
 select pg_temp.pay_due('Krishna Denim Works', '2026-10-05', 'ICIC000000888485', 1);
 select pg_temp.pay_due('Rajdhani Shirting Mills', '2026-10-05', 'ICIC000000888531', 1);
 select pg_temp.pay_due('Little Stitch Garments', '2026-10-05', 'ICIC000000888599', 1);
-select pg_temp.claim_step('FLIP-1289', 'lost_shipment', 'approved', null);
+select pg_temp.claim_step('FLIP-1289', 'lost_shipment', 'rejected', null);
 select pg_temp.claim_step('AMAZ-1442', 'lost_shipment', 'approved', null);
 select pg_temp.claim_step('FLIP-1389', 'damaged_return', 'claimed', null);
 select pg_temp.claim_new('SHOP-1412', 'lost_shipment', 1992.9, '2026-11-01');

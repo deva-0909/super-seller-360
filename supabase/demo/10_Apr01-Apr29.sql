@@ -403,9 +403,7 @@ select o.order_id, p.product_id, v.q, v.up, v.d, v.t from (values
 ('FLIP-1012','WTOP-WHT-L',1,599,59.9,26.96)
 ) v(ext, sku, q, up, d, t) join orders o on o.external_order_id = v.ext join products p on p.sku = v.sku;
 set constraints all immediate;
-select pg_temp.settle_new('Amazon - Seller Central', 'AMZ-STL-20260401', '2026-04-01', '2026-04-05', array['AMAZ-1001','AMAZ-1003','AMAZ-1002']::text[], array[]::text[]);
-select pg_temp.settle_new('Flipkart - Seller Hub', 'FLK-STL-20260401', '2026-04-01', '2026-04-05', array['FLIP-1004','FLIP-1002','FLIP-1003','FLIP-1001','FLIP-1005','FLIP-1006','FLIP-1010']::text[], array[]::text[]);
-select pg_temp.settle_new('Shopify - Main Store', 'SHP-STL-20260401', '2026-04-01', '2026-04-05', array['SHOP-1002']::text[], array[]::text[]);
+select pg_temp.settle_new('Flipkart - Seller Hub', 'FLK-STL-20260401', '2026-04-01', '2026-04-05', array['FLIP-1004']::text[], array[]::text[]);
 select pg_temp.retime();
 
 -- Tue 07 Apr 2026
@@ -461,7 +459,6 @@ insert into cod_collections (order_id, courier_name, cod_amount, collected_amoun
 select o.order_id, v.cr, o.net_amount, 0, 0, 'pending', o.order_date from (values
 ('SHOP-1010','Delhivery - Sachin GIDC Surat')
 ) v(ext, cr) join orders o on o.external_order_id = v.ext;
-select pg_temp.settle_pay('SHP-STL-20260401', 0.0);
 select pg_temp.retime();
 
 -- Thu 09 Apr 2026
@@ -610,7 +607,6 @@ select o.order_id, v.cr, o.net_amount, 0, 0, 'pending', o.order_date from (value
 ('FLIP-1023','Xpressbees - Pandesara')
 ) v(ext, cr) join orders o on o.external_order_id = v.ext;
 select pg_temp.cod_collect(array['AMAZ-1012']::text[]);
-select pg_temp.settle_pay('AMZ-STL-20260401', 0.0);
 select pg_temp.retime();
 
 -- Mon 13 Apr 2026

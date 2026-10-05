@@ -376,6 +376,7 @@ select pg_temp.ret_set('AMAZ-1204', 'in_transit');
 select pg_temp.rto_new('FLIP-1173', 'AWB31000546', 'Address incomplete');
 select pg_temp.rto_new('SHOP-1185', 'AWB31000584', 'Customer unreachable');
 select pg_temp.rto_new('SHOP-1186', 'AWB31000593', 'Customer unreachable');
+select pg_temp.claim_recover('AMAZ-1111', 'incorrect_deduction', 'CLAIM-CR-AMAZ-1111');
 select pg_temp.claim_step('AMAZ-1160', 'other', 'approved', null);
 select pg_temp.retime();
 
@@ -456,6 +457,7 @@ select pg_temp.rto_set('SHOP-1186', 'in_transit');
 select pg_temp.settle_new('Amazon - Seller Central', 'AMZ-STL-20260706', '2026-07-06', '2026-07-12', array['AMAZ-1223','AMAZ-1224','AMAZ-1225','AMAZ-1229','AMAZ-1230','AMAZ-1234','AMAZ-1226','AMAZ-1228','AMAZ-1232','AMAZ-1227','AMAZ-1233','AMAZ-1236','AMAZ-1235','AMAZ-1237','AMAZ-1239','AMAZ-1240','AMAZ-1244','AMAZ-1245','AMAZ-1247','AMAZ-1238','AMAZ-1242','AMAZ-1243','AMAZ-1248','AMAZ-1251']::text[], array['AMAZ-1188','AMAZ-1199','AMAZ-1183']::text[]);
 select pg_temp.settle_new('Flipkart - Seller Hub', 'FLK-STL-20260706', '2026-07-06', '2026-07-12', array['FLIP-1163','FLIP-1167','FLIP-1165','FLIP-1166','FLIP-1169','FLIP-1171','FLIP-1172','FLIP-1170','FLIP-1175','FLIP-1176','FLIP-1177','FLIP-1174','FLIP-1179','FLIP-1180','FLIP-1178','FLIP-1181']::text[], array['FLIP-1148']::text[]);
 select pg_temp.settle_new('Shopify - Main Store', 'SHP-STL-20260706', '2026-07-06', '2026-07-12', array['SHOP-1175','SHOP-1181','SHOP-1174','SHOP-1176','SHOP-1180','SHOP-1183','SHOP-1184','SHOP-1182','SHOP-1188','SHOP-1189','SHOP-1190','SHOP-1191']::text[], array[]::text[]);
+select pg_temp.claim_recover('AMAZ-1128', 'damaged_return', 'CLAIM-CR-AMAZ-1128');
 select pg_temp.claim_step('FLIP-1114', 'lost_shipment', 'claimed', null);
 select pg_temp.retime();
 
@@ -586,7 +588,6 @@ select pg_temp.ret_set('FLIP-1181', 'pickup');
 select pg_temp.rto_set('AMAZ-1250', 'in_transit');
 select pg_temp.cod_collect(array['SHOP-1194']::text[]);
 select pg_temp.rto_new('SHOP-1202', 'AWB31000656', 'Address incomplete');
-select pg_temp.claim_recover('AMAZ-1140', 'lost_shipment', 'CLAIM-CR-AMAZ-1140');
 select pg_temp.claim_step('FLIP-1115', 'incorrect_deduction', 'approved', null);
 select pg_temp.retime();
 

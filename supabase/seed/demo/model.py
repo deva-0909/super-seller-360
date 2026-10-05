@@ -317,8 +317,9 @@ def plan_settlements(d):
     """Called on a Monday: the week that ended yesterday is statemented; the payout follows after the channel's cycle."""
     we = d - dt.timedelta(days=1); ws = max(we - dt.timedelta(days=6), START)
     for ch, (pref, lag, cname) in SETTLE_CFG.items():
-        ords = [o for k in range(7) for o in deliveries.get((ch, ws + dt.timedelta(days=k)), [])]
-        refs = [e for k in range(7) for e in refund_log.get((ch, ws + dt.timedelta(days=k)), [])]
+        span = (we - ws).days + 1                      # the first statement is shorter than a week: do not run past its end
+        ords = [o for k in range(span) for o in deliveries.get((ch, ws + dt.timedelta(days=k)), [])]
+        refs = [e for k in range(span) for e in refund_log.get((ch, ws + dt.timedelta(days=k)), [])]
         if not ords and not refs: continue
         settle_idx[ch] += 1
         ref = "%s-STL-%s" % (pref, ws.strftime("%Y%m%d"))

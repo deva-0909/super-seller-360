@@ -1361,3 +1361,18 @@ Generators: `supabase/seed/demo/gen_costs.py` with `helpers_costs.py`.
 - **Cost view** (new `has_cost_view()`): Warehouse, Marketplace and Claims Managers no longer see inventory value, stock-at-risk cost, the books tile on Dashboards, idle-stock cost on Business Insights, or the cost column on Products (the values are not sent to their browser). The creditors-ageing "check against the books" box is shown only to roles that can read the ledger.
 - Limit: cost prices are hidden on screens, not in the database; a technically skilled user of those roles could still read the products table through the API. Closing that needs column-level privileges and is a follow-up.
 - Verified in the sandbox by reading each table as each demo user: finance roles see everything; Tax Manager sees only tax-ledger journals; Operations, Claims, Marketplace and Warehouse see no journals.
+
+## Audit fixes, database (migration 0091)
+
+Run `supabase/migrations/0091_audit_fixes_db.sql` once in the SQL Editor (new query). It:
+
+- stops the recurring-journal runner from posting dates in the future;
+- takes all access away from the `anon` role on every table and function, and for anything created later;
+- limits who can read the bank/COD screens to named roles;
+- refuses bank-feed secrets that do not start with `BANKFEED_` and web addresses that point inside the network;
+- tightens the row-level scope policies;
+- rebuilds the stock-ageing view so the age counts from the goods-receipt date (it used to flag almost every SKU as overdue);
+- corrects the ten orders that were settled twice (₹16,655.19): the earlier settlement is taken off them with one correction journal per settlement, cash received twice is held in **Settlement Excess Received**, duplicate fees and tax credits are reversed;
+- adds a guard so an order's value can only be in one settlement.
+
+The demo generator (`supabase/seed/demo/model.py`) no longer creates the double settlements; production keeps the data it already has and is fixed by the migration.

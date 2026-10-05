@@ -425,7 +425,7 @@ select pg_temp.ret_set('FLIP-1277', 'pickup');
 select pg_temp.ret_new('AMAZ-1360', 'Size did not fit', 'webhook');
 select pg_temp.cod_collect(array['SHOP-1299']::text[]);
 select pg_temp.cod_collect(array['SHOP-1303']::text[]);
-select pg_temp.settle_pay('AMZ-STL-20260810', 85.0);
+select pg_temp.settle_pay('AMZ-STL-20260810', 0.0);
 select pg_temp.retime();
 
 -- Mon 24 Aug 2026
@@ -552,7 +552,6 @@ select pg_temp.settle_pay('FLK-STL-20260810', 0.0);
 select pg_temp.claim_step('AMAZ-1326', 'damaged_return', 'claimed', null);
 select pg_temp.claim_new('FLIP-1254', 'damaged_return', 881.37, '2026-09-24');
 select pg_temp.claim_step('AMAZ-1337', 'other', 'claimed', null);
-select pg_temp.claim_new('AMAZ-1332', 'incorrect_deduction', 85.0, '2026-09-24');
 select pg_temp.retime();
 
 -- Wed 26 Aug 2026
@@ -759,7 +758,6 @@ select pg_temp.pay_due('Rajdhani Shirting Mills', '2026-08-31', 'ICIC00000088696
 select pg_temp.pay_due('Little Stitch Garments', '2026-08-31', 'ICIC000000887050', 1);
 select pg_temp.claim_recover('AMAZ-1264', 'damaged_return', 'CLAIM-CR-AMAZ-1264');
 select pg_temp.claim_step('FLIP-1254', 'damaged_return', 'claimed', null);
-select pg_temp.claim_step('AMAZ-1332', 'incorrect_deduction', 'claimed', null);
 select pg_temp.retime();
 
 -- Sat 29 Aug 2026
@@ -886,7 +884,7 @@ select pg_temp.ret_set('FLIP-1299', 'pickup');
 select pg_temp.rto_set('FLIP-1301', 'in_transit');
 select pg_temp.ret_new('SHOP-1315', 'Size did not fit', 'manual');
 select pg_temp.cod_collect(array['SHOP-1321']::text[]);
-select pg_temp.settle_pay('AMZ-STL-20260817', 0.0);
+select pg_temp.settle_pay('AMZ-STL-20260817', 85.0);
 select pg_temp.claim_step('AMAZ-1318', 'other', 'approved', 1133.25);
 select pg_temp.retime();
 
@@ -1004,6 +1002,7 @@ select pg_temp.cod_collect(array['SHOP-1324']::text[]);
 select pg_temp.cod_collect(array['AMAZ-1418']::text[]);
 select pg_temp.settle_pay('FLK-STL-20260817', -60.0);
 select pg_temp.claim_step('FLIP-1256', 'damaged_return', 'approved', null);
+select pg_temp.claim_new('AMAZ-1348', 'incorrect_deduction', 85.0, '2026-10-01');
 select pg_temp.retime();
 
 -- Wed 02 Sep 2026
@@ -1192,6 +1191,7 @@ select pg_temp.pay_due('Rajdhani Shirting Mills', '2026-09-07', 'ICIC00000088741
 select pg_temp.pay_due('Little Stitch Garments', '2026-09-07', 'ICIC000000887505', 1);
 select pg_temp.claim_recover('AMAZ-1289', 'lost_shipment', 'CLAIM-CR-AMAZ-1289');
 select pg_temp.claim_new('AMAZ-1383', 'damaged_return', 508.19, '2026-10-04');
+select pg_temp.claim_step('AMAZ-1348', 'incorrect_deduction', 'claimed', null);
 select pg_temp.retime();
 
 -- Sat 05 Sep 2026
