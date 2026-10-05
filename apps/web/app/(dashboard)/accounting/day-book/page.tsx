@@ -52,7 +52,7 @@ export default async function DayBookPage({ searchParams }: { searchParams: Prom
       {error ? <p className="mt-4 text-sm text-danger">Could not load vouchers: {error.message}</p> : null}
       {truncated ? <p className="mt-4 text-sm text-warning">Showing the latest {LIMIT} vouchers. Narrow the dates to see the rest.</p> : null}
 
-      <div className="mt-6 border border-line bg-surface">
+      <div className="mt-6 border border-line bg-surface overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b border-line-strong text-xs text-ink-muted">

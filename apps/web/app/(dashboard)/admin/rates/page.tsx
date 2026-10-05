@@ -45,7 +45,7 @@ export default async function RatesPage({ searchParams }: { searchParams: Promis
     body = (
       <div className="border border-line bg-surface p-3">
         <p className="text-xs text-ink-muted">Every change to a rate or limit, with who made it and the old and new value. It cannot be edited.</p>
-        <div className="mt-2 max-h-[62vh] overflow-y-auto">
+        <div className="mt-2 max-h-[62vh] overflow-y-auto overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead className="sticky top-0 bg-surface"><tr className="border-b border-line-strong text-xs text-ink-muted"><th className="px-2 py-1 font-medium">When</th><th className="px-2 py-1 font-medium">Who</th><th className="px-2 py-1 font-medium">What</th><th className="px-2 py-1 font-medium">Change</th></tr></thead>
             <tbody>

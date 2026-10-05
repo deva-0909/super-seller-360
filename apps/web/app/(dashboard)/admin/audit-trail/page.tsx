@@ -101,7 +101,7 @@ export default async function AuditTrailPage() {
         don&apos;t yet record who created them, so they&apos;re not included.
       </p>
 
-      <div className="mt-6 border border-line bg-surface">
+      <div className="mt-6 border border-line bg-surface overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b border-line-strong text-xs text-ink-muted">

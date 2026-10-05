@@ -16,7 +16,7 @@ export default async function SupplierPage({ params }: { params: Promise<{ id: s
   const { data: s } = await supabase.from("suppliers").select("*").eq("supplier_id", id).maybeSingle();
   if (!s) notFound();
   const [{ data: bank }, { data: states }, { data: sections }, { data: bills }, { data: pays }] = await Promise.all([
-    supabase.from("supplier_bank").select("*").eq("supplier_id", id).maybeSingle(),
+    supabase.from("supplier_bank").select("bank_name, ifsc, account_holder, account_last4").eq("supplier_id", id).maybeSingle(),
     supabase.from("gst_states").select("code, name").order("code"),
     supabase.from("tds_sections").select("section, description").eq("active", true).order("section"),
     supabase.from("purchase_bills").select("bill_id, bill_no, supplier_invoice_no, bill_date, total, tds_amount, net_payable, status").eq("supplier_id", id).order("bill_date", { ascending: false }).limit(50),
@@ -45,7 +45,7 @@ export default async function SupplierPage({ params }: { params: Promise<{ id: s
       ) : null}
 
       <h2 className="mt-8 text-sm font-semibold text-ink">Bills</h2>
-      <div className="mt-2 border border-line bg-surface">
+      <div className="mt-2 border border-line bg-surface overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead><tr className="border-b border-line-strong text-xs text-ink-muted">
             <th className="px-4 py-3 font-medium">Bill</th><th className="px-4 py-3 font-medium">Invoice</th><th className="px-4 py-3 font-medium">Date</th>
@@ -61,7 +61,7 @@ export default async function SupplierPage({ params }: { params: Promise<{ id: s
         </table>
       </div>
       <h2 className="mt-8 text-sm font-semibold text-ink">Payments</h2>
-      <div className="mt-2 border border-line bg-surface">
+      <div className="mt-2 border border-line bg-surface overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead><tr className="border-b border-line-strong text-xs text-ink-muted">
             <th className="px-4 py-3 font-medium">Payment</th><th className="px-4 py-3 font-medium">Date</th>

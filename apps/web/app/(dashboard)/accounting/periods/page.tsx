@@ -38,7 +38,7 @@ export default async function PeriodsPage() {
 
       {canCreate ? <CreateYearForm suggested={suggested} /> : null}
 
-      <div className="mt-6 border border-line bg-surface">
+      <div className="mt-6 border border-line bg-surface overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b border-line-strong text-xs text-ink-muted">

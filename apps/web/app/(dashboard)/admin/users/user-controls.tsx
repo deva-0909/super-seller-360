@@ -24,6 +24,8 @@ export function UserRoleControl({
   const [error, setError] = useState<string | null>(null);
 
   async function handleChange(newRoleId: string) {
+    const to = roles.find((r) => r.role_id === newRoleId)?.name ?? "this role";
+    if (!window.confirm(`Change this person's role to ${to}? Their menu and what they can see or do will change straight away.`)) return;
     setError(null);
     setLoading(true);
     const { error } = await supabase
@@ -72,6 +74,8 @@ export function UserStatusToggle({
   const [loading, setLoading] = useState(false);
 
   async function toggle() {
+    if (loading) return;
+    if (status !== "suspended" && !window.confirm("Suspend this person? They will not be able to use the app until you reactivate them.")) return;
     setLoading(true);
     const nextStatus = status === "suspended" ? "active" : "suspended";
     const { error } = await supabase

@@ -33,7 +33,7 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
       <div className="mt-4 flex gap-4 overflow-x-auto text-sm">
         {views.map((v) => <Link key={v.key} href={`?view=${v.key}`} className={`whitespace-nowrap ${v.key === view ? "font-medium text-ink" : "text-accent hover:underline"}`}>{v.label}</Link>)}
       </div>
-      <div className="mt-4 border border-line bg-surface">
+      <div className="mt-4 border border-line bg-surface overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead><tr className="border-b border-line-strong text-xs text-ink-muted">
             <th className="px-4 py-3 font-medium">Claim</th><th className="px-4 py-3 font-medium">By</th><th className="px-4 py-3 font-medium">Title</th>

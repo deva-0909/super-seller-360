@@ -44,7 +44,7 @@ function Card({ it, canReview, selected, onSelect }: { it: Item; canReview: bool
       </div>
       {it.narration ? <p className="px-3 pb-2 text-sm text-ink">{it.narration}</p> : null}
       {open ? (
-        <div className="border-t border-line px-3 py-2 text-sm">
+        <div className="border-t border-line px-3 py-2 text-sm overflow-x-auto">
           <table className="w-full max-w-xl text-xs"><tbody>
             {it.lines.map((l, i) => (<tr key={i}><td className="py-0.5 pr-4 text-ink">{l.ledger}</td><td className="py-0.5 text-right font-data">{l.debit > 0 ? `Dr ${inr(l.debit)}` : ""}</td><td className="py-0.5 text-right font-data">{l.credit > 0 ? `Cr ${inr(l.credit)}` : ""}</td></tr>))}
           </tbody></table>

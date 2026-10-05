@@ -83,7 +83,7 @@ export default async function Gstr3bPage({ searchParams }: { searchParams: Promi
       {flags ? <p className="mt-4 border border-warning/40 bg-warning-tint p-3 text-sm text-ink">Some invoices in this month have data problems (state, HSN or rate). <Link href={`/gst/gstr1?month=${month}`} className="text-accent hover:underline">See them in the GSTR-1 workings</Link>.</p> : null}
 
       <h2 className="mt-8 text-sm font-semibold text-ink">3.1 Outward supplies, net of credit notes</h2>
-      <div className="mt-2 border border-line bg-surface">
+      <div className="mt-2 border border-line bg-surface overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead><tr className="border-b border-line-strong text-xs text-ink-muted"><th className="px-4 py-3 font-medium">Nature of supply</th><th className={th}>Taxable value</th><th className={th}>IGST</th><th className={th}>CGST</th><th className={th}>SGST</th></tr></thead>
           <tbody>
@@ -94,7 +94,7 @@ export default async function Gstr3bPage({ searchParams }: { searchParams: Promi
       </div>
 
       <h2 className="mt-8 text-sm font-semibold text-ink">3.2 Inter-state supplies to unregistered buyers, by state</h2>
-      <div className="mt-2 border border-line bg-surface">
+      <div className="mt-2 border border-line bg-surface overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead><tr className="border-b border-line-strong text-xs text-ink-muted"><th className="px-4 py-3 font-medium">Place of supply</th><th className={th}>Taxable value</th><th className={th}>IGST</th></tr></thead>
           <tbody>
@@ -105,7 +105,7 @@ export default async function Gstr3bPage({ searchParams }: { searchParams: Promi
       </div>
 
       <h2 className="mt-8 text-sm font-semibold text-ink">4 Input tax credit</h2>
-      <div className="mt-2 border border-line bg-surface">
+      <div className="mt-2 border border-line bg-surface overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead><tr className="border-b border-line-strong text-xs text-ink-muted"><th className="px-4 py-3 font-medium">Source</th><th className={th}>IGST</th><th className={th}>CGST</th><th className={th}>SGST</th></tr></thead>
           <tbody>
@@ -127,7 +127,7 @@ export default async function Gstr3bPage({ searchParams }: { searchParams: Promi
       <ItcAdjustments month={month} items={adj} canWrite={canWrite && !locked} />
 
       <h2 className="mt-8 text-sm font-semibold text-ink">6.1 Payment of tax</h2>
-      <div className="mt-2 border border-line bg-surface">
+      <div className="mt-2 border border-line bg-surface overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead><tr className="border-b border-line-strong text-xs text-ink-muted"><th className="px-4 py-3 font-medium" /><th className={th}>IGST</th><th className={th}>CGST</th><th className={th}>SGST</th></tr></thead>
           <tbody>

@@ -29,7 +29,7 @@ export function SectionTable({ title, note, cols, rows, csvName }: {
         </div>
         {rows.length ? <CsvButton rows={csv} filename={csvName} label="Download CSV" /> : null}
       </div>
-      <div className="mt-2 border border-line bg-surface">
+      <div className="mt-2 border border-line bg-surface overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b border-line-strong text-xs text-ink-muted">

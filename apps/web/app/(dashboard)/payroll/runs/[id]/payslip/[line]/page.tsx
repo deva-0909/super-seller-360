@@ -33,7 +33,7 @@ export default async function PayslipPage({ params }: { params: Promise<{ id: st
           <div><span className="text-ink-muted">PAN: </span>{e.pan ?? "-"}</div><div><span className="text-ink-muted">UAN: </span>{e.uan ?? "-"}</div>
           <div><span className="text-ink-muted">ESIC no: </span>{e.esic_no ?? "-"}</div><div><span className="text-ink-muted">Paid days: </span>{n(l.paid_days)} of {n(l.days_in_month)}{n(l.lop_days) > 0 ? ` (${n(l.lop_days)} without pay)` : ""}</div>
         </div>
-        <div className="mt-4 grid gap-4 md:grid-cols-2">
+        <div className="mt-4 grid gap-4 md:grid-cols-2 overflow-x-auto">
           <table className="w-full text-sm"><thead><tr className="border-b border-line-strong text-xs text-ink-muted"><th className={`${cell} text-left font-medium`}>Earnings</th><th className={`${cell} text-right font-medium`}>₹</th></tr></thead>
             <tbody>{earn.filter(([, v]) => v > 0).map(([k, v]) => <tr key={k} className="border-b border-line"><td className={cell}>{k}</td><td className={`${cell} text-right font-data`}>{inr(v)}</td></tr>)}
               <tr><td className={`${cell} font-semibold`}>Gross pay</td><td className={`${cell} text-right font-data font-semibold`}>{inr(gross)}</td></tr></tbody></table>

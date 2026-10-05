@@ -36,7 +36,7 @@ export default async function ExpensePage({ params, searchParams }: { params: Pr
       {issue === "submit" ? <p className="mt-2 text-sm text-warning">The claim was saved as a draft. Attach a receipt below, then submit it.</p> : null}
       {c.status === "paid" ? <p className="mt-1 text-sm text-ink-muted">Paid on {new Date(c.paid_on).toLocaleDateString("en-IN")} by {c.payment_mode}{c.payment_utr ? `, ref ${c.payment_utr}` : ""}.</p> : null}
 
-      <div className="mt-6 border border-line bg-surface">
+      <div className="mt-6 border border-line bg-surface overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead><tr className="border-b border-line-strong text-xs text-ink-muted">
             <th className="px-4 py-3 font-medium">Date</th><th className="px-4 py-3 font-medium">Category</th><th className="px-4 py-3 font-medium">For</th><th className="px-4 py-3 font-medium text-right">Amount</th></tr></thead>

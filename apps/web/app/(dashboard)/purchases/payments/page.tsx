@@ -26,7 +26,7 @@ export default async function PaymentsPage({ searchParams }: { searchParams: Pro
       <div className="mt-4 flex gap-4 text-sm">
         {["pending", "approved", "all"].map((f) => <Link key={f} href={`?status=${f}`} className={f === status ? "font-medium text-ink" : "text-accent hover:underline"}>{f === "all" ? "All" : f[0].toUpperCase() + f.slice(1)}</Link>)}
       </div>
-      <div className="mt-4 border border-line bg-surface">
+      <div className="mt-4 border border-line bg-surface overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead><tr className="border-b border-line-strong text-xs text-ink-muted">
             <th className="px-4 py-3 font-medium">Payment</th><th className="px-4 py-3 font-medium">Supplier</th><th className="px-4 py-3 font-medium">Date</th>

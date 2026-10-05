@@ -47,7 +47,7 @@ export default async function VoucherPage({ params }: { params: Promise<{ id: st
       </div>
       {v.narration ? <p className="mt-3 text-sm text-ink">{v.narration}</p> : null}
 
-      <div className="mt-6 border border-line bg-surface">
+      <div className="mt-6 border border-line bg-surface overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b border-line-strong text-xs text-ink-muted">

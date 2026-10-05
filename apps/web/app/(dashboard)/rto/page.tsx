@@ -18,6 +18,8 @@ export default async function RtoPage() {
   const currentUser = await getCurrentUser();
   const supabase = await createClient();
 
+  const { data: stuckRaw } = await supabase.from("rto_stuck").select("external_order_id, net_amount, days_open").order("days_open", { ascending: false });
+  const stuck = (stuckRaw ?? []) as { external_order_id: string; net_amount: number; days_open: number }[];
   const [{ data: rtos }, { data: orders }, { data: warehouses }] =
     await Promise.all([
       supabase
@@ -48,8 +50,15 @@ export default async function RtoPage() {
         fallback, not the primary path.
       </p>
 
+      {stuck.length ? (
+        <div className="mt-4 border border-warning/40 bg-warning-tint p-3 text-sm text-ink">
+          <p className="font-medium">{stuck.length} return shipment(s) have not arrived for over 15 days (₹{stuck.reduce((t, r) => t + Number(r.net_amount), 0).toLocaleString("en-IN")} of orders)</p>
+          <p className="mt-1 text-ink-muted">Chase the courier or raise a claim. Until the goods are received, the sale and its cost stay in the books. Oldest: {stuck[0].external_order_id}, {stuck[0].days_open} days.</p>
+        </div>
+      ) : null}
+
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
-        <div className="border border-line bg-surface">
+        <div className="border border-line bg-surface overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead>
               <tr className="border-b border-line-strong text-xs text-ink-muted">

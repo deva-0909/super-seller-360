@@ -37,6 +37,8 @@ export default async function AgeingPage() {
   const totalBucket = (b: string) => rows.filter((r) => r.bucket === b).reduce((t, r) => t + r.outstanding, 0);
   const total = rows.reduce((t, r) => t + r.outstanding, 0);
   const breaches = rows.filter((r) => r.msme_breach);
+  const { data: lateRaw } = await supabase.from("msme_paid_late").select("bill_no, supplier_name, limit_date, payment_no, payment_date, paid_amount, days_late").order("payment_date", { ascending: false }).limit(200);
+  const paidLate = (lateRaw ?? []) as { bill_no: string; supplier_name: string; limit_date: string; payment_no: string; payment_date: string; paid_amount: number; days_late: number }[];
   const diff = booksVisible ? Math.round((ledgerOwed - (total - advance)) * 100) / 100 : 0;
 
   const csv: (string | number)[][] = [
@@ -73,7 +75,7 @@ export default async function AgeingPage() {
       </div>
 
       <h2 className="mt-8 text-sm font-semibold text-ink">By supplier</h2>
-      <div className="mt-2 border border-line bg-surface">
+      <div className="mt-2 border border-line bg-surface overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead><tr className="border-b border-line-strong text-xs text-ink-muted">
             <th className="px-4 py-3 font-medium">Supplier</th>{BUCKETS.map((b) => <th key={b} className="px-4 py-3 font-medium text-right">{b}</th>)}<th className="px-4 py-3 font-medium text-right">Total</th></tr></thead>
@@ -89,7 +91,7 @@ export default async function AgeingPage() {
       </div>
 
       <h2 className="mt-8 text-sm font-semibold text-ink">Bill by bill</h2>
-      <div className="mt-2 border border-line bg-surface">
+      <div className="mt-2 border border-line bg-surface overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead><tr className="border-b border-line-strong text-xs text-ink-muted">
             <th className="px-4 py-3 font-medium">Bill</th><th className="px-4 py-3 font-medium">Supplier</th><th className="px-4 py-3 font-medium">Due</th>
@@ -116,6 +118,26 @@ export default async function AgeingPage() {
           {Math.abs(diff) < 0.01 ? " They agree." : ` Difference ${inr(Math.abs(diff))}: usually a manual journal, an opening balance or a supplier balance carried over from before this module. Look in the Sundry Creditors ledger.`}
         </p>
       </div>
+      ) : null}
+      {paidLate.length ? (
+        <div className="mt-6 overflow-x-auto border border-warning/40 bg-surface">
+          <p className="border-b border-line px-4 py-3 text-sm font-medium text-ink">
+            MSME suppliers paid after the 45-day limit ({paidLate.length})
+            <span className="ml-2 font-normal text-ink-muted">Such payments are not deductible in the year (Section 43B(h)) and interest is due to the supplier. Confirm with your CA.</span>
+          </p>
+          <table className="w-full text-left text-sm">
+            <thead><tr className="border-b border-line text-xs text-ink-muted"><th className="px-4 py-2 font-medium">Supplier</th><th className="px-4 py-2 font-medium">Bill</th><th className="px-4 py-2 font-medium">Limit date</th><th className="px-4 py-2 font-medium">Paid on</th><th className="px-4 py-2 font-medium">Days late</th><th className="px-4 py-2 text-right font-medium">Amount</th></tr></thead>
+            <tbody>
+              {paidLate.slice(0, 50).map((r) => (
+                <tr key={r.payment_no + r.bill_no} className="border-b border-line last:border-0">
+                  <td className="px-4 py-2">{r.supplier_name}</td><td className="px-4 py-2 font-data">{r.bill_no}</td>
+                  <td className="px-4 py-2 font-data text-ink-muted">{r.limit_date}</td><td className="px-4 py-2 font-data text-ink-muted">{r.payment_date}</td>
+                  <td className="px-4 py-2 font-data">{r.days_late}</td><td className="px-4 py-2 text-right font-data">{inr(Number(r.paid_amount))}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       ) : null}
     </div>
   );

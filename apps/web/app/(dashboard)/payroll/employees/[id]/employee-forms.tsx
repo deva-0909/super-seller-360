@@ -9,7 +9,7 @@ import { inputCls, primaryBtn, smallBtn } from "@/components/purchases/bits";
 
 export type Emp = { emp_id: string; name: string; gender: string | null; date_of_birth: string | null; date_of_joining: string; date_of_leaving: string | null; pan: string | null; uan: string | null; esic_no: string | null; designation: string | null; department: string | null; email: string | null; phone: string | null; pf_applicable: boolean; pf_on_actual: boolean; esi_applicable: boolean; pt_applicable: boolean; lwf_applicable: boolean; status: string };
 export type Sal = { effective_from: string; basic: number; da: number; hra: number; other_allowance: number; total: number };
-export type Bank = { bank_name: string; ifsc: string; account_number: string; account_holder: string };
+export type Bank = { bank_name: string; ifsc: string; account_last4: string; account_holder: string };
 export type Decl = { regime: string; ded_80c: number; ded_80d: number; hra_exempt: number; home_loan_interest: number; other_deductions: number; prev_income: number; prev_tds: number };
 
 export function EmployeeForms({ emp, salary, bank, decl, fy, canWrite }: { emp: Emp; salary: Sal[]; bank: Bank | null; decl: Decl | null; fy: number; canWrite: boolean }) {
@@ -21,7 +21,7 @@ export function EmployeeForms({ emp, salary, bank, decl, fy, canWrite }: { emp: 
   const [e, setE] = useState({ ...emp, name: emp.name, dob: emp.date_of_birth ?? "", pan: emp.pan ?? "", uan: emp.uan ?? "", esic: emp.esic_no ?? "", designation: emp.designation ?? "", department: emp.department ?? "", email: emp.email ?? "", phone: emp.phone ?? "" });
   const cur = salary[0];
   const [s, setS] = useState({ from: new Date().toISOString().slice(0, 10), basic: String(cur?.basic ?? ""), da: String(cur?.da ?? 0), hra: String(cur?.hra ?? 0), other: String(cur?.other_allowance ?? 0) });
-  const [b, setB] = useState({ bank: bank?.bank_name ?? "", ifsc: bank?.ifsc ?? "", acct: bank?.account_number ?? "", holder: bank?.account_holder ?? emp.name });
+  const [b, setB] = useState({ bank: bank?.bank_name ?? "", ifsc: bank?.ifsc ?? "", acct: "", holder: bank?.account_holder ?? emp.name });
   const [d, setD] = useState({ regime: decl?.regime ?? "new", c80: String(decl?.ded_80c ?? 0), d80: String(decl?.ded_80d ?? 0), hra: String(decl?.hra_exempt ?? 0), home: String(decl?.home_loan_interest ?? 0), other: String(decl?.other_deductions ?? 0), pinc: String(decl?.prev_income ?? 0), ptds: String(decl?.prev_tds ?? 0) });
   const [leave, setLeave] = useState(emp.date_of_leaving ?? "");
 
@@ -78,7 +78,7 @@ export function EmployeeForms({ emp, salary, bank, decl, fy, canWrite }: { emp: 
             <h2 className="text-sm font-semibold text-ink">Bank account (for the salary file)</h2>
             <div className="mt-3 grid grid-cols-2 gap-2">
               <input className={inputCls} placeholder="Bank" value={b.bank} onChange={(x) => setB({ ...b, bank: x.target.value })} /><input className={inputCls} placeholder="IFSC" value={b.ifsc} onChange={(x) => setB({ ...b, ifsc: x.target.value.toUpperCase() })} />
-              <input className={inputCls} placeholder="Account number" value={b.acct} onChange={(x) => setB({ ...b, acct: x.target.value })} /><input className={inputCls} placeholder="Name on account" value={b.holder} onChange={(x) => setB({ ...b, holder: x.target.value })} />
+              <input className={inputCls} placeholder={bank?.account_last4 ? `Saved ••••${bank.account_last4}. Type a new number to change` : "Account number"} aria-label="Account number" autoComplete="off" value={b.acct} onChange={(x) => setB({ ...b, acct: x.target.value })} /><input className={inputCls} placeholder="Name on account" value={b.holder} onChange={(x) => setB({ ...b, holder: x.target.value })} />
             </div>
             <button className={`${smallBtn} mt-2`} disabled={busy} onClick={() => run(() => supabase.rpc("employee_set_bank", { p_emp: emp.emp_id, p_bank: b.bank, p_ifsc: b.ifsc, p_account: b.acct, p_holder: b.holder }), "Bank details saved.")}>Save bank details</button>
           </div>

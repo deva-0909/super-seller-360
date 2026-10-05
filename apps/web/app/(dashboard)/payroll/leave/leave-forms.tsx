@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { friendlyError } from "@/lib/friendly-error";
@@ -25,9 +25,13 @@ export function RecordLeave({ emps }: { emps: { id: string; label: string }[] })
   const supabase = createClient();
   const [f, setF] = useState({ emp: emps[0]?.id ?? "", kind: "taken", days: "", date: new Date().toISOString().slice(0, 10), note: "" });
   const [err, setErr] = useState<string | null>(null);
+  const inFlight = useRef(false);
   async function go() {
+    if (inFlight.current) return; // one click records one entry
+    inFlight.current = true;
     setErr(null);
     const { error } = await supabase.rpc("leave_record", { p_emp: f.emp, p_kind: f.kind, p_days: Number(f.days), p_date: f.date, p_note: f.note });
+    inFlight.current = false;
     if (error) { setErr(friendlyError(error.message)); return; }
     setF({ ...f, days: "", note: "" }); router.refresh();
   }

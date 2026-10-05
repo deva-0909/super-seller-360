@@ -1385,3 +1385,16 @@ The demo generator (`supabase/seed/demo/model.py`) no longer creates the double 
 - **Bank-feed function**: only `BANKFEED_` secrets can be sent, only public https addresses, redirects are not followed. Webhook signatures compared in constant time. Redeploy: `supabase functions deploy bank-statement-sync --no-verify-jwt`, and the same for `shopify-order-webhook` and `returns-rto-webhook`.
 - **Orders** has search, status filter and pages. CSV downloads neutralise formulas; uploads over 10 MB are refused.
 - Lint is clean (7 errors fixed); Next.js upgraded to 16.3.8.
+
+## Audit fixes, round 3 (migrations 0092 and 0093)
+
+**0092, encryption.** Bank account numbers (suppliers and employees) and connection keys are stored encrypted. The key is held in Supabase Vault, not in the tables. The screens show only the last four digits; to change a number, type the new one (leave blank to keep). Payment and salary bank files open the number inside the database function only. Needs Vault switched on (the script tries to). Employee/supplier tables no longer allow `select account_number` from the browser.
+
+**0093, business rules.**
+- Gujarat professional tax by slab (Rs 80 from 6,000, Rs 150 from 9,000, Rs 200 from 12,000) with women's exemption below Rs 12,000 (`payroll_settings.pt_women_exempt_below`). Slabs live in `pt_slabs` and are editable with `pt_slab_save`. **Confirm these with your CA.** Existing approved payroll runs are not changed; new and recalculated runs use the slabs.
+- MSME suppliers paid after the 45-day limit are listed under Purchases > Ageing (view `msme_paid_late`).
+- Return shipments not received for over 15 days show a banner on the RTO screen (view `rto_stuck`).
+
+**Screens.** Confirmation before a role change, a suspend, and turning off two-step sign-in. A second click while a save is running is ignored (rates panels, leave entries). Tables scroll sideways on phones.
+
+**Not changed, needs a business decision with your CA:** bonus posting and bonus in final settlement, fees on marketplace COD orders, splitting shipping out of commission, credit-note numbering and partial returns, month-end cut-off.

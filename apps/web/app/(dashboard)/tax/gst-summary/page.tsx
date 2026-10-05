@@ -271,7 +271,7 @@ export default async function GstSummaryPage({
       <h2 className="mt-8 text-sm font-semibold text-ink">
         State-wise supply (place of supply, for GSTR-1)
       </h2>
-      <div className="mt-3 border border-line bg-surface">
+      <div className="mt-3 border border-line bg-surface overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b border-line-strong text-xs text-ink-muted">
@@ -320,7 +320,7 @@ export default async function GstSummaryPage({
           for this period if any returns were credit-noted.
         </p>
       ) : null}
-      <div className="mt-3 border border-line bg-surface">
+      <div className="mt-3 border border-line bg-surface overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b border-line-strong text-xs text-ink-muted">

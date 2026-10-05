@@ -39,7 +39,7 @@ export default async function BillPage({ params, searchParams }: { params: Promi
         <BillActions id={id} status={b.status} canApprove={canApprove} isMaker={b.created_by === auth.user?.id} />
       </div>
 
-      <div className="mt-6 border border-line bg-surface">
+      <div className="mt-6 border border-line bg-surface overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead><tr className="border-b border-line-strong text-xs text-ink-muted">
             <th className="px-4 py-3 font-medium">Item</th><th className="px-4 py-3 font-medium">Booked to</th>

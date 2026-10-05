@@ -11,7 +11,7 @@ export default async function EmployeePage({ params }: { params: Promise<{ id: s
   const [{ data: emp }, { data: sal }, { data: bank }, { data: decl }, { data: canWrite }] = await Promise.all([
     supabase.from("employees").select("*").eq("emp_id", id).maybeSingle(),
     supabase.from("employee_salary").select("effective_from, basic, da, hra, other_allowance, total").eq("emp_id", id).order("effective_from", { ascending: false }),
-    supabase.from("employee_bank").select("bank_name, ifsc, account_number, account_holder").eq("emp_id", id).maybeSingle(),
+    supabase.from("employee_bank").select("bank_name, ifsc, account_last4, account_holder").eq("emp_id", id).maybeSingle(),
     supabase.from("employee_declarations").select("*").eq("emp_id", id).eq("fy", fy).maybeSingle(),
     supabase.rpc("has_payroll_write"),
   ]);

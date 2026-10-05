@@ -47,7 +47,7 @@ export default async function TrialBalancePage({ searchParams }: { searchParams:
       <DateRangeForm from={from} to={to} />
       {error ? <p className="mt-4 text-sm text-danger">Could not load the trial balance: {error.message}</p> : null}
 
-      <div className="mt-6 border border-line bg-surface">
+      <div className="mt-6 border border-line bg-surface overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b border-line-strong text-xs text-ink-muted">

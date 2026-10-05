@@ -37,7 +37,7 @@ export default async function PaymentPage({ params, searchParams }: { params: Pr
         <PaymentActions id={id} status={p.status} canApprove={canApprove} isMaker={p.created_by === auth.user?.id} />
       </div>
 
-      <div className="mt-6 border border-line bg-surface">
+      <div className="mt-6 border border-line bg-surface overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead><tr className="border-b border-line-strong text-xs text-ink-muted"><th className="px-4 py-3 font-medium">Bill paid</th><th className="px-4 py-3 font-medium text-right">Amount</th></tr></thead>
           <tbody>

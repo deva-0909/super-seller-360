@@ -40,7 +40,7 @@ export default async function BillsPage({ searchParams }: { searchParams: Promis
           <Link key={f} href={`?status=${f}`} className={f === status ? "font-medium text-ink" : "text-accent hover:underline"}>{f === "all" ? "All" : f[0].toUpperCase() + f.slice(1)}</Link>
         ))}
       </div>
-      <div className="mt-4 border border-line bg-surface">
+      <div className="mt-4 border border-line bg-surface overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b border-line-strong text-xs text-ink-muted">

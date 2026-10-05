@@ -79,7 +79,7 @@ export default async function TaxPage() {
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
-        <div className="border border-line bg-surface">
+        <div className="border border-line bg-surface overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead>
               <tr className="border-b border-line-strong text-xs text-ink-muted">

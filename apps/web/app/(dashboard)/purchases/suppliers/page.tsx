@@ -21,7 +21,7 @@ export default async function SuppliersPage() {
         </div>
         {canWrite ? <Link href="/purchases/suppliers/new" className="inline-flex h-10 items-center rounded-lg bg-accent px-4 text-sm font-semibold text-white hover:bg-accent-hover">Add supplier</Link> : null}
       </div>
-      <div className="mt-6 border border-line bg-surface">
+      <div className="mt-6 border border-line bg-surface overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b border-line-strong text-xs text-ink-muted">

@@ -22,7 +22,7 @@ export default async function LedgersPage() {
         Closing balance of every ledger including its opening balance, from posted vouchers only. See also the <Link href="/accounting/trial-balance" className="text-accent hover:underline">Trial Balance</Link> and <Link href="/accounting/day-book" className="text-accent hover:underline">Day Book</Link>.
       </p>
 
-      <div className="mt-6 border border-line bg-surface">
+      <div className="mt-6 border border-line bg-surface overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b border-line-strong text-xs text-ink-muted">

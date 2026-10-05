@@ -41,7 +41,7 @@ export default async function CreditNotePage({ params, searchParams }: { params:
         </div>
         <NoteActions id={id} status={n.status} canApprove={canApprove} isMaker={n.created_by === auth.user?.id} />
       </div>
-      <div className="mt-6 max-w-xl border border-line bg-surface">
+      <div className="mt-6 max-w-xl border border-line bg-surface overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead><tr className="border-b border-line-strong text-xs text-ink-muted"><th className="px-4 py-3 font-medium">Line</th><th className="px-4 py-3 text-right font-medium">Value</th><th className="px-4 py-3 text-right font-medium">GST rate</th></tr></thead>
           <tbody>{lines.map((l) => <tr key={l.line_no}><td className="px-4 py-3 text-ink">{l.description ?? "—"}</td><td className="px-4 py-3 text-right font-data text-ink">{m(Number(l.taxable))}</td><td className="px-4 py-3 text-right font-data text-ink-muted">{Number(l.gst_rate)}%</td></tr>)}</tbody>

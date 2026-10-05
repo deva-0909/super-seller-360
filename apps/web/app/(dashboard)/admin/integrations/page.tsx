@@ -26,7 +26,7 @@ export default async function IntegrationsPage() {
       <h2 className="mt-6 text-sm font-semibold text-ink">
         Channel connections
       </h2>
-      <div className="mt-3 border border-line bg-surface">
+      <div className="mt-3 border border-line bg-surface overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b border-line-strong text-xs text-ink-muted">

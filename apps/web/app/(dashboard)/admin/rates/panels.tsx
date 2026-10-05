@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { friendlyError } from "@/lib/friendly-error";
@@ -13,9 +13,13 @@ function useRpc() {
   const supabase = createClient();
   const [err, setErr] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
+  const inFlight = useRef(false);
   async function run(fn: () => PromiseLike<{ error: { message: string } | null }>, ok = "Saved.") {
+    if (inFlight.current) return; // a second click while the first is still saving is ignored
+    inFlight.current = true;
     setErr(null); setMsg(null);
-    const { error } = await fn();
+    let error: { message: string } | null = null;
+    try { ({ error } = await fn()); } finally { inFlight.current = false; }
     if (error) { setErr(friendlyError(error.message)); return; }
     setMsg(ok); router.refresh();
   }
@@ -113,7 +117,7 @@ export function SlabPanel({ rows }: { rows: Slab[] }) {
   return (
     <div className="border border-line bg-surface p-3">
       <p className="text-xs text-ink-muted">Income-tax slabs used for salary TDS. For a new Budget, add the new year&apos;s slabs (the year they start from); the system uses the latest set that applies to each financial year. Standard deduction, rebate and cess are on the Payroll tab.</p>
-      <div className="mt-2 max-h-[48vh] overflow-y-auto">
+      <div className="mt-2 max-h-[48vh] overflow-y-auto overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead className="sticky top-0 bg-surface"><tr className="border-b border-line-strong text-xs text-ink-muted"><th className="px-2 py-1 font-medium">Regime</th><th className="px-2 py-1 font-medium">Applies</th><th className="px-2 py-1 font-medium">Age</th><th className="px-2 py-1 font-medium">Income from (₹)</th><th className="px-2 py-1 font-medium">up to (₹)</th><th className="px-2 py-1 font-medium">Rate %</th><th /></tr></thead>
           <tbody>{rows.map((s) => <SlabRow key={s.slab_id} s={s} />)}</tbody>

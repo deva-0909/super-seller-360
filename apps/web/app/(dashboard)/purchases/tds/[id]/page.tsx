@@ -35,7 +35,7 @@ export default async function ChallanPage({ params, searchParams }: { params: Pr
         </div>
         <ChallanActions id={id} status={c.status} canApprove={canApprove} isMaker={c.created_by === auth.user?.id} />
       </div>
-      <div className="mt-6 max-w-md border border-line bg-surface">
+      <div className="mt-6 max-w-md border border-line bg-surface overflow-x-auto">
         <table className="w-full text-left text-sm"><tbody>
           {row("Tax", inr(Number(c.tax)))}{row("Interest", inr(Number(c.interest)) === "—" ? "₹0.00" : inr(Number(c.interest)))}{row("Late fee", inr(Number(c.late_fee)) === "—" ? "₹0.00" : inr(Number(c.late_fee)))}
         </tbody><tfoot><tr className="border-t border-line-strong text-sm font-medium"><td className="px-4 py-3 text-ink">Total paid</td><td className="px-4 py-3 text-right font-data text-ink">{inr(Number(c.total))}</td></tr></tfoot></table>

@@ -61,7 +61,8 @@ export function MfaPanel() {
     router.refresh();
   }
   async function remove() {
-    if (!verified) return;
+    if (!verified || busy) return;
+    if (!window.confirm("Turn off two-step sign-in? Your account will be protected by the password alone.")) return;
     setBusy(true); setErr(null);
     const { error } = await supabase.auth.mfa.unenroll({ factorId: verified.id });
     setBusy(false);

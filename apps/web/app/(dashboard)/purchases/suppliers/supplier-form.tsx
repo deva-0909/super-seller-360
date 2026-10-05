@@ -11,7 +11,7 @@ export type SupplierInit = {
   supplier_id?: string; name?: string; trade_name?: string | null; gstin?: string | null; pan?: string | null; state_code?: string;
   is_msme?: boolean; msme_reg_no?: string | null; payment_terms_days?: number; tds_section?: string | null; tds_rate_override?: number | null;
   email?: string | null; phone?: string | null; address?: string | null;
-  bank_name?: string | null; ifsc?: string | null; account_number?: string | null; account_holder?: string | null;
+  bank_name?: string | null; ifsc?: string | null; account_last4?: string | null; account_holder?: string | null;
 };
 
 export function SupplierForm({ init, states, sections, showBank }: {
@@ -23,7 +23,7 @@ export function SupplierForm({ init, states, sections, showBank }: {
     is_msme: init?.is_msme ?? false, msme_reg_no: init?.msme_reg_no ?? "", payment_terms_days: String(init?.payment_terms_days ?? 30),
     tds_section: init?.tds_section ?? "", tds_rate_override: init?.tds_rate_override != null ? String(init.tds_rate_override) : "",
     email: init?.email ?? "", phone: init?.phone ?? "", address: init?.address ?? "",
-    bank_name: init?.bank_name ?? "", ifsc: init?.ifsc ?? "", account_number: init?.account_number ?? "", account_holder: init?.account_holder ?? "",
+    bank_name: init?.bank_name ?? "", ifsc: init?.ifsc ?? "", account_number: "", account_holder: init?.account_holder ?? "",
   });
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -102,7 +102,7 @@ export function SupplierForm({ init, states, sections, showBank }: {
           <p className="text-sm font-semibold text-ink sm:col-span-2">Bank details</p>
           <Lbl label="Account holder"><input className={inputCls} value={f.account_holder} onChange={(e) => set("account_holder", e.target.value)} /></Lbl>
           <Lbl label="Bank"><input className={inputCls} value={f.bank_name} onChange={(e) => set("bank_name", e.target.value)} /></Lbl>
-          <Lbl label="Account number"><input className={inputCls} inputMode="numeric" value={f.account_number} onChange={(e) => set("account_number", e.target.value.replace(/\D/g, ""))} /></Lbl>
+          <Lbl label={init?.account_last4 ? `Account number (saved: ending ${init.account_last4}; type a new one to change it)` : "Account number"}><input className={inputCls} inputMode="numeric" autoComplete="off" placeholder={init?.account_last4 ? `••••••${init.account_last4}` : ""} value={f.account_number} onChange={(e) => set("account_number", e.target.value.replace(/\D/g, ""))} /></Lbl>
           <Lbl label="IFSC"><input className={inputCls} value={f.ifsc} maxLength={11} onChange={(e) => set("ifsc", e.target.value.toUpperCase())} /></Lbl>
           <p className="text-xs text-ink-muted sm:col-span-2">Changing the GSTIN, TDS settings or bank account of an approved supplier sends it back for approval by a second person.</p>
         </section>
