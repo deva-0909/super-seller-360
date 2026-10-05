@@ -1291,3 +1291,7 @@ Modelled on the CleanCar finance screens, in this app's own look.
 - Shared pieces: `components/accounting/tally.tsx`, `components/ui/print-button.tsx`; printing hides the menu and top bar (`globals.css`).
 
 Run `0083_pnl_report.sql` in the Supabase SQL Editor before pushing, otherwise the P&L screen shows an error.
+
+## Fix: "View as" role preview did nothing (migration 0084)
+
+`0024` had rewritten `current_role_name()` and removed the preview logic added by `0006`, so the menu and the data rules always used the real role. `0084_restore_role_preview.sql` restores it (a suspended user still gets no role; only a real Super Admin's preview is honoured) and clears old preview rows. Run it in the Supabase SQL Editor; no code change is needed.
