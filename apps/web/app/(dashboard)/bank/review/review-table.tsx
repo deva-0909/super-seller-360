@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { friendlyError } from "@/lib/friendly-error";
 import { dateFmt, inr } from "../reconcile/types";
+import { SplitPanel } from "./split-panel";
 
 export type Opt = { id: string; label: string };
 export type ReviewLine = {
@@ -27,6 +28,7 @@ export function ReviewTable({ accountId, lines, ledgers, suppliers, canWrite }: 
   const [busy, setBusy] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  const [splitFor, setSplitFor] = useState<string | null>(null);
 
   const confident = lines.filter((l) => l.suggest_ledger_id && (l.suggest_confidence ?? 0) >= 70);
 
@@ -96,7 +98,8 @@ export function ReviewTable({ accountId, lines, ledgers, suppliers, canWrite }: 
             {lines.map((l) => {
               const conf = l.suggest_confidence ?? 0;
               return (
-                <tr key={l.bank_txn_id} className="border-b border-line/60 align-top">
+                <Fragment key={l.bank_txn_id}>
+                <tr className="border-b border-line/60 align-top">
                   <td className="px-3 py-3">{canWrite && l.suggest_ledger_id && conf >= 70 ? <input type="checkbox" aria-label="Select line" checked={picked.includes(l.bank_txn_id)} onChange={(e) => setPicked(e.target.checked ? [...picked, l.bank_txn_id] : picked.filter((x) => x !== l.bank_txn_id))} /> : null}</td>
                   <td className="whitespace-nowrap px-3 py-3 text-ink-muted">{dateFmt(l.txn_date)}</td>
                   <td className="px-3 py-3 text-ink">
@@ -120,8 +123,13 @@ export function ReviewTable({ accountId, lines, ledgers, suppliers, canWrite }: 
                   </td>
                   <td className="whitespace-nowrap px-3 py-3 text-right font-data text-ink">{l.type === "debit" ? inr(l.amount) : ""}</td>
                   <td className="whitespace-nowrap px-3 py-3 text-right font-data text-ink">{l.type === "credit" ? inr(l.amount) : ""}</td>
-                  <td className="px-3 py-3">{canWrite ? <button className={primary} disabled={!ledger[l.bank_txn_id] || !!busy} onClick={() => accept(l)}>{busy === l.bank_txn_id ? "Booking…" : "Accept"}</button> : null}</td>
+                  <td className="px-3 py-3"><div className="flex flex-col gap-2">{canWrite ? <button className={primary} disabled={!ledger[l.bank_txn_id] || !!busy} onClick={() => accept(l)}>{busy === l.bank_txn_id ? "Booking…" : "Accept"}</button> : null}
+                    {canWrite ? <button className="h-8 rounded-lg border border-line bg-surface px-3 text-xs font-semibold text-ink hover:bg-surface-sunken" onClick={() => setSplitFor(splitFor === l.bank_txn_id ? null : l.bank_txn_id)}>Split</button> : null}</div></td>
                 </tr>
+                {splitFor === l.bank_txn_id ? (
+                  <tr className="border-b border-line/60 bg-surface-sunken/50"><td colSpan={8} className="px-3 py-3"><SplitPanel line={l} ledgers={ledgers} vendor={vendor[l.bank_txn_id] || null} onDone={() => { setSplitFor(null); setMsg("Booked."); router.refresh(); }} /></td></tr>
+                ) : null}
+                </Fragment>
               );
             })}
             {!lines.length ? <tr><td colSpan={8} className="px-4 py-10 text-center text-sm text-ink-muted">Nothing to review. New bank lines that are not in your books will appear here.</td></tr> : null}

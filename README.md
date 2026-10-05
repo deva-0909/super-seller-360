@@ -1427,3 +1427,6 @@ Accounting → Month-end checklist (`/accounting/month-end`, also a quick action
 
 ## Round 10: recurring bills
 Purchases → Recurring bills (`/purchases/recurring`). A template (supplier, lines, repeat every month/quarter/year) creates a normal pending purchase bill when due ("Create bill now" or "Create all due"); a second person approves it as usual. Invoice number is PREFIX-YYYYMM so a month cannot be entered twice. Pay-bills batches already exist as Purchases → Payment runs (0073). Migration `0099_recurring_bills.sql`.
+
+## Round 11: split bank lines
+Bank → For review: a **Split** button on each line books it across several accounts (amount + GST, or one payment for several costs). Parts must add up to the bank amount; posts one voucher and links it to the bank line. Migration `0100_bank_split_booking.sql`. Receipt capture on expense claims already exists (camera upload; submit needs a receipt). Recurring sales invoices are not applicable: invoices here are created from orders.
