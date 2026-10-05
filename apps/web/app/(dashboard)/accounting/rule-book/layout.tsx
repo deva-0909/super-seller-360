@@ -20,7 +20,7 @@ export default async function RuleBookLayout({ children }: { children: React.Rea
       <div className="mt-5">
         <RuleBookTabs reviewCount={count ?? 0} />
       </div>
-      <div className="mt-6"><AccessGuard gate="accounting_view">{children}</AccessGuard></div>
+      <div className="mt-6"><AccessGuard gate="books_view">{children}</AccessGuard></div>
     </div>
   );
 }

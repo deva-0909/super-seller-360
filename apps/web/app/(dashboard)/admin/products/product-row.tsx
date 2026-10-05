@@ -27,10 +27,12 @@ export function ProductRow({
   product,
   striped,
   canEdit,
+  showCost = true,
 }: {
   product: Product;
   striped: boolean;
   canEdit: boolean;
+  showCost?: boolean;
 }) {
   const router = useRouter();
   const supabase = createClient();
@@ -191,11 +193,13 @@ export function ProductRow({
       <td className="px-4 py-3 text-right font-data text-ink-muted">
         {product.gst_rate != null ? `${product.gst_rate}%` : "—"}
       </td>
-      <td className="px-4 py-3 text-right font-data text-ink-muted">
-        {product.cost_price != null
-          ? `₹${Number(product.cost_price).toLocaleString("en-IN")}`
-          : "—"}
-      </td>
+      {showCost ? (
+        <td className="px-4 py-3 text-right font-data text-ink-muted">
+          {product.cost_price != null
+            ? `₹${Number(product.cost_price).toLocaleString("en-IN")}`
+            : "—"}
+        </td>
+      ) : null}
       <td className="px-4 py-3 text-right font-data text-ink-muted">
         {product.stock_timeout_days != null ? `${product.stock_timeout_days}d` : "—"}
       </td>

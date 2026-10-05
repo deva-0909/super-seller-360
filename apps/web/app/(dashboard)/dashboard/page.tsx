@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { getAccess } from "@/lib/access";
 
 function Kpi({
   label,
@@ -28,6 +29,9 @@ function Kpi({
 
 export default async function DashboardPage() {
   const supabase = await createClient();
+  const access = await getAccess();
+  const showCost = access.cost_view !== false;
+  const showBooks = access.books_view !== false;
 
   const [
     { data: orders },
@@ -118,7 +122,7 @@ export default async function DashboardPage() {
         />
         <Kpi label="Return rate" value={`${returnRate.toFixed(1)}%`} />
         <Kpi label="RTO rate" value={`${rtoRate.toFixed(1)}%`} />
-        <Kpi label="Inventory value" value={`₹${inventoryValue.toLocaleString("en-IN")}`} />
+        {showCost ? <Kpi label="Inventory value" value={`₹${inventoryValue.toLocaleString("en-IN")}`} /> : null}
         <Link href="/insights" className="block hover:opacity-90">
           <Kpi
             label="Stock time-out alerts"
@@ -126,28 +130,32 @@ export default async function DashboardPage() {
             tone={overdueSkus > 0 ? "danger" : nearingSkus > 0 ? "warning" : "success"}
           />
         </Link>
-        <Kpi
-          label="Stock at risk (cost)"
-          value={`₹${atRiskValue.toLocaleString("en-IN")}`}
-          tone={atRiskValue > 0 ? "warning" : "ink"}
-        />
+        {showCost ? (
+          <Kpi
+            label="Stock at risk (cost)"
+            value={`₹${atRiskValue.toLocaleString("en-IN")}`}
+            tone={atRiskValue > 0 ? "warning" : "ink"}
+          />
+        ) : null}
         <Kpi
           label="Claims recoverable"
           value={`₹${claimsRecoverable.toLocaleString("en-IN")}`}
           tone={claimsRecoverable > 0 ? "warning" : "ink"}
         />
-        <Kpi
-          label="Trial balance"
-          value={totalDebit === totalCredit ? "Balanced" : "Out of balance"}
-          tone={totalDebit === totalCredit ? "success" : "danger"}
-        />
+        {showBooks ? (
+          <Kpi
+            label="Trial balance"
+            value={totalDebit === totalCredit ? "Balanced" : "Out of balance"}
+            tone={totalDebit === totalCredit ? "success" : "danger"}
+          />
+        ) : null}
       </div>
 
-      <p className="mt-6 text-xs text-ink-muted">
+      {showBooks ? <p className="mt-6 text-xs text-ink-muted">
         Trial balance: ₹{totalDebit.toLocaleString("en-IN")} debit vs. ₹
         {totalCredit.toLocaleString("en-IN")} credit across every posted
         voucher.
-      </p>
+      </p> : null}
     </div>
   );
 }

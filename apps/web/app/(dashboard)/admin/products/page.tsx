@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/current-user";
+import { getAccess } from "@/lib/access";
 import { CreateProductForm } from "./create-product-form";
 import { ProductRow } from "./product-row";
 
@@ -8,11 +9,14 @@ export default async function ProductsPage() {
   const currentUser = await getCurrentUser();
   const supabase = await createClient();
 
-  const { data: products } = await supabase
+  const showCost = (await getAccess()).cost_view !== false;
+  const { data: rawProducts } = await supabase
     .from("products")
     .select("product_id, sku, name, category, hsn, gst_rate, cost_price, stock_timeout_days, status, size, colour, barcode, brand, packaging_cost")
     .order("name");
 
+  // people who may not see cost prices never receive them
+  const products = (rawProducts ?? []).map((p) => (showCost ? p : { ...p, cost_price: null, packaging_cost: null }));
   const canCreate = ["Super Admin", "Operations Manager"].includes(currentUser.roleName);
 
   return (
@@ -43,7 +47,7 @@ export default async function ProductsPage() {
                 <th className="px-4 py-3 font-medium">Category</th>
                 <th className="px-4 py-3 font-medium">HSN</th>
                 <th className="px-4 py-3 font-medium text-right">GST %</th>
-                <th className="px-4 py-3 font-medium text-right">Cost</th>
+                {showCost ? <th className="px-4 py-3 font-medium text-right">Cost</th> : null}
                 <th className="px-4 py-3 font-medium text-right">Time-out</th>
                 <th className="px-4 py-3 font-medium">Status</th>
                 {canCreate ? <th className="px-4 py-3 font-medium"></th> : null}
@@ -56,6 +60,7 @@ export default async function ProductsPage() {
                   product={p}
                   striped={i % 2 === 1}
                   canEdit={canCreate}
+                  showCost={showCost}
                 />
               ))}
               {!products?.length ? (

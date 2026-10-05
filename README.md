@@ -1351,3 +1351,13 @@ The cost side of the same story, 1 April to 5 October 2026, entered by the Accou
 **Checked in the sandbox** over parts 1 and 2: the trial balance sums to nil; all 47 Data Health checks are green; neither bank account goes below nil on any day (opening balances included); every statement line is matched; depreciation ties to the register; profit for the half-year is about Rs 1.3 lakh.
 
 Generators: `supabase/seed/demo/gen_costs.py` with `helpers_costs.py`.
+
+## Access tightening: the books and cost prices (migration 0090)
+
+- **Books view** (new `has_books_view()`): journals, vouchers, voucher lines, opening balances, fixed assets, depreciation and recurring journals are readable only by Super Admin, CEO/Owner, Finance Manager, Accountant and Auditor. Operations and Claims Managers can no longer read them (so no profit, bank balance or salary can be worked out from the journals).
+- **Tax Manager** keeps read access to the GST, TDS and TCS ledger entries only, so the Tax and GST screens still work.
+- **Claims Manager** is removed from accounting view altogether (supplier bills, payments, ledgers); **Operations Manager** keeps purchasing, TDS and cash forecast but not the books.
+- **Menu and screens:** Accounting (ledgers), Journal Entries, Rule Book, Trial Balance, Day Book, Profit & Loss, Balance Sheet, Periods, Opening Balances and Fixed Assets use the new `books_view` gate; the route guards match.
+- **Cost view** (new `has_cost_view()`): Warehouse, Marketplace and Claims Managers no longer see inventory value, stock-at-risk cost, the books tile on Dashboards, idle-stock cost on Business Insights, or the cost column on Products (the values are not sent to their browser). The creditors-ageing "check against the books" box is shown only to roles that can read the ledger.
+- Limit: cost prices are hidden on screens, not in the database; a technically skilled user of those roles could still read the products table through the API. Closing that needs column-level privileges and is a follow-up.
+- Verified in the sandbox by reading each table as each demo user: finance roles see everything; Tax Manager sees only tax-ledger journals; Operations, Claims, Marketplace and Warehouse see no journals.

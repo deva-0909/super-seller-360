@@ -1,5 +1,5 @@
 export type Gate =
-  | "accounting_view" | "accounting_write" | "bankcod_view" | "settlements_view" | "returns_view" | "claims_view" | "tax_view" | "gst_view"
+  | "accounting_view" | "accounting_write" | "books_view" | "cost_view" | "bankcod_view" | "settlements_view" | "returns_view" | "claims_view" | "tax_view" | "gst_view"
   | "inventory_view" | "users_view" | "roles_view" | "audit_view" | "integrations_view" | "channels_view" | "warehouses_view" | "uploads" | "automation_view" | "connectors_manage" | "purchasing_view" | "payroll_view" | "journal_review";
 
 export type NavItem = {
@@ -44,25 +44,25 @@ export const NAV_SECTIONS: NavSection[] = [
       { label: "Claims", href: "/claims", status: "live", gate: "claims_view" },
       { label: "Tax", href: "/tax", status: "live", gate: "tax_view" },
       { label: "GST Returns", href: "/gst", status: "live", gate: "gst_view" },
-      { label: "Accounting", href: "/accounting/ledgers", status: "live", gate: "accounting_view" },
+      { label: "Accounting", href: "/accounting/ledgers", status: "live", gate: "books_view" },
       { label: "Purchase Orders", href: "/purchases/orders", status: "live", gate: "purchasing_view" },
       { label: "Demand Forecast", href: "/forecast/demand", status: "live", gate: "purchasing_view" },
       { label: "Cash Forecast", href: "/forecast/cash", status: "live", gate: "accounting_view" },
       { label: "Purchases", href: "/purchases/bills", status: "live", gate: "accounting_view" },
-      { label: "Opening Balances", href: "/accounting/opening-balances", status: "live", gate: "accounting_view" },
-      { label: "Fixed Assets", href: "/accounting/assets", status: "live", gate: "accounting_view" },
+      { label: "Opening Balances", href: "/accounting/opening-balances", status: "live", gate: "books_view" },
+      { label: "Fixed Assets", href: "/accounting/assets", status: "live", gate: "books_view" },
       { label: "Statutory Calendar", href: "/accounting/statutory", status: "live", gate: "accounting_view" },
       { label: "Payroll", href: "/payroll", status: "live", gate: "payroll_view" },
-      { label: "Journal Entries", href: "/accounting/journal", status: "live", gate: "accounting_view" },
+      { label: "Journal Entries", href: "/accounting/journal", status: "live", gate: "books_view" },
       { label: "Journal Review", href: "/accounting/journal/review", status: "live", gate: "journal_review" },
       { label: "Cash Settlement", href: "/accounting/cash-settlement", status: "live", gate: "bankcod_view" },
-      { label: "Rule Book", href: "/accounting/rule-book", status: "live", gate: "accounting_view" },
-      { label: "Trial Balance", href: "/accounting/trial-balance", status: "live", gate: "accounting_view" },
-      { label: "Day Book", href: "/accounting/day-book", status: "live", gate: "accounting_view" },
-      { label: "Profit & Loss", href: "/accounting/profit-and-loss", status: "live", gate: "accounting_view" },
-      { label: "Balance Sheet", href: "/accounting/balance-sheet", status: "live", gate: "accounting_view" },
+      { label: "Rule Book", href: "/accounting/rule-book", status: "live", gate: "books_view" },
+      { label: "Trial Balance", href: "/accounting/trial-balance", status: "live", gate: "books_view" },
+      { label: "Day Book", href: "/accounting/day-book", status: "live", gate: "books_view" },
+      { label: "Profit & Loss", href: "/accounting/profit-and-loss", status: "live", gate: "books_view" },
+      { label: "Balance Sheet", href: "/accounting/balance-sheet", status: "live", gate: "books_view" },
       { label: "Cash Flow", href: "/accounting/cash-flow", status: "live", gate: "bankcod_view" },
-      { label: "Periods", href: "/accounting/periods", status: "live", gate: "accounting_view" },
+      { label: "Periods", href: "/accounting/periods", status: "live", gate: "books_view" },
       { label: "Reports", status: "soon", gate: "accounting_view" },
     ],
   },

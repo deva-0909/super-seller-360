@@ -25,6 +25,7 @@ export default async function AgeingPage() {
   const { data: tb } = await supabase.rpc("trial_balance", { p_from: null, p_to: new Date().toISOString().slice(0, 10) });
   const led = ((tb ?? []) as Record<string, unknown>[]).find((r) => r.ledger_name === "Sundry Creditors");
   const ledgerOwed = led ? -Number(led.closing) : 0;
+  const booksVisible = !!led; // only the finance team can read the ledger, so others see no comparison
 
   const bySupplier = new Map<string, { name: string; total: number; byBucket: Record<string, number> }>();
   for (const r of rows) {
@@ -36,7 +37,7 @@ export default async function AgeingPage() {
   const totalBucket = (b: string) => rows.filter((r) => r.bucket === b).reduce((t, r) => t + r.outstanding, 0);
   const total = rows.reduce((t, r) => t + r.outstanding, 0);
   const breaches = rows.filter((r) => r.msme_breach);
-  const diff = Math.round((ledgerOwed - (total - advance)) * 100) / 100;
+  const diff = booksVisible ? Math.round((ledgerOwed - (total - advance)) * 100) / 100 : 0;
 
   const csv: (string | number)[][] = [
     ["Creditors ageing", new Date().toISOString().slice(0, 10)],
@@ -107,6 +108,7 @@ export default async function AgeingPage() {
         </table>
       </div>
 
+      {booksVisible ? (
       <div className={`mt-6 border p-4 text-sm ${Math.abs(diff) < 0.01 ? "border-line bg-accent-tint text-ink" : "border-warning/40 bg-warning-tint text-ink"}`}>
         <p className="font-medium">Check against the books</p>
         <p className="mt-1 text-ink-muted">
@@ -114,6 +116,7 @@ export default async function AgeingPage() {
           {Math.abs(diff) < 0.01 ? " They agree." : ` Difference ${inr(Math.abs(diff))}: usually a manual journal, an opening balance or a supplier balance carried over from before this module. Look in the Sundry Creditors ledger.`}
         </p>
       </div>
+      ) : null}
     </div>
   );
 }

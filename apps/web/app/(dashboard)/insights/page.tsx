@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { getAccess } from "@/lib/access";
 import { TimeoutPill } from "@/components/ui/timeout-pill";
 import {
   BarList,
@@ -60,6 +61,8 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
   const { range: rangeParam } = await searchParams;
   const range = RANGES.find((r) => r.key === rangeParam) ?? RANGES[2];
   const supabase = await createClient();
+  const showCost = (await getAccess()).cost_view !== false;
+  const costInr = (n: number) => (showCost ? inr(n) : "hidden");
 
   const [{ data: channels }, { data: salesRaw }, { data: agingRaw }, { data: listings }] = await Promise.all([
     supabase.from("channels").select("channel_id, name").order("name"),
@@ -178,7 +181,7 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
         <Kpi label="Avg order value" value={orderCount ? inr(revenue / orderCount) : "—"} />
         <Kpi
           label="Stock at risk (cost)"
-          value={inr(cost(overdue) + cost(nearing))}
+          value={costInr(cost(overdue) + cost(nearing))}
           sub={`${overdue.length} overdue · ${nearing.length} nearing`}
           tone={overdue.length ? "danger" : nearing.length ? "warning" : "success"}
         />
@@ -236,7 +239,7 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
             <Card
               key={p.channel.channel_id}
               title={p.channel.name.split(" - ")[0]}
-              subtitle={`${p.notSelling.length} of ${p.listedCount} listed SKUs not selling · ${inr(idleCost)} idle stock`}
+              subtitle={`${p.notSelling.length} of ${p.listedCount} listed SKUs not selling · ${costInr(idleCost)} idle stock`}
             >
               {p.notSelling.length ? (
                 <ul className="flex flex-col divide-y divide-line">
@@ -267,9 +270,9 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
         <Card title="Stock value by time-out status" subtitle="At cost price">
           <StackBar
             parts={[
-              { label: "Overdue", value: cost(overdue), color: "#dc2626", display: `${overdue.length} SKUs · ${inr(cost(overdue))}` },
-              { label: "Nearing", value: cost(nearing), color: "#f59e0b", display: `${nearing.length} SKUs · ${inr(cost(nearing))}` },
-              { label: "Healthy", value: cost(okSkus), color: "#16a34a", display: `${okSkus.length} SKUs · ${inr(cost(okSkus))}` },
+              { label: "Overdue", value: cost(overdue), color: "#dc2626", display: `${overdue.length} SKUs · ${costInr(cost(overdue))}` },
+              { label: "Nearing", value: cost(nearing), color: "#f59e0b", display: `${nearing.length} SKUs · ${costInr(cost(nearing))}` },
+              { label: "Healthy", value: cost(okSkus), color: "#16a34a", display: `${okSkus.length} SKUs · ${costInr(cost(okSkus))}` },
             ]}
           />
           <div className="mt-6">
