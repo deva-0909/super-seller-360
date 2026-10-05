@@ -40,6 +40,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { label: "Bank / COD", href: "/bank", status: "live", gate: "bankcod_view" },
       { label: "COD Collections", href: "/cod", status: "live", gate: "bankcod_view" },
       { label: "Expense Claims", href: "/expenses", status: "live" },
+      { label: "My Payslips", href: "/my-payslips", status: "live" },
       { label: "Claims", href: "/claims", status: "live", gate: "claims_view" },
       { label: "Tax", href: "/tax", status: "live", gate: "tax_view" },
       { label: "GST Returns", href: "/gst", status: "live", gate: "gst_view" },

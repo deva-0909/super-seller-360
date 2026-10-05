@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-const TABS = [["/payroll", "Pay runs"], ["/payroll/employees", "Employees"], ["/payroll/dues", "Dues to pay"], ["/payroll/returns", "Returns data"], ["/payroll/settings", "Settings"]];
+const TABS = [["/payroll", "Pay runs"], ["/payroll/employees", "Employees"], ["/payroll/dues", "Dues to pay"], ["/payroll/leave", "Leave"], ["/payroll/bonus", "Bonus"], ["/payroll/exits", "Exits and gratuity"], ["/payroll/returns", "Returns data"], ["/payroll/settings", "Settings"]];
 
 export function PayrollTabs({ active }: { active: string }) {
   return (
