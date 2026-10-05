@@ -1273,3 +1273,10 @@ Cash forecast (migration 0081): approved but unpaid bonus and final settlements 
 
 ## For the developer
 See docs/DEVELOPER_HANDOVER.md for what is still open (live connection keys, CA review of rates, real sample files, one-time setup, known gaps). Search the code for `DEV POINTER`.
+
+## Rates and Compliance screen, compact layout (migration 0082)
+
+- **Administration > Rates and Compliance** (Super Admin only): one screen with tabs to change GST slabs and the B2CL limit, TDS sections (rate, thresholds, on/off, add new), marketplace TCS and 194-O rules, PF/ESI/PT/LWF and salary-tax settings, salary income-tax slabs, bonus/gratuity/leave rates, and depreciation rates. No coding needed.
+- GST slabs were typed into several database functions; they now all read the `gst_allowed_rates` table (`gst_slabs()`).
+- **Change log tab**: every change to any of these tables is recorded by a database trigger with who, when, old value and new value (`rate_change_log`), whichever screen made the change. Finance Managers, Accountants, Auditors, CEO and Super Admin can read it.
+- **Compact layout**: a block at the end of `apps/web/app/globals.css` tightens padding, tables, headings and the side menu on screens 1024 px wide and up, so most screens fit without scrolling. The long intro text under each title shows two lines and opens in full when you point at it. Phones and tablets keep the roomier layout. To adjust the density, edit only that block.

@@ -77,6 +77,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { label: "Warehouses", href: "/admin/warehouses", status: "live", gate: "warehouses_view" },
       { label: "Permissions", href: "/admin/permissions", status: "live", gate: "roles_view" },
       { label: "Connection Centre", href: "/admin/connectors", status: "live", gate: "connectors_manage" },
+      { label: "Rates and Compliance", href: "/admin/rates", status: "live", gate: "connectors_manage" },
       { label: "Integrations", href: "/admin/integrations", status: "live", gate: "integrations_view" },
       { label: "Automation", href: "/admin/automation", status: "live", gate: "automation_view" },
       { label: "Audit Trail", href: "/admin/audit-trail", status: "live", gate: "audit_view" },

@@ -121,3 +121,45 @@ body {
 }
 /* never let the page itself scroll sideways */
 html, body { max-width: 100%; overflow-x: hidden; }
+
+
+/* ---------- Compact layout (desktop and laptop screens) ----------
+   Goal: most screens fit on one screen with little or no scrolling. Phones and tablets keep the roomier layout.
+   Unlayered rules here win over the Tailwind utilities the pages already use, so every page tightens without editing it. */
+@media (min-width: 1024px) {
+  header.h-14 { height: 3rem; }
+  nav.bg-sidebar-bg { gap: 0.75rem; padding-top: 0.75rem; padding-bottom: 0.75rem; }
+  nav.bg-sidebar-bg a, nav.bg-sidebar-bg span.rounded-lg { padding-top: 0.2rem; padding-bottom: 0.2rem; font-size: 0.8125rem; }
+  main .py-8 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+  main .py-6 { padding-top: 0.625rem; padding-bottom: 0.625rem; }
+  main .md\:px-8 { padding-left: 1.25rem; padding-right: 1.25rem; }
+  main h1.text-lg, main h1.text-xl { font-size: 1rem; line-height: 1.4rem; }
+  main h2.text-sm { font-size: 0.8125rem; }
+  main .mt-10 { margin-top: 1rem; }
+  main .mt-8 { margin-top: 0.875rem; }
+  main .mt-6 { margin-top: 0.625rem; }
+  main .mt-5 { margin-top: 0.5rem; }
+  main .mt-4 { margin-top: 0.5rem; }
+  main .mt-3 { margin-top: 0.375rem; }
+  main .mb-4 { margin-bottom: 0.5rem; }
+  main .space-y-4 > :not(:last-child) { margin-bottom: 0.5rem; }
+  main .space-y-6 > :not(:last-child) { margin-bottom: 0.625rem; }
+  main .p-4 { padding: 0.625rem 0.75rem; }
+  main .p-5 { padding: 0.75rem; }
+  main .gap-4 { gap: 0.5rem; }
+  main .gap-3 { gap: 0.5rem; }
+  /* tables */
+  main table.text-sm, main table { font-size: 0.8125rem; line-height: 1.2rem; }
+  main th.py-3 { padding-top: 0.35rem; padding-bottom: 0.35rem; }
+  main td.py-2, main td.py-3 { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+  main td.px-3, main th.px-3 { padding-left: 0.5rem; padding-right: 0.5rem; }
+  /* the intro paragraph under a page title: two lines, the rest opens when you point at it */
+  main > div > p.max-w-3xl:not(:hover), main > div > p.max-w-4xl:not(:hover) {
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; font-size: 0.75rem; line-height: 1.1rem; cursor: help;
+  }
+  main > div > p.max-w-3xl, main > div > p.max-w-4xl { font-size: 0.75rem; line-height: 1.1rem; }
+  /* form fields */
+  main input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), main select { min-height: 0; }
+  main .h-10 { height: 2.25rem; }
+  main .h-9 { height: 2rem; }
+}
