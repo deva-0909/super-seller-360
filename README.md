@@ -1424,3 +1424,6 @@ See `docs/ca-confirmations.md`. New migration `0095_gujarat_pt_update.sql` (run 
 
 ## Round 9: month-end checklist
 Accounting → Month-end checklist (`/accounting/month-end`, also a quick action on the Accounts home). Read-only list of what still needs attention for a month: trial balance, bank lines to review, open settlements, pending bills, late-booked invoices, expense claims, payroll, GSTR-1/3B, overdue COD, data health, period status. New migration `0098_month_end_checklist.sql`.
+
+## Round 10: recurring bills
+Purchases → Recurring bills (`/purchases/recurring`). A template (supplier, lines, repeat every month/quarter/year) creates a normal pending purchase bill when due ("Create bill now" or "Create all due"); a second person approves it as usual. Invoice number is PREFIX-YYYYMM so a month cannot be entered twice. Pay-bills batches already exist as Purchases → Payment runs (0073). Migration `0099_recurring_bills.sql`.
