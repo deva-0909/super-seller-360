@@ -140,7 +140,7 @@ export const KINDS: Record<string, KindConfig> = {
       { key: "period_start", heading: "Period start", type: "date", sample: "2026-09-16", aliases: ["From"] },
       { key: "period_end", heading: "Period end", type: "date", sample: "2026-09-30", aliases: ["To"] },
       { key: "order_id", heading: "Order id", type: "text", sample: "402-1234567-8901234", aliases: ["Order ID", "order_id", "Order number"] },
-      { key: "fee_type", heading: "Type", required: true, list: ["order_value", "commission", "shipping", "gateway_fee", "tax", "refund", "other"], sample: "commission", aliases: ["Fee type", "Charge type"] },
+      { key: "fee_type", heading: "Type", required: true, list: ["order_value", "commission", "shipping", "gateway_fee", "tax", "refund", "other", "tcs", "tds_194o"], sample: "commission", aliases: ["Fee type", "Charge type"] },
       { key: "amount", heading: "Amount", required: true, type: "number", sample: "100", hint: "Always positive. Fees are what the marketplace kept.", aliases: ["Value"] },
       { key: "tax_amount", heading: "GST on the fee", type: "number", sample: "18", aliases: ["GST", "Tax"] },
     ],
@@ -149,6 +149,7 @@ export const KINDS: Record<string, KindConfig> = {
       "GST charged on a fee goes in the GST column of that fee row, not on a separate row.",
       "A settlement is saved only if all its rows are fine. A settlement that is already uploaded is left as it is.",
       "Set the agreed rates under Settlements > Fee check and every fee line is compared with them.",
+      "Put the GST TCS the marketplace held in a row of type tcs, and the income-tax TDS (194-O) in a row of type tds_194o. The amount is what was held, with no GST. They are checked under Settlements > Marketplace tax credits.",
     ],
   },
   orders: {

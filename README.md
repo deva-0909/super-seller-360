@@ -1238,3 +1238,15 @@ Run `0077_journal_guard_rails.sql`. Three layers, sized for 500 to 1,000 voucher
 3. **After posting** (Accounting > Journal Review): hand-written journals, recurring journals (first run only), bank matches and expense claims get a risk score. Score 40 or more must be reviewed; a sample of the rest (default 10%, tripled for new staff or high error rates) is picked up to a daily cap (default 60). The manager marks each right or wrong; "wrong" can reverse a hand-written journal in one click. The operator sees the reviewer's note on their entry. A quality table shows entries, risky ones, reviewed and error rate per person. Work Queue shows held and overdue items.
 
 Every number (amounts, sample percentage, daily cap, deadline, weak words, control groups) is editable on the Journal Review page by a Finance Manager or Super Admin. CEO/Owner and Auditor can view. Orders, returns and settlements posted by the system are not in scope.
+
+## Statutory compliance, part 3: marketplace GST TCS and 194-O TDS credits (migration 0078)
+
+Run `0078_marketplace_tax_credits.sql`. New screen: **Settlements > Marketplace Tax Credits**.
+
+- Marketplaces hold back **GST TCS** (section 52 CGST, 0.5% from 10 Jul 2024, 1% before) and **income-tax TDS** (194-O, 0.1% from 1 Oct 2024, 1% before; section 393 of the Income-tax Act 2025 from 1 Apr 2026). Rates are stored by effective date and are editable; each carries a "confirm with your CA" note.
+- Settlement uploads now accept two extra row types: `tcs` and `tds_194o` (the amount held, without GST). Payout expected still nets them off.
+- For each marketplace channel and month the page shows: sales value, rate, what **should** have been held, what the settlement reports say **was** held (status: as expected / held less / held more), and what your portal shows as **credited** (type it beside the month: GSTR-2A/2B or cash ledger for TCS, Form 26AS/AIS/16A for TDS). Credit status: credited in full, not due yet, missing past due, short, excess. Due dates: TCS credit by the 15th of the next month; TDS credit about 15 days after the 26Q due date of the quarter.
+- A "looks like X% of ..." hint shows which sales value the marketplace actually charged 194-O on (with or without GST, before or after returns), so the "charged on" setting can be matched to reality.
+- Individual or HUF sellers: tick the option and 194-O is expected only on sales beyond the yearly limit (₹5,00,000 by default).
+- Missing or short credit and wrong deductions appear in the Work Queue. CSV export for your CA.
+- Marketplace Managers see only channels they are assigned to. Posting of TCS/TDS receivables to ledgers stays with the Rule Book (this screen is a control, it does not post entries).

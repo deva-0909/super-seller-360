@@ -42,6 +42,7 @@ export default async function SettlementsPage() {
 
       <div className="mt-3 flex gap-4 text-sm">
         <Link href="/settlements/fees" className="text-accent hover:underline">Fee check</Link>
+        <Link href="/settlements/tax-credits" className="ml-4 text-accent hover:underline">Marketplace tax credits</Link>
         {canReconcileRole ? <Link href="/imports/settlement" className="text-accent hover:underline">Upload a settlement report</Link> : null}
       </div>
       {canReconcileRole && (matchReady ?? 0) > 0 ? <AutoMatch count={matchReady ?? 0} /> : null}
