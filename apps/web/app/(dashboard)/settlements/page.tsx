@@ -25,6 +25,13 @@ export default async function SettlementsPage() {
     supabase.from("channels").select("channel_id, name").order("name"),
   ]);
 
+  const { data: codRaw } = await fetchAll<{ channel_name: string; net_amount: number; expected_fees: number; days_old: number }>(() => supabase.from("cod_awaiting_settlement").select("channel_name, net_amount, expected_fees, days_old").order("order_id"));
+  const codByChannel = new Map<string, { n: number; value: number; fees: number; oldest: number }>();
+  for (const r of codRaw ?? []) {
+    const e = codByChannel.get(r.channel_name) ?? { n: 0, value: 0, fees: 0, oldest: 0 };
+    e.n += 1; e.value += Number(r.net_amount); e.fees += Number(r.expected_fees); e.oldest = Math.max(e.oldest, Number(r.days_old));
+    codByChannel.set(r.channel_name, e);
+  }
   const { count: matchReady } = await supabase.from("settlement_bank_matches").select("settlement_id", { count: "exact", head: true });
   const canReconcileRole = ["Super Admin", "Finance Manager", "Accountant"].includes(currentUser.roleName);
 
@@ -47,6 +54,17 @@ export default async function SettlementsPage() {
         {canReconcileRole ? <Link href="/imports/settlement" className="text-accent hover:underline">Upload a settlement report</Link> : null}
       </div>
       {canReconcileRole && (matchReady ?? 0) > 0 ? <AutoMatch count={matchReady ?? 0} /> : null}
+      {codByChannel.size ? (
+        <div className="mt-4 border border-line bg-surface p-3 text-sm">
+          <p className="font-medium text-ink">Marketplace COD orders delivered but not yet in any settlement</p>
+          <p className="mt-1 text-xs text-ink-muted">These will arrive in a marketplace settlement with their fees taken off. Nothing is booked for them until then. The fee shown is an estimate from your fee rules (Fee check); it is ₹0 until the rules are entered.</p>
+          <ul className="mt-2 space-y-1">
+            {[...codByChannel.entries()].map(([name, e]) => (
+              <li key={name} className="text-ink">{name}: {e.n} orders, ₹{Math.round(e.value).toLocaleString("en-IN")} · expected fees ₹{Math.round(e.fees).toLocaleString("en-IN")} · oldest {e.oldest} days</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
         <div className="border border-line bg-surface overflow-x-auto">

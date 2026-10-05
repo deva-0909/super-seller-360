@@ -1398,3 +1398,13 @@ The demo generator (`supabase/seed/demo/model.py`) no longer creates the double 
 **Screens.** Confirmation before a role change, a suspend, and turning off two-step sign-in. A second click while a save is running is ignored (rates panels, leave entries). Tables scroll sideways on phones.
 
 **Not changed, needs a business decision with your CA:** bonus posting and bonus in final settlement, fees on marketplace COD orders, splitting shipping out of commission, credit-note numbering and partial returns, month-end cut-off.
+
+## Audit fixes, round 4 (migration 0094)
+
+Built with suggested defaults. **Confirm each with your CA.** Nothing here posts to the books.
+
+- **Leaver's bonus.** On the final-settlement form, "Suggest bonus from pay runs" fills the statutory bonus for the months worked in the year (same limits and rate as the yearly bonus run). It suggests nothing if the person was already in an approved bonus run.
+- **Marketplace COD orders awaiting settlement.** Settlements screen lists delivered marketplace COD orders that are in no settlement yet, with an estimated fee from the Fee check rules (₹0 until those rules are entered). Booking an estimate in the ledgers was avoided on purpose: the marketplace's own settlement will carry the real fees, and a second entry would double-count.
+- **Credit notes.** `sales_credit_note_register` view shows each credit note number with its voucher number, invoice and whether it is a full or partial note. Numbers already issued are not changed (GST needs its own unbroken series).
+- **Month-end cut-off.** Accounting > Periods lists bills entered in a later month than their invoice date.
+- Shopify order webhook: a repeated delivery no longer adds the order lines twice.

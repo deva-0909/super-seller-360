@@ -162,6 +162,12 @@ Deno.serve(async (req: Request) => {
   // Unmapped SKUs still import (product_id null) rather than blocking the
   // whole order — Order Detail already renders that as "Unmapped SKU".
   const lineItems = payload.line_items ?? [];
+  // Shopify sends orders/create and orders/updated, and retries on timeout. Lines are written once; a repeat delivery
+  // updates the order but never adds the lines a second time (invoices and returns may already point at them).
+  const { count: haveLines } = await adminClient.from("order_lines").select("order_line_id", { count: "exact", head: true }).eq("order_id", order.order_id);
+  if ((haveLines ?? 0) > 0) {
+    return new Response(JSON.stringify({ ok: true, order_id: order.order_id, lines: "kept" }), { headers: { "Content-Type": "application/json" } });
+  }
   for (const item of lineItems) {
     let productId: string | null = null;
     if (item.sku) {

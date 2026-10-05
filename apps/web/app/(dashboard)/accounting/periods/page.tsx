@@ -13,6 +13,8 @@ export default async function PeriodsPage() {
     .select("accounting_period_id, period_name, start_date, end_date, status, locked_at")
     .order("start_date", { ascending: false });
 
+  const { data: lateRaw } = await supabase.from("bills_booked_late").select("bill_no, supplier_name, supplier_invoice_date, bill_date, total").order("bill_date", { ascending: false }).limit(100);
+  const lateBills = (lateRaw ?? []) as { bill_no: string; supplier_name: string; supplier_invoice_date: string; bill_date: string; total: number }[];
   const canCreate = ["Super Admin", "Finance Manager", "Accountant"].includes(currentUser.roleName);
   const lastStart = periods?.[0]?.start_date ? new Date(periods[0].start_date) : new Date();
   const suggested = lastStart.getMonth() >= 3 ? lastStart.getFullYear() + 1 : lastStart.getFullYear();
@@ -83,6 +85,19 @@ export default async function PeriodsPage() {
           </tbody>
         </table>
       </div>
+
+      {lateBills.length ? (
+        <div className="mt-6 overflow-x-auto border border-line bg-surface">
+          <p className="border-b border-line px-4 py-3 text-sm font-medium text-ink">Bills entered in a later month than their invoice date ({lateBills.length})
+            <span className="ml-2 font-normal text-ink-muted">These move expense from one month to the next. Check them before closing a period; a journal can bring the cost back to the month it belongs to. Confirm the treatment with your CA.</span></p>
+          <table className="w-full text-left text-sm">
+            <thead><tr className="border-b border-line text-xs text-ink-muted"><th className="px-4 py-2 font-medium">Bill</th><th className="px-4 py-2 font-medium">Supplier</th><th className="px-4 py-2 font-medium">Invoice date</th><th className="px-4 py-2 font-medium">Entered on</th><th className="px-4 py-2 text-right font-medium">Amount</th></tr></thead>
+            <tbody>{lateBills.slice(0, 30).map((b) => (
+              <tr key={b.bill_no} className="border-b border-line last:border-0"><td className="px-4 py-2 font-data">{b.bill_no}</td><td className="px-4 py-2">{b.supplier_name}</td><td className="px-4 py-2 font-data text-ink-muted">{b.supplier_invoice_date}</td><td className="px-4 py-2 font-data text-ink-muted">{b.bill_date}</td><td className="px-4 py-2 text-right font-data">₹{Number(b.total).toLocaleString("en-IN")}</td></tr>
+            ))}</tbody>
+          </table>
+        </div>
+      ) : null}
     </div>
   );
 }
