@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/current-user";
 import { StatusPill } from "@/components/ui/status-pill";
 import { CreateSettlementForm } from "./create-settlement-form";
+import { AutoMatch } from "./auto-match";
 
 const STATUS_MAP: Record<string, "success" | "warning" | "danger" | "neutral"> = {
   reconciled: "success",
@@ -23,6 +24,9 @@ export default async function SettlementsPage() {
     supabase.from("channels").select("channel_id, name").order("name"),
   ]);
 
+  const { count: matchReady } = await supabase.from("settlement_bank_matches").select("settlement_id", { count: "exact", head: true });
+  const canReconcileRole = ["Super Admin", "Finance Manager", "Accountant"].includes(currentUser.roleName);
+
   const canCreate =
     currentUser.roleName === "Super Admin" || currentUser.roleName === "Finance Manager";
 
@@ -35,6 +39,12 @@ export default async function SettlementsPage() {
         What each channel actually paid vs. what was expected — every
         settlement is one deduction-comparison, not just a payment log.
       </p>
+
+      <div className="mt-3 flex gap-4 text-sm">
+        <Link href="/settlements/fees" className="text-accent hover:underline">Fee check</Link>
+        {canReconcileRole ? <Link href="/imports/settlement" className="text-accent hover:underline">Upload a settlement report</Link> : null}
+      </div>
+      {canReconcileRole && (matchReady ?? 0) > 0 ? <AutoMatch count={matchReady ?? 0} /> : null}
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
         <div className="border border-line bg-surface">

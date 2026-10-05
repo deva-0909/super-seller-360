@@ -1176,3 +1176,10 @@ The menu now comes from `my_nav_access()`, computed from the same `has_*()` func
 ## Purchase orders, goods receipt and re-order (migration 0071)
 
 `/purchases/orders`, `/purchases/reorder`. Order → (approval above the limit, `purchase_settings.po_approval_limit`, default ₹50,000) → goods received at a warehouse (only good quantity adds stock; up to 10% over-receipt) → supplier bill created from what was received and not yet billed (price differences are flagged) → the existing bill approval and payment flow. Re-order suggestions use stock, promised-to-orders, on-order and 30-day sales; per-product rules (level, fixed quantity, lead time, usual supplier). The Work queue shows POs waiting, late POs, received-but-unbilled goods and products below their level.
+
+## Settlement upload, fee check, bank auto-match, anomaly alerts (migration 0072)
+
+- **Excel Uploads → settlement report**: one row per order and fee; builds the settlement and its lines (all-or-nothing per settlement; an uploaded settlement is never rewritten).
+- **Settlements → Fee check**: agreed commission / shipping / gateway rates per channel; fee lines above the rate (beyond a tolerance) are flagged, with an "Accept" (reason required) to dismiss.
+- **Bank auto-match**: a pending settlement with exactly one unmatched bank credit for the expected amount is reconciled in one click (same `reconcile_settlement`, same permission). Bank lines already drafted by a journal rule are left alone.
+- **Anomalies** (`/work-queue/anomalies`): sold below cost, discount above 40%, possible duplicate supplier payments; also shown in the Work queue.

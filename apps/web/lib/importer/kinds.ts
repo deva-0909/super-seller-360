@@ -128,6 +128,29 @@ export const KINDS: Record<string, KindConfig> = {
       "Ledger names must match the ones in Accounting > Ledgers. Create a missing ledger first.",
     ],
   },
+  settlement: {
+    kind: "settlement",
+    title: "Upload a marketplace settlement report",
+    intro: "The portal's payout report with one row per order and fee. The app builds the settlement, checks every fee against the agreed rate and flags overcharges.",
+    roles: ["Super Admin", "Finance Manager", "Accountant"],
+    backHref: "/settlements", backLabel: "Settlements",
+    option: "channel",
+    columns: [
+      { key: "settlement_id", heading: "Settlement id", required: true, type: "text", sample: "ST-2026-10-01", aliases: ["settlement_id", "Payout id", "Settlement ID", "Payment id"] },
+      { key: "period_start", heading: "Period start", type: "date", sample: "2026-09-16", aliases: ["From"] },
+      { key: "period_end", heading: "Period end", type: "date", sample: "2026-09-30", aliases: ["To"] },
+      { key: "order_id", heading: "Order id", type: "text", sample: "402-1234567-8901234", aliases: ["Order ID", "order_id", "Order number"] },
+      { key: "fee_type", heading: "Type", required: true, list: ["order_value", "commission", "shipping", "gateway_fee", "tax", "refund", "other"], sample: "commission", aliases: ["Fee type", "Charge type"] },
+      { key: "amount", heading: "Amount", required: true, type: "number", sample: "100", hint: "Always positive. Fees are what the marketplace kept.", aliases: ["Value"] },
+      { key: "tax_amount", heading: "GST on the fee", type: "number", sample: "18", aliases: ["GST", "Tax"] },
+    ],
+    notes: [
+      "order_value rows are what the marketplace collected for the order. Every other row is something it kept (commission, shipping, gateway_fee, tax, refund, other).",
+      "GST charged on a fee goes in the GST column of that fee row, not on a separate row.",
+      "A settlement is saved only if all its rows are fine. A settlement that is already uploaded is left as it is.",
+      "Set the agreed rates under Settlements > Fee check and every fee line is compared with them.",
+    ],
+  },
   orders: {
     kind: "orders",
     title: "Import orders",
@@ -158,6 +181,6 @@ export const KINDS: Record<string, KindConfig> = {
   },
 };
 
-export const KIND_ORDER = ["products", "opening_stock", "stock_count", "listing_map", "ledger_opening", "orders"];
+export const KIND_ORDER = ["products", "opening_stock", "stock_count", "listing_map", "ledger_opening", "orders", "settlement"];
 
 export const MAX_ROWS = 5000;
