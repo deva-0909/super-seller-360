@@ -1430,3 +1430,6 @@ Purchases → Recurring bills (`/purchases/recurring`). A template (supplier, li
 
 ## Round 11: split bank lines
 Bank → For review: a **Split** button on each line books it across several accounts (amount + GST, or one payment for several costs). Parts must add up to the bank amount; posts one voucher and links it to the bank line. Migration `0100_bank_split_booking.sql`. Receipt capture on expense claims already exists (camera upload; submit needs a receipt). Recurring sales invoices are not applicable: invoices here are created from orders.
+
+## Round 12: demo data
+`supabase/migrations/0101_demo_data_round2.sql` (idempotent) plus `docs/demo-data-guide.md`: sample bank lines, recurring bills, credit notes, cash plan and a repeating journal for the newer screens, with exact figures to cross-check.
