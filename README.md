@@ -1303,3 +1303,7 @@ Checked every role against the menu, the screen guards and the database rules.
 - Every table has row-level security on; the connection-keys table cannot be read by any signed-in user.
 - Fixed: `cash_opening_balance()` and `jr_rule_definition()` had no role check (now wrapped); the Channels and Listing Map screens had no screen guard (`admin/channels/layout.tsx`).
 - Left as designed: `run_recurring_journals()` can be triggered by any signed-in user (the app runs due scheduled journals when anyone opens it; it is safe to repeat). Orders, Dashboards, Insights, Ask, Work Queue, Products, Expense Claims, My Payslips and Settings are open to every role; what they show is still limited by row-level security.
+
+## Data Health (migration 0086)
+
+`data_health()` runs 47 cross-checks that the data agrees with itself: books balance, vouchers match their lines, orders match invoices and journals, stock matches movements, settlements and COD add up, purchase bills / payments / TDS, payroll slips and runs, fixed-asset depreciation, expense claims and GST reconciliation. Each returns OK, Look (warn), Wrong (fail), Error or No data (the area is empty). The screen is **Administration > Data Health** (`/admin/data-health`, for Super Admin, CEO/Owner and Auditor). Run it after any import or demo load.
