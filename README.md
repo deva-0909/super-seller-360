@@ -1183,3 +1183,7 @@ The menu now comes from `my_nav_access()`, computed from the same `has_*()` func
 - **Settlements → Fee check**: agreed commission / shipping / gateway rates per channel; fee lines above the rate (beyond a tolerance) are flagged, with an "Accept" (reason required) to dismiss.
 - **Bank auto-match**: a pending settlement with exactly one unmatched bank credit for the expected amount is reconciled in one click (same `reconcile_settlement`, same permission). Bank lines already drafted by a journal rule are left alone.
 - **Anomalies** (`/work-queue/anomalies`): sold below cost, discount above 40%, possible duplicate supplier payments; also shown in the Work queue.
+
+## Payment runs (migration 0073)
+
+`/purchases/payment-runs`. Pick the approved bills that are due (MSME suppliers first), download a bank bulk-payment CSV (one line per supplier, needs the supplier's account number and IFSC), enter the UTRs after the bank pays, and a Finance Manager approves all the resulting payments in one click (the person who recorded them cannot approve them). A supplier the bank did not pay is left out and its bills become payable again. Bank-statement categorisation already exists (bank reconciliation rules, 0054).
