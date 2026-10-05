@@ -1228,3 +1228,13 @@ Run `0076_payroll.sql` in the Supabase SQL Editor. A new **Payroll** item appear
 - **Settings**: every rate is editable by Finance Manager or Super Admin. Rates are standard values, to be confirmed by your CA.
 
 Not covered yet: bonus, gratuity, leave encashment, full-and-final settlement, surcharge marginal relief, employee self-service payslips.
+
+## Journal guard rails (migration 0077)
+
+Run `0077_journal_guard_rails.sql`. Three layers, sized for 500 to 1,000 vouchers a day (most are posted by the system from fixed rules; only people-chosen entries are checked):
+
+1. **While entering** (Accounting > Journal Entries > New): "Check entry" reads the entry back in plain words ("Records an expense: Rent", "Reduces what you own: Cash") and warns about a control account (bank, debtors, creditors, tax, stock, statutory dues), back-dated or future dates, the same ledger on both sides, a duplicate, a ledger pair not used in a year, an amount far above that ledger's norm, a weak narration and a missing bill. A warning needs a written reason and a tick; the server refuses the post without it.
+2. **Hold**: an entry at or above the approval amount (default ₹2,00,000) is saved as a draft and does not reach the books until a different Finance Manager or Super Admin approves it. Rejecting cancels it.
+3. **After posting** (Accounting > Journal Review): hand-written journals, recurring journals (first run only), bank matches and expense claims get a risk score. Score 40 or more must be reviewed; a sample of the rest (default 10%, tripled for new staff or high error rates) is picked up to a daily cap (default 60). The manager marks each right or wrong; "wrong" can reverse a hand-written journal in one click. The operator sees the reviewer's note on their entry. A quality table shows entries, risky ones, reviewed and error rate per person. Work Queue shows held and overdue items.
+
+Every number (amounts, sample percentage, daily cap, deadline, weak words, control groups) is editable on the Journal Review page by a Finance Manager or Super Admin. CEO/Owner and Auditor can view. Orders, returns and settlements posted by the system are not in scope.
