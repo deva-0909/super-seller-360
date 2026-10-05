@@ -44,6 +44,8 @@ export default async function TdsPage({ searchParams }: { searchParams: Promise<
           <p className="mt-1 text-sm text-ink-muted">Tax deducted from suppliers when bills were approved, and what has been deposited with the government. Due dates are the 7th of the next month (30 April for March); confirm with your CA.</p>
         </div>
         <div className="flex gap-2">
+          <Link href="/purchases/tds/returns" className="inline-flex h-10 items-center rounded-lg border border-line bg-surface px-4 text-sm font-semibold text-ink hover:bg-surface-sunken">Returns (Form 140)</Link>
+          <Link href="/purchases/tds/rules" className="inline-flex h-10 items-center rounded-lg border border-line bg-surface px-4 text-sm font-semibold text-ink hover:bg-surface-sunken">Rules</Link>
           <Link href="/purchases/tds/deductions" className="inline-flex h-10 items-center rounded-lg border border-line bg-surface px-4 text-sm font-semibold text-ink hover:bg-surface-sunken">Deductions list</Link>
           <CsvButton rows={csv} filename={`tds-register-${fy}`} />
         </div>

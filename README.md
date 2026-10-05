@@ -1205,3 +1205,13 @@ Type a question in plain words (sales, top products, low stock, pending orders, 
 - **Admin → Channels**: Super Admin picks, per channel, when the invoice is made automatically (order shipped, order delivered, or a person creates it).
 - **Order page → Ships from**: pick the warehouse for an order that is still pending or processing. Left on Automatic, the app picks the warehouse that has the stock.
 - No database change.
+
+## Statutory compliance, part 1: TDS under the Income-tax Act 2025 (migration 0075)
+
+From 1 April 2026 the 1961 Act is replaced. Non-salary TDS is section 393, salary TDS section 392. Form 26Q is now **Form 140**, 24Q is **Form 138**, 27EQ is **Form 143**, certificates 16A/16 are **Form 131/130**; the late filing fee is Rs 200 a day (section 427).
+
+- **TDS rules** (`/purchases/tds/rules`): every section's rate, per-bill and yearly limits, no-PAN rate and payment code are editable and every change is logged. Corrected: limits for fees (194J), commission (194H) and rent are totals **per year** per supplier, not per bill. Added: 194Q (goods, 0.1% on purchases above Rs 50 lakh, switched on only if turnover last year was over Rs 10 crore), 194A, 194T. No PAN means 20% (5% for 194Q).
+- **Lower-deduction certificates** (section 197) with validity dates; outside the dates the normal rate applies.
+- **Returns** (`/purchases/tds/returns`): Form 140 working papers per quarter (CSV), Form 131 certificate data (CSV), interest on late deposit (1.5% a month or part), late filing fee, and pre-filing checks (no TAN, no PAN, wrong 1%/2% contractor rate by PAN type, tax not deposited, late deposit, missing payment code, suppliers that may need a TDS section, statement overdue). Record the acknowledgement number once filed.
+- **Statutory calendar** (`/accounting/statutory`): TDS deposits and returns, certificates, advance tax, GST dates and, once you tick "I have employees", PF, ESI, Gujarat professional tax, labour welfare, Form 138 and Form 130. Anything due within 5 days or late appears in the work queue.
+- All rates and dates are working rules from published guidance. Your CA must confirm each one. The payment codes are left blank on purpose: enter them from the Form 140 utility.
