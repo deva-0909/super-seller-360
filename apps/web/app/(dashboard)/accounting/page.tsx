@@ -134,6 +134,7 @@ export default async function AccountsHomePage({ searchParams }: { searchParams:
             ["View ledgers", "/accounting/ledgers"],
             ["Trial Balance", "/accounting/trial-balance"],
             ["Day Book", "/accounting/day-book"],
+            ["Month-end checklist", "/accounting/month-end"],
             ["GST Returns", "/gst"],
           ].map(([t, h]) => (
             <Link key={h} href={h} className="border border-line bg-surface px-3 py-2 text-sm text-ink hover:bg-surface-sunken">{t}</Link>

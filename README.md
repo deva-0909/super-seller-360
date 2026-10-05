@@ -1421,3 +1421,6 @@ See `docs/ca-confirmations.md`. New migration `0095_gujarat_pt_update.sql` (run 
 - New tab Bank → **For review** (`/bank/review`): every bank line not yet in the books, with a suggested vendor and account. Accept books it (via the existing `br_book_txn`), "Accept all confident" does the 70%+ ones, and "Remember my choices" learns a name→vendor/account rule.
 - Rules live in `bank_payee_rules` (shown and editable on the same page). New lines are suggested automatically on import.
 - Migrations: `0096_revoke_anon_helpers.sql`, `0097_bank_review_inbox.sql`.
+
+## Round 9: month-end checklist
+Accounting → Month-end checklist (`/accounting/month-end`, also a quick action on the Accounts home). Read-only list of what still needs attention for a month: trial balance, bank lines to review, open settlements, pending bills, late-booked invoices, expense claims, payroll, GSTR-1/3B, overdue COD, data health, period status. New migration `0098_month_end_checklist.sql`.
