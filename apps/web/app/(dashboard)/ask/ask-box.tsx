@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { fetchAll } from "@/lib/fetch-all";
 import { friendlyError } from "@/lib/friendly-error";
 import { inr } from "@/lib/report-utils";
 import { inputCls, primaryBtn, smallBtn } from "@/components/purchases/bits";
@@ -30,8 +31,8 @@ export function AskBox() {
     const fail = (e: { message: string } | null) => { if (e) throw new Error(e.message); };
     switch (p.intent) {
       case "sales": {
-        const { data, error } = await supabase.from("orders").select("net_amount, fulfilment_status, channels(name)").gte("order_date", since).neq("fulfilment_status", "cancelled").limit(10000);
-        fail(error);
+        const { data, error } = await fetchAll(() => supabase.from("orders").select("net_amount, fulfilment_status, channels(name)").gte("order_date", since).neq("fulfilment_status", "cancelled").order("order_id"));
+        if (error) throw new Error(error);
         const m = new Map<string, { n: number; v: number }>();
         for (const o of (data ?? []) as unknown as { net_amount: number; channels: { name: string } | null }[]) {
           const k = o.channels?.name ?? "Other"; const c = m.get(k) ?? { n: 0, v: 0 }; c.n += 1; c.v += Number(o.net_amount); m.set(k, c);
@@ -41,8 +42,8 @@ export function AskBox() {
         return { title: `Sales, ${p.label}`, summary: `${tot.n} orders worth ${inr(tot.v)} (cancelled orders left out).`, head: ["Channel", "Orders", "Value"], rows };
       }
       case "top_products": {
-        const { data, error } = await supabase.from("order_lines").select("quantity, unit_price, products(name, sku), orders!inner(order_date, fulfilment_status)").gte("orders.order_date", since).neq("orders.fulfilment_status", "cancelled").limit(10000);
-        fail(error);
+        const { data, error } = await fetchAll(() => supabase.from("order_lines").select("quantity, unit_price, products(name, sku), orders!inner(order_date, fulfilment_status)").gte("orders.order_date", since).neq("orders.fulfilment_status", "cancelled").order("line_id"));
+        if (error) throw new Error(error);
         const m = new Map<string, { sku: string; q: number; v: number }>();
         for (const l of (data ?? []) as unknown as { quantity: number; unit_price: number; products: { name: string; sku: string } | null }[]) {
           const k = l.products?.name ?? "Unknown"; const c = m.get(k) ?? { sku: l.products?.sku ?? "", q: 0, v: 0 };
@@ -58,16 +59,16 @@ export function AskBox() {
         return { title: "Running low", summary: rows.length ? `${rows.length} product(s) need re-ordering.` : "Nothing needs re-ordering right now (or no re-order levels are set yet).", head: ["Product", "SKU", "In stock", "On order", "Cover", "Suggested qty"], rows, href: "/purchases/reorder", hrefLabel: "Open re-order list" };
       }
       case "pending_orders": {
-        const { data, error } = await supabase.from("orders").select("fulfilment_status").in("fulfilment_status", ["pending", "processing", "shipped"]).limit(10000);
-        fail(error);
+        const { data, error } = await fetchAll<{ fulfilment_status: string }>(() => supabase.from("orders").select("fulfilment_status").in("fulfilment_status", ["pending", "processing", "shipped"]).order("order_id"));
+        if (error) throw new Error(error);
         const m = new Map<string, number>();
         for (const o of data ?? []) m.set(o.fulfilment_status, (m.get(o.fulfilment_status) ?? 0) + 1);
         const total = [...m.values()].reduce((a, b) => a + b, 0);
         return { title: "Orders not yet delivered", summary: `${total} order(s) in progress.`, head: ["Status", "Orders"], rows: [...m.entries()].map(([k, n]) => [k, n]), href: "/orders", hrefLabel: "Open orders" };
       }
       case "returns": {
-        const { data, error } = await supabase.from("orders").select("net_amount, channels(name)").eq("fulfilment_status", "rto").gte("order_date", since).limit(10000);
-        fail(error);
+        const { data, error } = await fetchAll(() => supabase.from("orders").select("net_amount, channels(name)").eq("fulfilment_status", "rto").gte("order_date", since).order("order_id"));
+        if (error) throw new Error(error);
         const m = new Map<string, { n: number; v: number }>();
         for (const o of (data ?? []) as unknown as { net_amount: number; channels: { name: string } | null }[]) {
           const k = o.channels?.name ?? "Other"; const c = m.get(k) ?? { n: 0, v: 0 }; c.n += 1; c.v += Number(o.net_amount); m.set(k, c);

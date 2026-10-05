@@ -43,6 +43,13 @@ function toHex(buffer: ArrayBuffer): string {
     .join("");
 }
 
+function safeEq(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let d = 0;
+  for (let i = 0; i < a.length; i++) d |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return d === 0;
+}
+
 async function verifyHmac(rawBody: string, signatureHeader: string, secret: string): Promise<boolean> {
   const key = await crypto.subtle.importKey(
     "raw",
@@ -52,7 +59,7 @@ async function verifyHmac(rawBody: string, signatureHeader: string, secret: stri
     ["sign"],
   );
   const signature = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(rawBody));
-  return toHex(signature) === signatureHeader;
+  return safeEq(toHex(signature), signatureHeader);
 }
 
 Deno.serve(async (req: Request) => {

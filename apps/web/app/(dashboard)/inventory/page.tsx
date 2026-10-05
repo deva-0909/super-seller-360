@@ -1,23 +1,24 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { fetchAll } from "@/lib/fetch-all";
 import { TimeoutPill, type TimeoutState } from "@/components/ui/timeout-pill";
 
 export default async function InventoryPage() {
   const supabase = await createClient();
   const { data: canUpload } = await supabase.rpc("import_can", { p_kind: "stock_count" }).then((r) => ({ data: r.data === true }));
 
-  const { data: balances } = await supabase
+  const { data: balances } = await fetchAll<{ quantity: number; updated_at: string; product_id: string; products: unknown; warehouses: unknown }>(() => supabase
     .from("inventory_balances")
     .select("quantity, updated_at, product_id, products(name, sku), warehouses(name)")
-    .order("updated_at", { ascending: false });
+    .order("updated_at", { ascending: false }).order("product_id").order("warehouse_id"));
 
-  const { data: resRows } = await supabase.from("inventory_reserved").select("product_id, reserved");
+  const { data: resRows } = await fetchAll<{ product_id: string; reserved: number }>(() => supabase.from("inventory_reserved").select("product_id, reserved").order("product_id"));
   const reserved = new Map((resRows ?? []).map((r) => [r.product_id as string, Number(r.reserved)]));
 
-  const { data: agingRows } = await supabase
+  const { data: agingRows } = await fetchAll<{ sku: string; timeout_state: string; days_left: number | null; timeout_date: string | null }>(() => supabase
     .from("sku_stock_aging")
     .select("sku, timeout_state, days_left, timeout_date")
-    .limit(10000);
+    .order("sku"));
   const aging = new Map((agingRows ?? []).map((a) => [a.sku, a]));
   const overdueCount = (agingRows ?? []).filter((a) => a.timeout_state === "overdue").length;
   const nearingCount = (agingRows ?? []).filter((a) => a.timeout_state === "nearing").length;
@@ -36,7 +37,7 @@ export default async function InventoryPage() {
         <p className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm">
           <Link href="/imports/opening_stock" className="font-medium text-accent hover:underline">Upload opening stock</Link>
           <Link href="/imports/stock_count" className="font-medium text-accent hover:underline">Upload a stock count</Link>
-          <a href="/api/import-template/stock_count" className="text-accent hover:underline">Download the count sheet</a>
+          <a href="/api/import-template/stock_count" className="text-accent hover:underline" download>Download the count sheet</a>
         </p>
       ) : null}
 

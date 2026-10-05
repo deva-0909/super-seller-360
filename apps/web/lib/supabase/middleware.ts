@@ -38,8 +38,9 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // exact match only: "/login-anything" must not count as a public page
   const isPublicPath = PUBLIC_PATHS.some((path) =>
-    request.nextUrl.pathname.startsWith(path),
+    request.nextUrl.pathname === path || request.nextUrl.pathname.startsWith(path + "/"),
   );
 
   if (!user && !isPublicPath) {

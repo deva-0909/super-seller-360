@@ -29,6 +29,13 @@ function toHex(buffer: ArrayBuffer): string {
     .join("");
 }
 
+function safeEq(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let d = 0;
+  for (let i = 0; i < a.length; i++) d |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return d === 0;
+}
+
 async function verifyShopifyHmac(rawBody: string, hmacHeader: string, secret: string): Promise<boolean> {
   const key = await crypto.subtle.importKey(
     "raw",
@@ -43,7 +50,7 @@ async function verifyShopifyHmac(rawBody: string, hmacHeader: string, secret: st
     String.fromCharCode(...new Uint8Array(signature)),
   );
   // Shopify sends base64; compare that primarily, hex kept only for local debugging.
-  return computedBase64 === hmacHeader || computedHex === hmacHeader;
+  return safeEq(computedBase64, hmacHeader) || safeEq(computedHex, hmacHeader);
 }
 
 function mapFulfilmentStatus(shopifyStatus: string | null): string {

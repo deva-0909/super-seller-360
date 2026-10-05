@@ -42,7 +42,7 @@ function OtpForm() {
   async function handleResend() {
     setError(null);
     setResent(false);
-    const { error } = await supabase.auth.signInWithOtp({ email });
+    const { error } = await supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: false } });
     if (error) {
       setError("Couldn't resend the code. Try again in a moment.");
       return;

@@ -30,15 +30,13 @@ export default function LoginPage() {
     setLoading(false);
 
     if (error) {
-      setError(
-        error.message === "Invalid login credentials"
-          ? "That email and password don't match our records."
-          : error.message,
-      );
+      // one message for every failure, so the form never tells a stranger which emails exist
+      setError("That email and password don't match our records.");
       return;
     }
 
     router.push("/");
+    router.refresh();
   }
 
   return (

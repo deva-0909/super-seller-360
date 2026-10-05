@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getAccess } from "@/lib/access";
+import { fetchAll } from "@/lib/fetch-all";
+import { nowMs } from "@/lib/dates";
 import { TimeoutPill } from "@/components/ui/timeout-pill";
 import {
   BarList,
@@ -66,18 +68,17 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
 
   const [{ data: channels }, { data: salesRaw }, { data: agingRaw }, { data: listings }] = await Promise.all([
     supabase.from("channels").select("channel_id, name").order("name"),
-    supabase.from("sku_channel_sales").select("product_id, channel_id, order_id, order_date, quantity, revenue").limit(10000),
-    supabase.from("sku_stock_aging").select("*").limit(10000),
-    supabase.from("channel_sku_map").select("product_id, channel_id").eq("status", "active").limit(10000),
+    fetchAll(() => supabase.from("sku_channel_sales").select("product_id, channel_id, order_id, order_date, quantity, revenue").order("order_id").order("product_id")),
+    fetchAll(() => supabase.from("sku_stock_aging").select("*").order("product_id")),
+    fetchAll<{ product_id: string; channel_id: string }>(() => supabase.from("channel_sku_map").select("product_id, channel_id").eq("status", "active").order("mapping_id")),
   ]);
 
   const aging = (agingRaw ?? []) as AgingRow[];
   const product = new Map(aging.map((a) => [a.product_id, a]));
-  const cutoff = range.days ? new Date(Date.now() - range.days * 86400000) : null;
+  const cutoff = range.days ? new Date(nowMs() - range.days * 86400000) : null;
   const sales = ((salesRaw ?? []) as SaleRow[]).filter((s) => !cutoff || new Date(s.order_date) >= cutoff);
 
   const chs = channels ?? [];
-  const chName = (id: string) => chs.find((c) => c.channel_id === id)?.name.split(" - ")[0] ?? "—";
   const chColor = (id: string) => CHANNEL_COLORS[chs.findIndex((c) => c.channel_id === id) % CHANNEL_COLORS.length];
 
   // ---- headline numbers

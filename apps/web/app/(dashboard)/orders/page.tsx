@@ -14,16 +14,30 @@ const FULFILMENT_STATUS_MAP: Record<
   rto: "danger",
 };
 
-export default async function OrdersPage() {
+const PAGE = 50;
+type SP = { q?: string; status?: string; page?: string };
+
+export default async function OrdersPage({ searchParams }: { searchParams: Promise<SP> }) {
+  const sp = await searchParams;
+  const page = Math.max(1, Number(sp.page) || 1);
+  const q = (sp.q ?? "").trim().replace(/[%,()]/g, " ").slice(0, 60);
+  const status = Object.keys(FULFILMENT_STATUS_MAP).includes(sp.status ?? "") ? sp.status! : "";
   const supabase = await createClient();
 
-  const { data: orders } = await supabase
+  let query = supabase
     .from("orders")
     .select(
       "order_id, external_order_id, order_date, net_amount, fulfilment_status, payment_status, channels(name), invoices(invoice_id)",
+      { count: "exact" },
     )
     .order("order_date", { ascending: false })
-    .limit(100);
+    .order("order_id")
+    .range((page - 1) * PAGE, page * PAGE - 1);
+  if (q) query = query.ilike("external_order_id", `%${q}%`);
+  if (status) query = query.eq("fulfilment_status", status);
+  const { data: orders, count } = await query;
+  const pages = Math.max(1, Math.ceil((count ?? 0) / PAGE));
+  const link = (p: number) => `/orders?${new URLSearchParams({ ...(q ? { q } : {}), ...(status ? { status } : {}), page: String(p) }).toString()}`;
 
   return (
     <div className="px-4 md:px-8 py-8">
@@ -44,7 +58,19 @@ export default async function OrdersPage() {
         </Link>
       </div>
 
-      <div className="mt-6 border border-line bg-surface">
+      <form className="mt-4 flex flex-wrap items-center gap-2 text-sm" method="get">
+        <label htmlFor="o-q" className="sr-only">Search by order number</label>
+        <input id="o-q" name="q" defaultValue={q} placeholder="Order number" className="h-9 border border-line bg-surface px-3" />
+        <label htmlFor="o-s" className="sr-only">Fulfilment status</label>
+        <select id="o-s" name="status" defaultValue={status} className="h-9 border border-line bg-surface px-2">
+          <option value="">All statuses</option>
+          {Object.keys(FULFILMENT_STATUS_MAP).map((k) => <option key={k} value={k}>{k}</option>)}
+        </select>
+        <button className="h-9 border border-line px-3 hover:bg-surface-sunken">Search</button>
+        <span className="text-ink-muted">{count ?? 0} order(s)</span>
+      </form>
+
+      <div className="mt-4 overflow-x-auto border border-line bg-surface">
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b border-line-strong text-xs text-ink-muted">
@@ -124,6 +150,13 @@ export default async function OrdersPage() {
           </tbody>
         </table>
       </div>
+      {pages > 1 ? (
+        <p className="mt-3 flex items-center gap-4 text-sm">
+          {page > 1 ? <Link href={link(page - 1)} className="text-accent hover:underline">Previous</Link> : null}
+          <span className="text-ink-muted">Page {page} of {pages}</span>
+          {page < pages ? <Link href={link(page + 1)} className="text-accent hover:underline">Next</Link> : null}
+        </p>
+      ) : null}
     </div>
   );
 }

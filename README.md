@@ -1376,3 +1376,12 @@ Run `supabase/migrations/0091_audit_fixes_db.sql` once in the SQL Editor (new qu
 - adds a guard so an order's value can only be in one settlement.
 
 The demo generator (`supabase/seed/demo/model.py`) no longer creates the double settlements; production keeps the data it already has and is fixed by the migration.
+
+## Audit fixes, web app (Batch 2)
+
+- **Totals are complete.** Dashboard, Insights, Inventory, Ask, Payroll and Settlements read every row (`lib/fetch-all.ts`) instead of stopping at 1,000.
+- **Sign-in.** Anyone with an authenticator app set up must enter its code after the password (new `/mfa` screen). Super Admin, Finance Manager, Accountant and CEO/Owner must set one up (switch off with `REQUIRE_MFA=off` in Vercel). One generic message for every failed login; code sign-in no longer creates accounts. Public pages match exactly.
+- **Security headers** (CSP, HSTS, frame, referrer) in `next.config.ts`. The access guard now fails closed. The template download checks the user's role. Orders import needs the uploads role. Purchases gate fixed so Tax Manager can reach bills and TDS.
+- **Bank-feed function**: only `BANKFEED_` secrets can be sent, only public https addresses, redirects are not followed. Webhook signatures compared in constant time. Redeploy: `supabase functions deploy bank-statement-sync --no-verify-jwt`, and the same for `shopify-order-webhook` and `returns-rto-webhook`.
+- **Orders** has search, status filter and pages. CSV downloads neutralise formulas; uploads over 10 MB are refused.
+- Lint is clean (7 errors fixed); Next.js upgraded to 16.3.8.

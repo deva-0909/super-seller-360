@@ -7,7 +7,7 @@
 //          Header  x-signature: hex HMAC-SHA256 of the raw request body using the BANK_FEED_SECRET function secret.
 //
 //  PULL  - this function calls the bank's API using the feed settings saved under Bank > Reconciliation > Statement feed
-//          (address, which secret holds the API token, and how the bank's field names map to ours).
+//          (address, which BANKFEED_ secret holds the API token, and how the bank's field names map to ours).
 //          POST  { "bank_account_id": "<uuid>", "action": "pull" }
 //          Allowed for a signed-in user who may reconcile (the "Sync now" button) or for a scheduler that sends
 //          header  x-cron-secret: <BANK_FEED_CRON_SECRET>.
@@ -36,6 +36,29 @@ async function hmacOk(raw: string, header: string, secret: string): Promise<bool
   for (let i = 0; i < sig.length; i++) diff |= sig.charCodeAt(i) ^ header.charCodeAt(i);
   return diff === 0;
 }
+
+// the address the function will call must be a public https host, never an address inside the network
+function publicHttps(u: string): boolean {
+  let x: URL;
+  try { x = new URL(u); } catch { return false; }
+  if (x.protocol !== "https:" || x.username || x.password) return false;
+  const h = x.hostname.toLowerCase();
+  if (h === "localhost" || h.endsWith(".local") || h.endsWith(".internal") || !h.includes(".")) return false;
+  if (h.includes(":")) return false; // IPv6 literal
+  const m = h.match(/^(\d+)\.(\d+)\.(\d+)\.(\d+)$/);
+  if (m) {
+    const [a, b] = [Number(m[1]), Number(m[2])];
+    if (a === 10 || a === 127 || a === 0 || (a === 169 && b === 254) || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168) || a >= 224) return false;
+  }
+  return true;
+}
+
+const sameSecret = (a: string, b: string) => {
+  if (a.length !== b.length) return false;
+  let d = 0;
+  for (let i = 0; i < a.length; i++) d |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return d === 0;
+};
 
 const iso = (d: Date) => d.toISOString().slice(0, 10);
 
@@ -72,7 +95,7 @@ Deno.serve(async (req: Request) => {
   let allowed = false;
   const cron = Deno.env.get("BANK_FEED_CRON_SECRET");
   const cronHdr = req.headers.get("x-cron-secret");
-  if (cron && cronHdr && cronHdr === cron) allowed = true;
+  if (cron && cronHdr && sameSecret(cronHdr, cron)) allowed = true;
   if (!allowed) {
     const authz = req.headers.get("authorization") ?? "";
     if (authz.startsWith("Bearer ")) {
@@ -85,7 +108,7 @@ Deno.serve(async (req: Request) => {
 
   const { data: feed } = await admin.rpc("bank_feed_for_sync", { p_bank_account_id: accountId });
   if (!feed || feed.provider !== "api_pull" || !feed.enabled) return json({ error: "The API pull is not switched on for this bank account" }, 400);
-  if (!feed.endpoint_url || !String(feed.endpoint_url).startsWith("https://")) return json({ error: "The bank API address is missing or not https" }, 400);
+  if (!feed.endpoint_url || !publicHttps(String(feed.endpoint_url))) return json({ error: "The bank API address is missing, not https, or points to a private address" }, 400);
 
   const map: FieldMap = feed.field_map ?? {};
   const to = new Date();
@@ -94,6 +117,8 @@ Deno.serve(async (req: Request) => {
 
   const headers: Record<string, string> = { Accept: "application/json" };
   if (feed.secret_name) {
+    // only secrets named for bank feeds can be sent out; the function's own keys can never be named here
+    if (!/^BANKFEED_[A-Z0-9_]{1,60}$/.test(String(feed.secret_name))) return json({ error: "The secret name must start with BANKFEED_" }, 400);
     const token = Deno.env.get(feed.secret_name);
     if (!token) {
       const msg = `The function secret ${feed.secret_name} is not set`;
@@ -104,7 +129,7 @@ Deno.serve(async (req: Request) => {
   }
   let res: Response;
   try {
-    const init: RequestInit = { method: feed.http_method || "GET", headers, signal: AbortSignal.timeout(25000) };
+    const init: RequestInit = { method: feed.http_method || "GET", headers, signal: AbortSignal.timeout(25000), redirect: "manual" };
     if (init.method === "POST") { headers["Content-Type"] = "application/json"; init.body = fill(map.request_body ?? "{}", vars); }
     res = await fetch(fill(feed.endpoint_url, vars), init);
   } catch (e) {
@@ -113,7 +138,7 @@ Deno.serve(async (req: Request) => {
     return json({ error: msg }, 502);
   }
   if (!res.ok) {
-    const msg = `The bank API answered ${res.status}`;
+    const msg = res.status >= 300 && res.status < 400 ? "The bank API tried to redirect; redirects are not followed" : `The bank API answered ${res.status}`;
     await admin.rpc("bank_feed_mark", { p_bank_account_id: accountId, p_status: "error", p_message: msg });
     return json({ error: msg }, 502);
   }

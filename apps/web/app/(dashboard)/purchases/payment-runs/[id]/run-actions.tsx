@@ -7,7 +7,12 @@ import { friendlyError } from "@/lib/friendly-error";
 import { inputCls, primaryBtn, smallBtn } from "@/components/purchases/bits";
 
 type Row = { supplier_id: string; beneficiary: string; account_number: string; ifsc: string; bank: string | null; amount: number; reference: string; bills: string };
-const csvCell = (v: string | number | null) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+// a text cell that starts with = + - @ would be run as a formula when the file is opened in Excel, so it is marked as plain text
+const csvCell = (v: string | number | null) => {
+  let t = String(v ?? "");
+  if (typeof v === "string" && /^[=+\-@\t\r]/.test(t)) t = "'" + t;
+  return `"${t.replace(/"/g, '""')}"`;
+};
 
 export function RunActions({ runId, runNo, status, suppliers, canWrite, canApprove, pendingPayments }: { runId: string; runNo: string; status: string; suppliers: { supplier_id: string; name: string }[]; canWrite: boolean; canApprove: boolean; pendingPayments: number }) {
   const router = useRouter();

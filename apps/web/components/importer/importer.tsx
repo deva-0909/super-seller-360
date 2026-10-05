@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { friendlyError } from "@/lib/friendly-error";
 import { KINDS } from "@/lib/importer/kinds";
+import { toCsv } from "@/lib/report-utils";
 import { parseFile, type ParseResult } from "@/lib/importer/parse";
 
 type RowResult = { row: number; status: "ok" | "warning" | "error"; action: string | null; message: string | null };
@@ -63,6 +64,7 @@ export function Importer({ kind, channels, defaultFy }: { kind: string; channels
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
     if (!f) return;
+    if (f.size > 10 * 1024 * 1024) { setError("That file is over 10 MB. Split it into smaller files and upload them one at a time."); e.target.value = ""; return; }
     setFile(f); setParsed(null); setPreview(null); setDone(null); setError(null); setFilter("all"); setShowAll(false);
     setBusy("reading");
     try {
@@ -106,8 +108,8 @@ export function Importer({ kind, channels, defaultFy }: { kind: string; channels
   }
 
   function downloadIssues(res: RunResult) {
-    const lines = ["Row,Result,Message", ...res.rows.filter((r) => r.status !== "ok").map((r) => `${r.row},${LABEL[r.status]},"${(r.message ?? "").replace(/"/g, '""')}"`)];
-    const url = URL.createObjectURL(new Blob([lines.join("\n")], { type: "text/csv" }));
+    const csv = toCsv([["Row", "Result", "Message"], ...res.rows.filter((r) => r.status !== "ok").map((r) => [r.row, LABEL[r.status], r.message ?? ""])]);
+    const url = URL.createObjectURL(new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" }));
     const a = document.createElement("a"); a.href = url; a.download = `${kind}-issues.csv`; a.click(); URL.revokeObjectURL(url);
   }
 

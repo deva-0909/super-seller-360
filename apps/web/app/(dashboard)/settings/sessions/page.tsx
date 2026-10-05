@@ -47,7 +47,7 @@ export default async function SessionManagementPage() {
       <p className="mt-6 text-xs text-ink-muted">
         Per-device session history (a full list of every signed-in device)
         requires the admin API and is planned for the Admin module build-out
-        — this screen currently manages the session for the browser you're
+        — this screen currently manages the session for the browser you&apos;re
         using now, plus a global sign-out.
       </p>
 

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getAccess } from "@/lib/access";
+import { fetchAll } from "@/lib/fetch-all";
 
 function Kpi({
   label,
@@ -44,15 +45,15 @@ export default async function DashboardPage() {
     { data: journalTotals },
     { data: agingRows },
   ] = await Promise.all([
-    supabase.from("orders").select("gross_amount, net_amount, fulfilment_status"),
-    supabase.from("settlements").select("status, expected_amount, actual_amount"),
-    supabase.from("cod_collections").select("cod_amount, remitted_amount"),
-    supabase.from("returns").select("return_id"),
-    supabase.from("rtos").select("rto_id"),
-    supabase.from("inventory_balances").select("quantity, products(cost_price)"),
-    supabase.from("claims").select("status, approved_amount, recovered_amount"),
-    supabase.from("journal_entries").select("debit, credit"),
-    supabase.from("sku_stock_aging").select("timeout_state, stock_cost_value").in("timeout_state", ["overdue", "nearing"]),
+    fetchAll<{ gross_amount: number; net_amount: number; fulfilment_status: string }>(() => supabase.from("orders").select("gross_amount, net_amount, fulfilment_status").order("order_id")),
+    fetchAll<{ status: string; expected_amount: number; actual_amount: number | null }>(() => supabase.from("settlements").select("status, expected_amount, actual_amount").order("settlement_id")),
+    fetchAll<{ cod_amount: number; remitted_amount: number }>(() => supabase.from("cod_collections").select("cod_amount, remitted_amount").order("cod_id")),
+    fetchAll<{ return_id: string }>(() => supabase.from("returns").select("return_id").order("return_id")),
+    fetchAll<{ rto_id: string }>(() => supabase.from("rtos").select("rto_id").order("rto_id")),
+    fetchAll<{ quantity: number; products: unknown }>(() => supabase.from("inventory_balances").select("quantity, products(cost_price)").order("product_id").order("warehouse_id")),
+    fetchAll<{ status: string; approved_amount: number; recovered_amount: number }>(() => supabase.from("claims").select("status, approved_amount, recovered_amount").order("claim_id")),
+    fetchAll<{ debit: number; credit: number }>(() => supabase.from("journal_entries").select("debit, credit").order("journal_id")),
+    fetchAll<{ timeout_state: string; stock_cost_value: number }>(() => supabase.from("sku_stock_aging").select("timeout_state, stock_cost_value").in("timeout_state", ["overdue", "nearing"]).order("sku")),
   ]);
 
   const overdueSkus = (agingRows ?? []).filter((a) => a.timeout_state === "overdue").length;

@@ -19,6 +19,8 @@ export async function GET(_req: Request, { params }: { params: Promise<{ kind: s
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return new Response("Sign in first", { status: 401 });
+  const { data: allowed } = await supabase.rpc("import_can", { p_kind: kind });
+  if (allowed !== true) return new Response("Your role cannot use this upload", { status: 403 });
 
   const [wh, ch, lg] = await Promise.all([
     cfg.columns.some((c) => c.listFrom === "warehouses") ? supabase.from("warehouses").select("name").eq("status", "active").order("name") : null,

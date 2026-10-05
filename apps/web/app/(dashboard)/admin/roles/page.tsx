@@ -15,7 +15,7 @@ export default async function RolesPage() {
             Roles
           </h1>
           <p className="mt-1 text-sm text-ink-muted">
-            The 10 roles below are fixed by the platform's permission model —
+            The 10 roles below are fixed by the platform&apos;s permission model —
             they can&apos;t be renamed or added to here. Assign them to
             people from the Users screen.
           </p>

@@ -51,7 +51,7 @@ export default async function ReturnsPage() {
         after a return is received, inspected, and dispositioned as good.
         Returns come in automatically once a marketplace/courier
         integration is connected — the form on the right is the manual
-        fallback for anything the automated feed hasn't captured yet, not
+        fallback for anything the automated feed hasn&apos;t captured yet, not
         the primary way returns should get logged.
       </p>
 

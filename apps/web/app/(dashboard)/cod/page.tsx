@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { daysSince } from "@/lib/dates";
 import { getCurrentUser } from "@/lib/current-user";
 import { StatusPill } from "@/components/ui/status-pill";
 import { CreateCodForm } from "./create-cod-form";
@@ -63,10 +64,7 @@ export default async function CodPage() {
               {collections?.map((c, i) => {
                 const pending = Number(c.cod_amount) - Number(c.remitted_amount);
                 const ageing = c.collected_date
-                  ? Math.floor(
-                      (Date.now() - new Date(c.collected_date).getTime()) /
-                        (1000 * 60 * 60 * 24),
-                    )
+                  ? daysSince(c.collected_date)
                   : null;
                 return (
                   <tr

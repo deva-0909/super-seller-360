@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { fetchAll } from "@/lib/fetch-all";
 import { inr } from "@/lib/report-utils";
 import { PayrollTabs } from "@/components/payroll/tabs";
 import { StartRun } from "./start-run";
@@ -10,7 +11,7 @@ export default async function PayrollPage() {
   const supabase = await createClient();
   const [{ data: runs }, { data: lines }, { data: canWrite }, { count: empCount }] = await Promise.all([
     supabase.from("payroll_runs").select("run_id, run_no, month, status, paid_on").order("month", { ascending: false }).limit(36),
-    supabase.from("payroll_lines").select("run_id, gross, net_pay").limit(5000),
+    fetchAll<{ run_id: string; gross: number; net_pay: number }>(() => supabase.from("payroll_lines").select("run_id, gross, net_pay").order("line_id")),
     supabase.rpc("has_payroll_write"),
     supabase.from("employees").select("emp_id", { count: "exact", head: true }).eq("status", "active"),
   ]);

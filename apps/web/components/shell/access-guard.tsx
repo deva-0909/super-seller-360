@@ -6,7 +6,8 @@ export async function AccessGuard({ gate, children }: { gate: Gate; children: Re
   const supabase = await createClient();
   const { data } = await supabase.rpc("my_nav_access");
   const a = data as Record<string, boolean> | null;
-  if (a && a[gate] === false) {
+  // Fail closed: if the access check itself fails or the gate is unknown, show nothing.
+  if (!a || a[gate] !== true) {
     return (
       <div className="px-4 md:px-8 py-8">
         <h1 className="text-lg font-semibold tracking-tight text-ink">No access</h1>

@@ -138,18 +138,16 @@ export function Donut({
   const total = parts.reduce((s, p) => s + p.value, 0) || 1;
   const R = 52;
   const C = 2 * Math.PI * R;
-  let offset = 0;
   return (
     <svg viewBox="0 0 140 140" className="mx-auto h-40 w-40" role="img" aria-label="Share of revenue by platform">
       <g transform="rotate(-90 70 70)">
-        {parts.map((p) => {
+        {parts.map((p, i) => {
           const len = (p.value / total) * C;
-          const el = (
+          const offset = parts.slice(0, i).reduce((s2, q) => s2 + (q.value / total) * C, 0);
+          return (
             <circle key={p.label} cx="70" cy="70" r={R} fill="none" stroke={p.color} strokeWidth="18"
               strokeDasharray={`${len} ${C - len}`} strokeDashoffset={-offset} />
           );
-          offset += len;
-          return el;
         })}
       </g>
       <text x="70" y="68" textAnchor="middle" fontSize="11" fill="#5b6b8c">Total</text>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { fetchAll } from "@/lib/fetch-all";
 import { getCurrentUser } from "@/lib/current-user";
 import { StatusPill } from "@/components/ui/status-pill";
 import { CreateSettlementForm } from "./create-settlement-form";
@@ -17,10 +18,10 @@ export default async function SettlementsPage() {
   const supabase = await createClient();
 
   const [{ data: settlements }, { data: channels }] = await Promise.all([
-    supabase
+    fetchAll<{ settlement_id: string; external_settlement_id: string; period_start: string; period_end: string; expected_amount: number; actual_amount: number | null; status: string; channels: { name: string } | null }>(() => supabase
       .from("settlements")
       .select("settlement_id, external_settlement_id, period_start, period_end, expected_amount, actual_amount, status, channels(name)")
-      .order("period_end", { ascending: false }),
+      .order("period_end", { ascending: false }).order("settlement_id")),
     supabase.from("channels").select("channel_id, name").order("name"),
   ]);
 
