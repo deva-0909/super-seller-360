@@ -1162,3 +1162,13 @@ The menu now comes from `my_nav_access()`, computed from the same `has_*()` func
 - Page guard: a role that lacks a feature sees "No access" even if it types the address (`components/shell/access-guard.tsx`).
 - Two-step sign-in (TOTP) at `/settings/security`. Set `REQUIRE_MFA=on` in Vercel to force it for Super Admin, CEO/Owner, Finance Manager and Accountant.
 - Printable tax invoice: `/orders/<id>/invoice`.
+
+## Connection centre (migration 0070)
+
+`/admin/connectors` (Super Admin only). One place to plug in a client's own keys: marketplaces (Amazon, Flipkart, Myntra, Meesho, Shopify), courier (Shiprocket, Delhivery), GST e-invoice (ClearTax, MasterGST), WhatsApp (Meta Cloud), bank feed.
+
+- Every connection starts in **Dummy** mode: sample orders, courier bookings and tracking, sample IRN, recorded WhatsApp messages. Nothing leaves the app. Everything made is labelled (DUMMY-...) and **Clear sample data** removes it before going live.
+- Keys are saved in `connector_secrets`, which the app cannot read; the screen shows only the last 4 characters. Only a Super Admin can read or change them.
+- To use LIVE keys from non-Super-Admin roles (e.g. Ops books a courier), set `SUPABASE_SERVICE_ROLE_KEY` in Vercel (server-only, never `NEXT_PUBLIC_`).
+- To add a provider: add a row in `connector_catalog` (fields + which are secret), then one file in `apps/web/lib/connectors/live/<code>.ts` and register it in `lib/connectors/live.ts`. Until then LIVE mode says "adapter not installed".
+- Order actions (book courier, track, register e-invoice, WhatsApp) appear on the order page when a matching connection exists.

@@ -1,6 +1,6 @@
 export type Gate =
   | "accounting_view" | "accounting_write" | "bankcod_view" | "settlements_view" | "returns_view" | "claims_view" | "tax_view" | "gst_view"
-  | "inventory_view" | "users_view" | "roles_view" | "audit_view" | "integrations_view" | "channels_view" | "warehouses_view" | "uploads" | "automation_view";
+  | "inventory_view" | "users_view" | "roles_view" | "audit_view" | "integrations_view" | "channels_view" | "warehouses_view" | "uploads" | "automation_view" | "connectors_manage";
 
 export type NavItem = {
   label: string;
@@ -66,6 +66,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { label: "Listing Map", href: "/admin/channels/listing-map", status: "live", gate: "channels_view" },
       { label: "Warehouses", href: "/admin/warehouses", status: "live", gate: "warehouses_view" },
       { label: "Permissions", href: "/admin/permissions", status: "live", gate: "roles_view" },
+      { label: "Connection Centre", href: "/admin/connectors", status: "live", gate: "connectors_manage" },
       { label: "Integrations", href: "/admin/integrations", status: "live", gate: "integrations_view" },
       { label: "Automation", href: "/admin/automation", status: "live", gate: "automation_view" },
       { label: "Audit Trail", href: "/admin/audit-trail", status: "live", gate: "audit_view" },

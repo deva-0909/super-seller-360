@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/current-user";
 import { StatusPill } from "@/components/ui/status-pill";
 import { PostInvoiceButton } from "./post-invoice-button";
+import { ConnectedActions, type Shipment } from "./connected-actions";
 
 export default async function OrderDetailPage({
   params,
@@ -38,6 +39,17 @@ export default async function OrderDetailPage({
       | { invoice_id: string; invoice_number: string; total: number }[]
       | null
   )?.[0];
+
+  const [{ data: conns }, { data: cats }, { data: shipRows }] = await Promise.all([
+    supabase.from("connector_instances").select("instance_id, connector_code, label, mode").eq("enabled", true).neq("status", "not_configured"),
+    supabase.from("connector_catalog").select("code, category"),
+    supabase.from("shipments").select("awb, courier, status, mode, charge, instance_id").eq("order_id", id).order("created_at"),
+  ]);
+  const catOf = new Map((cats ?? []).map((c) => [c.code, c.category]));
+  const pick = (k: string) => (conns ?? []).filter((c) => catOf.get(c.connector_code) === k).map((c) => ({ instance_id: c.instance_id, label: c.label, mode: c.mode }));
+  const invoiceId = (order.invoices as unknown as { invoice_id: string }[] | null)?.[0]?.invoice_id ?? null;
+  const { data: einv } = invoiceId ? await supabase.from("einvoice_records").select("irn, mode").eq("invoice_id", invoiceId).maybeSingle() : { data: null };
+  const canEinvoice = ["Super Admin", "Finance Manager", "Accountant"].includes(currentUser.roleName);
 
   const { data: statusHistory } = await supabase
     .from("order_status_history")
@@ -179,6 +191,9 @@ export default async function OrderDetailPage({
           </tbody>
         </table>
       </div>
+
+      <ConnectedActions orderId={order.order_id} invoiceId={invoiceId} courier={pick("courier")} gst={pick("gst")} whatsapp={pick("whatsapp")}
+        shipments={(shipRows ?? []) as unknown as Shipment[]} einvoice={einv as { irn: string; mode: string } | null} canShip={canPost} canEinvoice={canEinvoice} />
 
       <h2 className="mt-8 text-sm font-semibold text-ink">Accounting</h2>
       <div className="mt-3 border border-line bg-surface p-5">
