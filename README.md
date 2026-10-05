@@ -1295,3 +1295,11 @@ Run `0083_pnl_report.sql` in the Supabase SQL Editor before pushing, otherwise t
 ## Fix: "View as" role preview did nothing (migration 0084)
 
 `0024` had rewritten `current_role_name()` and removed the preview logic added by `0006`, so the menu and the data rules always used the real role. `0084_restore_role_preview.sql` restores it (a suspended user still gets no role; only a real Super Admin's preview is honoured) and clears old preview rows. Run it in the Supabase SQL Editor; no code change is needed.
+
+## Access audit (migration 0085)
+
+Checked every role against the menu, the screen guards and the database rules.
+- The menu is driven by `my_nav_access()` and each screen by `AccessGuard`; both follow the previewed role (after 0084).
+- Every table has row-level security on; the connection-keys table cannot be read by any signed-in user.
+- Fixed: `cash_opening_balance()` and `jr_rule_definition()` had no role check (now wrapped); the Channels and Listing Map screens had no screen guard (`admin/channels/layout.tsx`).
+- Left as designed: `run_recurring_journals()` can be triggered by any signed-in user (the app runs due scheduled journals when anyone opens it; it is safe to repeat). Orders, Dashboards, Insights, Ask, Work Queue, Products, Expense Claims, My Payslips and Settings are open to every role; what they show is still limited by row-level security.
