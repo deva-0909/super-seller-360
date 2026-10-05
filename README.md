@@ -1195,3 +1195,7 @@ The menu now comes from `my_nav_access()`, computed from the same `has_*()` func
 - Selling an asset posts the proceeds, clears cost and accumulated depreciation, and books the gain or loss.
 - Starting rates (straight line: Furniture 9.5%, Computers 31.67%, Office equipment 19%, Plant 6.33%, Vehicles 11.88%, 5% residual) are placeholders. **Confirm with your CA** and edit them on the page.
 - Adding an asset does not post the purchase; record it through a bill or journal.
+
+## Ask a question (`/ask`)
+
+Type a question in plain words (sales, top products, low stock, pending orders, returns, unusual orders, work queue). A fixed keyword matcher (`apps/web/lib/ask/intents.ts`) picks the question type and reads your own data, so each person only sees what their role allows. No AI key and no database change needed. Add a new question type by adding a keyword entry and a `case` in `ask-box.tsx`.

@@ -27,6 +27,7 @@ export const NAV_SECTIONS: NavSection[] = [
     label: "Workspace",
     items: [
       { label: "Work Queue", href: "/work-queue", status: "live" },
+      { label: "Ask a Question", href: "/ask", status: "live" },
       { label: "Dashboards", href: "/dashboard", status: "live" },
       { label: "Business Insights", href: "/insights", status: "live" },
       { label: "Orders", href: "/orders", status: "live" },
