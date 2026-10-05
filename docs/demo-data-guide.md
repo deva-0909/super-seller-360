@@ -35,6 +35,7 @@ Things to try: accept Airnet (one click); press "Accept all confident" (should b
 Press "Create all due bills": two pending bills appear in Purchases → Bills (invoice numbers ANDR-202610 and AIRN-202610). Pressing it again creates nothing. Approving needs a second person.
 
 ## 3. Supplier credit notes (Purchases → Credit notes)
+On a new unpaid fabric bill from Tiruppur Knit Fashions (invoice TKF/2610/DEMO: 200 kg × ₹150 = ₹30,000 + 5% = ₹31,500), so there is always something owed to reduce.
 - CN/DEMO/01: ₹1,500 + 5% = **₹1,575.00**, approved (reduces what you owe on that bill).
 - CN/DEMO/02: ₹2,000 + 5% = **₹2,100.00**, waiting for approval by a second person.
 

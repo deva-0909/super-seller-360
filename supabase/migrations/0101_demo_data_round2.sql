@@ -148,19 +148,26 @@ begin
   end if;
 
   -- ============================================================ 5. supplier credit notes (one approved, one waiting)
+  -- a fresh unpaid fabric bill is made first, so there is always something owed for the notes to reduce
   if not exists (select 1 from supplier_credit_notes where supplier_note_no in ('CN/DEMO/01', 'CN/DEMO/02')) then
-    select b.bill_id into v_bill from purchase_bills b join suppliers s using (supplier_id)
-     where b.status = 'approved' and not b.is_opening and b.taxable_value >= 20000 and b.supplier_invoice_date <= date '2026-10-03' and s.gstin is not null
-     order by b.supplier_invoice_date desc limit 1;
-    if v_bill is not null then
-      v_note := create_supplier_credit_note(v_bill, 'CN/DEMO/01', date '2026-10-03', 'rate_difference',
-        jsonb_build_array(jsonb_build_object('description', 'Rate difference agreed with supplier', 'taxable', 1500, 'gst_rate', 5)), 'Demo data');
+    select supplier_id into s_old from suppliers where name = 'Tiruppur Knit Fashions Pvt Ltd';
+    if not exists (select 1 from purchase_bills where supplier_id = s_old and supplier_invoice_no = 'TKF/2610/DEMO') then
+      v_bill := create_purchase_bill(s_old, 'TKF/2610/DEMO', date '2026-10-01', date '2026-10-01',
+        jsonb_build_array(jsonb_build_object('description', 'Knit fabric 200 kg', 'hsn_code', '6006', 'quantity', 200, 'unit_price', 150, 'gst_rate', 5,
+                                             'ledger_id', (select ledger_id from ledgers where name = 'Inventory - Stock-in-Trade'))), true, null, 'Demo data: fabric bill for the credit-note examples');
       perform set_config('request.jwt.claims', json_build_object('sub', v_fm, 'role', 'authenticated')::text, true);
-      perform approve_supplier_credit_note(v_note);
+      perform approve_purchase_bill(v_bill);
       perform set_config('request.jwt.claims', json_build_object('sub', v_acc, 'role', 'authenticated')::text, true);
-      perform create_supplier_credit_note(v_bill, 'CN/DEMO/02', date '2026-10-04', 'return',
-        jsonb_build_array(jsonb_build_object('description', 'Returned: stitching defects', 'taxable', 2000, 'gst_rate', 5)), 'Demo data: waiting for approval');
+    else
+      select bill_id into v_bill from purchase_bills where supplier_id = s_old and supplier_invoice_no = 'TKF/2610/DEMO';
     end if;
+    v_note := create_supplier_credit_note(v_bill, 'CN/DEMO/01', date '2026-10-03', 'rate_difference',
+      jsonb_build_array(jsonb_build_object('description', 'Rate difference agreed with supplier', 'taxable', 1500, 'gst_rate', 5)), 'Demo data');
+    perform set_config('request.jwt.claims', json_build_object('sub', v_fm, 'role', 'authenticated')::text, true);
+    perform approve_supplier_credit_note(v_note);
+    perform set_config('request.jwt.claims', json_build_object('sub', v_acc, 'role', 'authenticated')::text, true);
+    perform create_supplier_credit_note(v_bill, 'CN/DEMO/02', date '2026-10-04', 'return',
+      jsonb_build_array(jsonb_build_object('description', 'Returned: stitching defects', 'taxable', 2000, 'gst_rate', 5)), 'Demo data: waiting for approval');
   end if;
 
   -- ============================================================ 6. GST credit entered from GSTR-2B (September)
