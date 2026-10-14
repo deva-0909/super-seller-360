@@ -28,6 +28,9 @@ const SORTS = [
   { key: "metric", label: "Chosen measure, highest first" },
   { key: "revenue", label: "Revenue, highest first" },
   { key: "units", label: "Units, highest first" },
+  { key: "metric_asc", label: "Chosen measure, lowest first" },
+  { key: "revenue_asc", label: "Revenue, lowest first" },
+  { key: "units_asc", label: "Units, lowest first" },
   { key: "name", label: "Product name A–Z" },
 ];
 
@@ -113,13 +116,18 @@ export default async function ComparePage({ searchParams }: { searchParams: Prom
     return true;
   });
   const total = (id: string, src = cells) => [...(src.get(id)?.values() ?? [])].reduce(addCell, empty());
-  const keyOf = (id: string) => {
-    if (sort === "name") return 0;
-    const m = sort === "revenue" ? "revenue" : sort === "units" ? "units" : metric;
-    const v = measure(total(id), m);
-    return v ?? -1;
-  };
-  products = products.sort((a, b) => (sort === "name" ? info.get(a)!.name.localeCompare(info.get(b)!.name) : keyOf(b) - keyOf(a) || info.get(a)!.name.localeCompare(info.get(b)!.name)));
+  // sort key: which measure, and which direction (products with nothing to show always go last)
+  const asc = sort.endsWith("_asc");
+  const sortMeasure: MetricKey = sort.startsWith("revenue") ? "revenue" : sort.startsWith("units") ? "units" : metric;
+  const nameOf = (id: string) => info.get(id)!.name;
+  products = products.sort((a, b) => {
+    if (sort === "name") return nameOf(a).localeCompare(nameOf(b));
+    const va = measure(total(a), sortMeasure), vb = measure(total(b), sortMeasure);
+    if (va == null && vb == null) return nameOf(a).localeCompare(nameOf(b));
+    if (va == null) return 1;
+    if (vb == null) return -1;
+    return (asc ? va - vb : vb - va) || nameOf(a).localeCompare(nameOf(b));
+  });
   const LIMIT = 100;
   const shown = sp.all === "1" ? products : products.slice(0, LIMIT);
 
