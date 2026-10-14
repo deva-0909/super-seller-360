@@ -5,6 +5,7 @@ import { getCurrentUser } from "@/lib/current-user";
 import { StatusPill } from "@/components/ui/status-pill";
 import { CreateSettlementForm } from "./create-settlement-form";
 import { AutoMatch } from "./auto-match";
+import { SplitLayout, SidePanel } from "@/components/ui/split-layout";
 
 const STATUS_MAP: Record<string, "success" | "warning" | "danger" | "neutral"> = {
   reconciled: "success",
@@ -66,7 +67,7 @@ export default async function SettlementsPage() {
         </div>
       ) : null}
 
-      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
+      <SplitLayout>
         <div className="border border-line bg-surface overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead>
@@ -132,6 +133,7 @@ export default async function SettlementsPage() {
             </tbody>
           </table>
         </div>
+        <SidePanel>
 
         {canCreate ? (
           <CreateSettlementForm channels={channels ?? []} />
@@ -140,7 +142,8 @@ export default async function SettlementsPage() {
             Your role can view settlements but not log new ones.
           </div>
         )}
-      </div>
+        </SidePanel>
+      </SplitLayout>
     </div>
   );
 }

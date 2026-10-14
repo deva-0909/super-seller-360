@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/current-user";
 import { CreateWarehouseForm } from "./create-warehouse-form";
 import { WarehouseRow } from "./warehouse-row";
+import { SplitLayout, SidePanel } from "@/components/ui/split-layout";
 
 export default async function WarehousesPage() {
   const currentUser = await getCurrentUser();
@@ -24,7 +25,7 @@ export default async function WarehousesPage() {
         is tied to one of these.
       </p>
 
-      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
+      <SplitLayout>
         <div className="border border-line bg-surface overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead>
@@ -55,6 +56,7 @@ export default async function WarehousesPage() {
             </tbody>
           </table>
         </div>
+        <SidePanel>
 
         {canCreate ? (
           <CreateWarehouseForm />
@@ -63,7 +65,8 @@ export default async function WarehousesPage() {
             Only Super Admin and Operations Manager can add warehouses.
           </div>
         )}
-      </div>
+        </SidePanel>
+      </SplitLayout>
     </div>
   );
 }

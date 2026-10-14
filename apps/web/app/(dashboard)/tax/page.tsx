@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/current-user";
 import { StatusPill } from "@/components/ui/status-pill";
 import { CreateTaxTxnForm } from "./create-tax-txn-form";
+import { SplitLayout, SidePanel } from "@/components/ui/split-layout";
 
 export default async function TaxPage() {
   const currentUser = await getCurrentUser();
@@ -78,7 +79,7 @@ export default async function TaxPage() {
         </dl>
       </div>
 
-      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
+      <SplitLayout>
         <div className="border border-line bg-surface overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead>
@@ -130,6 +131,7 @@ export default async function TaxPage() {
             </tbody>
           </table>
         </div>
+        <SidePanel>
 
         {canCreate ? (
           <CreateTaxTxnForm />
@@ -138,7 +140,8 @@ export default async function TaxPage() {
             Your role can view tax records but not log new ones.
           </div>
         )}
-      </div>
+        </SidePanel>
+      </SplitLayout>
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/current-user";
 import { StatusPill } from "@/components/ui/status-pill";
 import { CreateClaimForm } from "./create-claim-form";
+import { SplitLayout, SidePanel } from "@/components/ui/split-layout";
 
 const STATUS_MAP: Record<string, "success" | "warning" | "danger" | "neutral"> = {
   recovered: "success",
@@ -57,7 +58,7 @@ export default async function ClaimsPage() {
         ) : null}
       </div>
 
-      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
+      <SplitLayout>
         <div className="border border-line bg-surface overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead>
@@ -115,6 +116,7 @@ export default async function ClaimsPage() {
             </tbody>
           </table>
         </div>
+        <SidePanel>
 
         {canCreate ? (
           <CreateClaimForm orders={orders ?? []} />
@@ -123,7 +125,8 @@ export default async function ClaimsPage() {
             Your role can view claims but not log new ones.
           </div>
         )}
-      </div>
+        </SidePanel>
+      </SplitLayout>
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/current-user";
 import { StatusPill } from "@/components/ui/status-pill";
 import { CreateBankTxnForm } from "./create-bank-txn-form";
+import { SplitLayout, SidePanel } from "@/components/ui/split-layout";
 
 export default async function BankPage() {
   const currentUser = await getCurrentUser();
@@ -33,7 +34,7 @@ export default async function BankPage() {
         unmatched entries are the ones worth chasing.
       </p>
 
-      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
+      <SplitLayout>
         <div className="border border-line bg-surface overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead>
@@ -92,6 +93,7 @@ export default async function BankPage() {
             </tbody>
           </table>
         </div>
+        <SidePanel>
 
         {canCreate ? (
           <CreateBankTxnForm accounts={accounts ?? []} />
@@ -100,7 +102,8 @@ export default async function BankPage() {
             Your role can view bank transactions but not log new ones.
           </div>
         )}
-      </div>
+        </SidePanel>
+      </SplitLayout>
     </div>
   );
 }

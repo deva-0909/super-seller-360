@@ -3,6 +3,7 @@ import { getCurrentUser } from "@/lib/current-user";
 import { StatusPill } from "@/components/ui/status-pill";
 import Link from "next/link";
 import { CreateRtoForm } from "./create-rto-form";
+import { SplitLayout, SidePanel } from "@/components/ui/split-layout";
 
 const STATUS_MAP: Record<string, "success" | "warning" | "danger" | "neutral"> = {
   restocked: "success",
@@ -57,7 +58,7 @@ export default async function RtoPage() {
         </div>
       ) : null}
 
-      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
+      <SplitLayout>
         <div className="border border-line bg-surface overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead>
@@ -117,6 +118,7 @@ export default async function RtoPage() {
             </tbody>
           </table>
         </div>
+        <SidePanel>
 
         {canCreate ? (
           <CreateRtoForm orders={orders ?? []} warehouses={warehouses ?? []} />
@@ -125,7 +127,8 @@ export default async function RtoPage() {
             Your role can view RTOs but not create them.
           </div>
         )}
-      </div>
+        </SidePanel>
+      </SplitLayout>
     </div>
   );
 }

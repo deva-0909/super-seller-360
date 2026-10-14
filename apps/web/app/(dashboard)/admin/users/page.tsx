@@ -5,6 +5,7 @@ import { StatusPill } from "@/components/ui/status-pill";
 import { InviteUserForm } from "./invite-user-form";
 import { UserRoleControl, UserStatusToggle } from "./user-controls";
 import { ScopeEditor } from "./scope-editor";
+import { SplitLayout, SidePanel } from "@/components/ui/split-layout";
 
 export default async function UsersPage() {
   const currentUser = await getCurrentUser();
@@ -35,7 +36,7 @@ export default async function UsersPage() {
         what they can see and do.
       </p>
 
-      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
+      <SplitLayout>
         <div className="border border-line bg-surface overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead>
@@ -129,6 +130,7 @@ export default async function UsersPage() {
             </tbody>
           </table>
         </div>
+        <SidePanel>
 
         {isSuperAdmin ? (
           <InviteUserForm roles={roles ?? []} />
@@ -137,7 +139,8 @@ export default async function UsersPage() {
             Only Super Admin can invite new users.
           </div>
         )}
-      </div>
+        </SidePanel>
+      </SplitLayout>
     </div>
   );
 }

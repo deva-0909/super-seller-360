@@ -4,6 +4,7 @@ import { getCurrentUser } from "@/lib/current-user";
 import { StatusPill } from "@/components/ui/status-pill";
 import { CreateCodForm } from "./create-cod-form";
 import { RemitButton } from "./remit-button";
+import { SplitLayout, SidePanel } from "@/components/ui/split-layout";
 
 const STATUS_MAP: Record<string, "success" | "warning" | "danger" | "neutral"> = {
   remitted: "success",
@@ -45,7 +46,7 @@ export default async function CodPage() {
         outstanding.
       </p>
 
-      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
+      <SplitLayout>
         <div className="border border-line bg-surface overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead>
@@ -118,6 +119,7 @@ export default async function CodPage() {
             </tbody>
           </table>
         </div>
+        <SidePanel>
 
         {canAct ? (
           <CreateCodForm orders={codOrders ?? []} />
@@ -126,7 +128,8 @@ export default async function CodPage() {
             Your role can view COD collections but not log new ones.
           </div>
         )}
-      </div>
+        </SidePanel>
+      </SplitLayout>
     </div>
   );
 }

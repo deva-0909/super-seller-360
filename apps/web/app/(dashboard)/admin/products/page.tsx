@@ -4,6 +4,7 @@ import { getCurrentUser } from "@/lib/current-user";
 import { getAccess } from "@/lib/access";
 import { CreateProductForm } from "./create-product-form";
 import { ProductRow } from "./product-row";
+import { SplitLayout, SidePanel } from "@/components/ui/split-layout";
 
 export default async function ProductsPage() {
   const currentUser = await getCurrentUser();
@@ -37,7 +38,7 @@ export default async function ProductsPage() {
         </p>
       ) : null}
 
-      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
+      <SplitLayout>
         <div className="border border-line bg-surface overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead>
@@ -73,6 +74,7 @@ export default async function ProductsPage() {
             </tbody>
           </table>
         </div>
+        <SidePanel>
 
         {canCreate ? (
           <CreateProductForm />
@@ -81,7 +83,8 @@ export default async function ProductsPage() {
             Only Super Admin and Operations Manager can add products.
           </div>
         )}
-      </div>
+        </SidePanel>
+      </SplitLayout>
     </div>
   );
 }

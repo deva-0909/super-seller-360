@@ -3,6 +3,7 @@ import { getCurrentUser } from "@/lib/current-user";
 import { StatusPill } from "@/components/ui/status-pill";
 import Link from "next/link";
 import { CreateReturnForm } from "./create-return-form";
+import { SplitLayout, SidePanel } from "@/components/ui/split-layout";
 
 const STATUS_MAP: Record<string, "success" | "warning" | "danger" | "neutral"> = {
   restocked: "success",
@@ -55,7 +56,7 @@ export default async function ReturnsPage() {
         the primary way returns should get logged.
       </p>
 
-      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
+      <SplitLayout>
         <div className="border border-line bg-surface overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead>
@@ -117,6 +118,7 @@ export default async function ReturnsPage() {
             </tbody>
           </table>
         </div>
+        <SidePanel>
 
         {canCreate ? (
           <CreateReturnForm
@@ -128,7 +130,8 @@ export default async function ReturnsPage() {
             Your role can view returns but not create them.
           </div>
         )}
-      </div>
+        </SidePanel>
+      </SplitLayout>
     </div>
   );
 }
