@@ -23,6 +23,7 @@ export function CreateProductForm() {
   const [gstRate, setGstRate] = useState("");
   const [costPrice, setCostPrice] = useState("");
   const [timeoutDays, setTimeoutDays] = useState("");
+  const [lotTracked, setLotTracked] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -52,6 +53,7 @@ export function CreateProductForm() {
       gst_rate: gstRate ? Number(gstRate) : null,
       cost_price: costPrice ? Number(costPrice) : null,
       stock_timeout_days: Number(timeoutDays),
+      lot_tracked: lotTracked,
     });
 
     setLoading(false);
@@ -148,6 +150,11 @@ export function CreateProductForm() {
           placeholder="90"
           hint="Max days this SKU's stock should sit unsold, counted from the last stock receipt. You'll be alerted 15 days before. Seasonal/occasion wear: 30–60; basics: 180."
         />
+
+        <label className="flex items-center gap-2 text-sm text-ink">
+          <input type="checkbox" checked={lotTracked} onChange={(e) => setLotTracked(e.target.checked)} />
+          Track lot / batch numbers for this product (a lot number is then needed whenever it is received)
+        </label>
 
         {error ? (
           <p role="alert" className="text-sm text-danger">

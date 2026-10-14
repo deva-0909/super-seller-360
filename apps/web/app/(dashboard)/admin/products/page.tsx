@@ -13,7 +13,7 @@ export default async function ProductsPage() {
   const showCost = (await getAccess()).cost_view !== false;
   const { data: rawProducts } = await supabase
     .from("products")
-    .select("product_id, sku, name, category, hsn, gst_rate, cost_price, stock_timeout_days, status, size, colour, barcode, brand, packaging_cost")
+    .select("product_id, sku, name, category, hsn, gst_rate, cost_price, stock_timeout_days, status, size, colour, barcode, brand, packaging_cost, lot_tracked")
     .order("name");
 
   // people who may not see cost prices never receive them

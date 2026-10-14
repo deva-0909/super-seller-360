@@ -21,6 +21,7 @@ type Product = {
   barcode: string | null;
   brand: string | null;
   packaging_cost: number | null;
+  lot_tracked?: boolean;
 };
 
 export function ProductRow({
@@ -51,6 +52,7 @@ export function ProductRow({
   const [gstRate, setGstRate] = useState(product.gst_rate?.toString() ?? "");
   const [costPrice, setCostPrice] = useState(product.cost_price?.toString() ?? "");
   const [timeoutDays, setTimeoutDays] = useState(product.stock_timeout_days?.toString() ?? "");
+  const [lotTracked, setLotTracked] = useState(product.lot_tracked === true);
 
   async function handleSave() {
     setLoading(true);
@@ -70,6 +72,7 @@ export function ProductRow({
         gst_rate: gstRate ? Number(gstRate) : null,
         cost_price: costPrice ? Number(costPrice) : null,
         stock_timeout_days: timeoutDays ? Number(timeoutDays) : null,
+        lot_tracked: lotTracked,
       })
       .eq("product_id", product.product_id);
     setLoading(false);
@@ -147,6 +150,10 @@ export function ProductRow({
             onChange={(e) => setTimeoutDays(e.target.value)}
             className="h-8 w-20 border border-line bg-surface px-2 text-sm outline-none focus:border-accent"
           />
+          <label className="mt-1 flex items-center gap-1 text-xs text-ink-muted">
+            <input type="checkbox" checked={lotTracked} onChange={(e) => setLotTracked(e.target.checked)} />
+            Lot / batch tracked
+          </label>
         </td>
         <td className="px-4 py-2" colSpan={2}>
           <div className="flex items-center gap-2">
@@ -201,7 +208,7 @@ export function ProductRow({
         </td>
       ) : null}
       <td className="px-4 py-3 text-right font-data text-ink-muted">
-        {product.stock_timeout_days != null ? `${product.stock_timeout_days}d` : "—"}
+        {product.stock_timeout_days != null ? `${product.stock_timeout_days}d` : "—"}{product.lot_tracked ? <span className="ml-1 text-xs">· lot</span> : null}
       </td>
       <td className="px-4 py-3">
         <button

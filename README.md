@@ -1441,3 +1441,10 @@ Bank → For review: a **Split** button on each line books it across several acc
 
 ## Round 17 — two-step sign-in reminder
 Finance roles without an authenticator app now see a dismissible banner ("Remind me in 7 days") instead of being redirected to Security on every page. Vercel setting `REQUIRE_MFA`: unset = reminder only, `enforce` = old hard redirect, `off` = no reminder.
+
+## Round 20 — scan-based receiving (0104)
+- Scan to receive on every approved purchase order (hardware scanner or phone camera), good/damaged mode, lot numbers, off-order items allowed with a reason (posted as a linked stock-in), undo, drafts kept on the device.
+- New **Inventory → Stock in (scan)** screen: receive without a purchase order; scan, paste or upload 100+ lines in one go.
+- Barcodes are unique (database rule); extra codes per product (supplier / carton with pack size / marketplace) are linked at the dock the first time they are seen.
+- Products can be marked lot-tracked. See docs/scanning-guide.md.
+- Camera scanning uses the browser's reader (Chrome/Edge/Android) with `@zxing/browser` as fallback (iPhone Safari); needs HTTPS (Vercel provides it).

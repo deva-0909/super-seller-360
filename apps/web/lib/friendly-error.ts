@@ -10,6 +10,9 @@ export function friendlyError(message: string): string {
   if (/violates row-level security policy/i.test(message)) {
     return "Your role doesn't have permission to do this.";
   }
+  if (/products_barcode_uq|product_barcodes_code_uq/i.test(message)) {
+    return "That barcode already belongs to another product. Each barcode can be used once.";
+  }
   if (/duplicate key value violates unique constraint/i.test(message)) {
     // The specific conflicting value lives in Postgres's DETAIL line, which
     // supabase-js exposes separately as error.details — not in

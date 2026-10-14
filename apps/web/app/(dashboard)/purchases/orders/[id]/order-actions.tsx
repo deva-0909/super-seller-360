@@ -5,18 +5,16 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { friendlyError } from "@/lib/friendly-error";
 import { inputCls, Lbl, primaryBtn, smallBtn } from "@/components/purchases/bits";
+import { ReceiveScan } from "@/components/scan/receive-scan";
+import type { CatRow } from "@/lib/scan/catalog";
 
-type L = { po_line_id: string; line_no: number; sku: string; name: string; quantity: number; unit_price: number; received_qty: number; rejected_qty: number; billed_qty: number };
+type L = { po_line_id: string; product_id: string; lot_tracked: boolean; line_no: number; sku: string; name: string; quantity: number; unit_price: number; received_qty: number; rejected_qty: number; billed_qty: number };
 
-export function OrderActions({ poId, status, lines, isCreator, canApprove, canPo, canGrn, canBill }: { poId: string; status: string; lines: L[]; isCreator: boolean; canApprove: boolean; canPo: boolean; canGrn: boolean; canBill: boolean }) {
+export function OrderActions({ poId, status, lines, isCreator, canApprove, canPo, canGrn, canBill, catalog }: { poId: string; status: string; lines: L[]; catalog: CatRow[]; isCreator: boolean; canApprove: boolean; canPo: boolean; canGrn: boolean; canBill: boolean }) {
   const router = useRouter();
   const supabase = createClient();
   const today = new Date().toISOString().slice(0, 10);
   const [note, setNote] = useState("");
-  const [challan, setChallan] = useState("");
-  const [recvDate, setRecvDate] = useState(today);
-  const [acc, setAcc] = useState<Record<string, string>>({});
-  const [rej, setRej] = useState<Record<string, string>>({});
   const [inv, setInv] = useState("");
   const [invDate, setInvDate] = useState(today);
   const [prices, setPrices] = useState<Record<string, string>>({});
@@ -48,21 +46,7 @@ export function OrderActions({ poId, status, lines, isCreator, canApprove, canPo
         </div>
       ) : null}
 
-      {canReceive ? (
-        <div className="space-y-3 border border-line bg-surface p-4">
-          <p className="text-sm font-medium text-ink">Receive goods</p>
-          <div className="grid gap-3 md:grid-cols-2"><Lbl label="Received on"><input type="date" max={today} className={inputCls} value={recvDate} onChange={(e) => setRecvDate(e.target.value)} /></Lbl><Lbl label="Supplier challan no."><input className={inputCls} value={challan} onChange={(e) => setChallan(e.target.value)} /></Lbl></div>
-          {lines.map((l) => (
-            <div key={l.po_line_id} className="grid grid-cols-12 items-end gap-2 text-sm">
-              <span className="col-span-12 md:col-span-6 text-ink">{l.sku} · {l.name} <span className="text-ink-muted">(still to come: {Math.max(l.quantity - l.received_qty - l.rejected_qty, 0)})</span></span>
-              <Lbl label="Good" className="col-span-6 md:col-span-3"><input className={inputCls} inputMode="numeric" value={acc[l.po_line_id] ?? ""} onChange={(e) => setAcc({ ...acc, [l.po_line_id]: e.target.value })} /></Lbl>
-              <Lbl label="Damaged / rejected" className="col-span-6 md:col-span-3"><input className={inputCls} inputMode="numeric" value={rej[l.po_line_id] ?? ""} onChange={(e) => setRej({ ...rej, [l.po_line_id]: e.target.value })} /></Lbl>
-            </div>
-          ))}
-          <button className={primaryBtn} disabled={!!busy} onClick={() => call("grn", () => supabase.rpc("grn_create", { p_po: poId, p_received_on: recvDate, p_challan: challan || null, p_lines: lines.map((l) => ({ po_line_id: l.po_line_id, accepted: Number(acc[l.po_line_id] || 0), rejected: Number(rej[l.po_line_id] || 0) })) }), () => "Goods received and stock updated.")}>{busy === "grn" ? "Saving…" : "Save receipt"}</button>
-          <p className="text-xs text-ink-muted">Only the good quantity is added to stock. Up to 10 percent over the ordered quantity is accepted.</p>
-        </div>
-      ) : null}
+      {canReceive ? <ReceiveScan poId={poId} lines={lines} catalog={catalog} onDone={() => router.refresh()} /> : null}
 
       {canBill && unbilled && ["approved", "part_received", "received", "closed"].includes(status) ? (
         <div className="space-y-3 border border-line bg-surface p-4">

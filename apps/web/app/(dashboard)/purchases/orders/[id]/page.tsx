@@ -4,6 +4,8 @@ import { createClient } from "@/lib/supabase/server";
 import { StatusTag } from "@/components/purchases/bits";
 import { inr } from "@/lib/report-utils";
 import { OrderActions } from "./order-actions";
+import { fetchAll } from "@/lib/fetch-all";
+import type { CatRow } from "@/lib/scan/catalog";
 
 export default async function OrderPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -18,9 +20,12 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
     supabase.rpc("has_purchase_approve"), supabase.rpc("has_po_write"), supabase.rpc("has_grn_write"), supabase.rpc("has_accounting_write"),
   ]);
   const ids = (lines ?? []).map((l) => l.product_id);
-  const { data: prods } = ids.length ? await supabase.from("products").select("product_id, sku, name").in("product_id", ids) : { data: [] };
+  const { data: prods } = ids.length ? await supabase.from("products").select("product_id, sku, name, lot_tracked").in("product_id", ids) : { data: [] };
   const pm = new Map((prods ?? []).map((p) => [p.product_id, p]));
-  const rows = (lines ?? []).map((l) => ({ ...l, sku: pm.get(l.product_id)?.sku ?? "", name: pm.get(l.product_id)?.name ?? "", quantity: Number(l.quantity), unit_price: Number(l.unit_price), received_qty: Number(l.received_qty), rejected_qty: Number(l.rejected_qty), billed_qty: Number(l.billed_qty) }));
+  const rows = (lines ?? []).map((l) => ({ ...l, lot_tracked: pm.get(l.product_id)?.lot_tracked === true, sku: pm.get(l.product_id)?.sku ?? "", name: pm.get(l.product_id)?.name ?? "", quantity: Number(l.quantity), unit_price: Number(l.unit_price), received_qty: Number(l.received_qty), rejected_qty: Number(l.rejected_qty), billed_qty: Number(l.billed_qty) }));
+  // the scanner's code list is only needed while goods can still be received
+  const receiving = canGrn === true && ["approved", "part_received"].includes(po.status);
+  const catalog = receiving ? (await fetchAll<CatRow>(() => supabase.rpc("scan_catalog"))).data : [];
   const sup = po.suppliers as unknown as { name: string; gstin: string | null } | null;
 
   return (
@@ -51,7 +56,7 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
       </div>
 
       <OrderActions poId={po.po_id} status={po.status} lines={rows} isCreator={po.created_by === me.user?.id}
-        canApprove={canApprove === true} canPo={canPo === true} canGrn={canGrn === true} canBill={canBill === true} />
+        canApprove={canApprove === true} canPo={canPo === true} canGrn={canGrn === true} canBill={canBill === true} catalog={catalog} />
 
       <div className="mt-6 grid gap-6 md:grid-cols-2">
         <div><h2 className="text-sm font-semibold text-ink">Goods receipts</h2>

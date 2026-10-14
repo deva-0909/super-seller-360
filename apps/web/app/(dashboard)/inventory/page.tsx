@@ -33,6 +33,10 @@ export default async function InventoryPage() {
         receipt and inspection, never by a return or RTO being logged.
       </p>
 
+      <p className="mt-3 text-sm">
+        <Link href="/inventory/stock-in" className="font-medium text-accent hover:underline">Stock in (scan or paste a list) →</Link>
+      </p>
+
       {canUpload ? (
         <p className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm">
           <Link href="/imports/opening_stock" className="font-medium text-accent hover:underline">Upload opening stock</Link>
