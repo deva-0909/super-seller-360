@@ -13,6 +13,7 @@ export default async function BillPage({ params, searchParams }: { params: Promi
   const user = await getCurrentUser();
   const canWrite = ["Super Admin", "Finance Manager", "Accountant"].includes(user.roleName);
   const canApprove = ["Super Admin", "Finance Manager"].includes(user.roleName);
+  const isOwner = ["Super Admin", "CEO/Owner"].includes(user.roleName);
   const supabase = await createClient();
   const { data: auth } = await supabase.auth.getUser();
   const { data: b } = await supabase.from("purchase_bills").select("*, suppliers(name, gstin, tds_section)").eq("bill_id", id).maybeSingle();
@@ -36,8 +37,21 @@ export default async function BillPage({ params, searchParams }: { params: Promi
           {b.decision_note ? <p className="mt-1 text-sm text-ink-muted">Note: {b.decision_note}</p> : null}
           {attach === "failed" ? <p className="mt-2 text-sm text-warning">The bill was saved, but the photo could not be attached. Add it below.</p> : null}
         </div>
-        <BillActions id={id} status={b.status} canApprove={canApprove} isMaker={b.created_by === auth.user?.id} />
+        <BillActions id={id} status={b.status} matchStatus={b.match_status} canApprove={canApprove} canRelease={isOwner} isMaker={b.created_by === auth.user?.id} />
       </div>
+
+      {b.match_status === "matched" ? <p className="mt-4 border border-line bg-surface p-3 text-sm text-success">Three-way match passed: price agrees with the order, quantity agrees with the goods received, and the total agrees with the supplier&apos;s invoice.</p> : null}
+      {b.match_status === "held" || b.match_status === "released" ? (
+        <div className={`mt-4 border p-4 text-sm ${b.match_status === "held" ? "border-danger bg-surface" : "border-line bg-surface"}`}>
+          <p className="font-medium text-ink">{b.match_status === "held" ? "ON HOLD: does not match. Only the Owner can release it, and it cannot be approved or paid until then." : "Released by the Owner despite the differences below."}</p>
+          <ul className="mt-2 list-disc space-y-1 pl-5 text-ink-muted">
+            {((b.match_variance ?? []) as { kind: string; line?: number; product?: string; expected?: number; invoiced?: number; note: string }[]).map((v, i) => (
+              <li key={i}>{v.line ? `Line ${v.line} ${v.product}: ` : ""}{v.note}{v.expected !== undefined ? ` (expected ${v.expected}, invoice ${v.invoiced})` : ""}</li>
+            ))}
+          </ul>
+          {b.match_note ? <p className="mt-2 text-ink-muted">Owner&apos;s note: {b.match_note}</p> : null}
+        </div>
+      ) : null}
 
       <div className="mt-6 border border-line bg-surface overflow-x-auto">
         <table className="w-full text-left text-sm">

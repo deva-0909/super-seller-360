@@ -7,6 +7,8 @@ import { buildIndex, lookup, productsFromCatalog, type CatRow } from "@/lib/scan
 import { beep } from "@/lib/scan/feedback";
 import { ScanBox, type ScanBoxHandle } from "./scan-box";
 import { LinkCode } from "./link-code";
+import { Proofs } from "@/components/ui/proofs";
+import { linkProofs, type Proof } from "@/lib/attachments";
 
 export type RecvLine = { po_line_id: string; product_id: string; line_no: number; sku: string; name: string; quantity: number; received_qty: number; rejected_qty: number; lot_tracked: boolean };
 
@@ -41,6 +43,8 @@ function Inner({ poId, lines, catalog, onDone }: { poId: string; lines: RecvLine
   const [challan, setChallan] = useState(draft?.challan ?? "");
   const [recvDate, setRecvDate] = useState(draft?.recvDate ?? today);
   const [lot, setLot] = useState(draft?.lot ?? "");
+  const [damageNote, setDamageNote] = useState("");
+  const [challanPics, setChallanPics] = useState<Proof[]>([]);
   const [mode, setMode] = useState<"good" | "bad">("good");
   const [mult, setMult] = useState("1");
   const [hist, setHist] = useState<Hist[]>([]);
@@ -135,17 +139,25 @@ function Inner({ poId, lines, catalog, onDone }: { poId: string; lines: RecvLine
     if (noReason) { setErr(`Say why ${noReason.label} is not on the order (Not on the order, Reason).`); return; }
     const noLot = extras.find((x) => x.lot_tracked && !x.lot.trim());
     if (noLot) { setErr(`${noLot.label} needs a lot number.`); return; }
+    const bad = lineEntries.reduce((t, e) => t + e.bad, 0);
+    if (lineEntries.length && !challan.trim()) { setErr("Enter the supplier's challan / delivery note number."); return; }
+    if (lineEntries.length && !challanPics.length) { setErr("Attach a photo of the supplier's challan (Challan photo, below)."); return; }
+    if (bad > 0 && !damageNote.trim()) { setErr("Some goods are damaged: write what was wrong with them."); return; }
     setBusy(true);
     const { data, error } = await supabase.rpc("grn_create_scanned", {
       p_po: poId, p_received_on: recvDate, p_challan: challan || null,
       p_lines: lineEntries.map((e) => ({ po_line_id: e.po_line_id, accepted: e.good, rejected: e.bad, lot_no: e.lot || null })),
       p_extras: extras.map((x) => ({ product_id: x.product_id, quantity: x.qty, lot_no: x.lot || null, note: x.note })),
-      p_notes: null,
+      p_notes: damageNote.trim() || null,
     });
+    if (!error) {
+      const g = (data as { grn_id: string | null }).grn_id;
+      if (g && challanPics.length) { try { await linkProofs(challanPics.map((x) => x.attachment_id), "goods_receipt", g); } catch { /* receipt is saved; photo can be added from the order page */ } }
+    }
     setBusy(false);
     if (error) { setErr(friendlyError(error.message)); return; }
     const r = data as { grn_id: string | null; stock_in_id: string | null };
-    setEntries([]); setExtras([]); setHist([]); setLog([]);
+    setEntries([]); setExtras([]); setHist([]); setLog([]); setChallanPics([]); setDamageNote(""); setChallan("");
     try { window.localStorage.removeItem(draftKey(poId)); } catch { /* ignore */ }
     setDone(`Receipt saved${r.grn_id ? " against the order" : ""}${r.stock_in_id ? `${r.grn_id ? " and" : ""} ${extras.length} off-order line(s) added to stock` : ""}.`);
     onDone();
@@ -166,7 +178,7 @@ function Inner({ poId, lines, catalog, onDone }: { poId: string; lines: RecvLine
 
       <div className="flex flex-wrap items-end gap-3 text-xs text-ink-muted">
         <label className="flex flex-col gap-1">Received on<input type="date" max={today} className={inputCls} value={recvDate} onChange={(e) => setRecvDate(e.target.value)} /></label>
-        <label className="flex flex-col gap-1">Supplier challan no.<input className={inputCls} value={challan} onChange={(e) => setChallan(e.target.value)} /></label>
+        <label className="flex flex-col gap-1">Supplier challan no. (required)<input className={inputCls} value={challan} onChange={(e) => setChallan(e.target.value)} /></label>
         <label className="flex flex-col gap-1">Lot / batch no. <span className="text-ink-faint">(lot-tracked items only)</span>
           <input ref={lotInput} className={inputCls} value={lot} onChange={(e) => setLot(e.target.value)} placeholder="e.g. L-2410-A" />
         </label>
@@ -177,6 +189,15 @@ function Inner({ poId, lines, catalog, onDone }: { poId: string; lines: RecvLine
             <button type="button" onClick={() => { setMode("bad"); box.current?.focus(); }} className={`h-10 px-3 ${mode === "bad" ? "bg-danger text-white" : "bg-surface text-ink"}`}>Damaged</button>
           </div>
         </div>
+      </div>
+
+      <div className="grid gap-3 md:grid-cols-2">
+        <Proofs entityType="goods_receipt" pending={challanPics} onPending={setChallanPics} kind="challan" label="Challan photo (required)" hint="Photograph the supplier's challan / delivery note." />
+        {totalBad > 0 ? (
+          <label className="flex flex-col gap-1 text-xs text-ink-muted">What was wrong with the damaged goods? (required)
+            <input className={`${inputCls} w-full`} value={damageNote} onChange={(e) => setDamageNote(e.target.value)} placeholder="e.g. torn packs, wrong size labels" />
+          </label>
+        ) : null}
       </div>
 
       <ScanBox ref={box} onScan={onScan} disabled={busy} />
@@ -235,7 +256,7 @@ function Inner({ poId, lines, catalog, onDone }: { poId: string; lines: RecvLine
         <button type="button" disabled={busy || !dirty} onClick={submit} className="h-11 bg-accent px-5 text-sm font-semibold text-white hover:bg-accent-hover disabled:opacity-60">
           {busy ? "Saving…" : "Save receipt"}
         </button>
-        {dirty ? <button type="button" onClick={() => { if (confirm("Throw away everything scanned so far?")) { setEntries([]); setExtras([]); setHist([]); setLog([]); } }} className="text-sm text-ink-muted hover:underline">Clear all</button> : null}
+        {dirty ? <button type="button" onClick={() => { if (confirm("Throw away everything scanned so far?")) { setEntries([]); setExtras([]); setHist([]); setLog([]); setChallanPics([]); setDamageNote(""); setChallan(""); } }} className="text-sm text-ink-muted hover:underline">Clear all</button> : null}
         <p className="text-xs text-ink-muted">Only the good quantity is added to stock. Up to 10% over the ordered quantity is accepted. Your scans are kept on this device if you close the page.</p>
       </div>
       {err ? <p role="alert" className="text-sm text-danger">{err}</p> : null}

@@ -1448,3 +1448,10 @@ Finance roles without an authenticator app now see a dismissible banner ("Remind
 - Barcodes are unique (database rule); extra codes per product (supplier / carton with pack size / marketplace) are linked at the dock the first time they are seen.
 - Products can be marked lot-tracked. See docs/scanning-guide.md.
 - Camera scanning uses the browser's reader (Chrome/Edge/Android) with `@zxing/browser` as fallback (iPhone Safari); needs HTTPS (Vercel provides it).
+
+
+## Round 21 — procurement controls (0105)
+Two-tier PO approval (manager up to the limit, Owner above), supplier invoice capture with three-way match, zero tolerance: any mismatch holds the bill until the Owner releases it; stock bills with no PO are held. Run `supabase/migrations/0105_procurement_controls.sql` before deploying. See `docs/procurement-audit.md`.
+
+## Round 22 — receiving controls (0106)
+Challan number + photo required, backdating limit, receiver must differ from PO raiser/approver, damage reason, return to vendor. Run `supabase/migrations/0106_receiving_controls.sql` (after 0104 and 0105) before deploying.

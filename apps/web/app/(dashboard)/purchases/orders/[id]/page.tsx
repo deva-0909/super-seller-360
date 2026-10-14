@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { StatusTag } from "@/components/purchases/bits";
 import { inr } from "@/lib/report-utils";
+import { Proofs } from "@/components/ui/proofs";
 import { OrderActions } from "./order-actions";
 import { fetchAll } from "@/lib/fetch-all";
 import type { CatRow } from "@/lib/scan/catalog";
@@ -10,14 +11,15 @@ import type { CatRow } from "@/lib/scan/catalog";
 export default async function OrderPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await createClient();
-  const { data: po } = await supabase.from("purchase_orders").select("po_id, po_no, order_date, expected_date, status, taxable_value, tax_value, total, notes, decision_note, created_by, suppliers(name, gstin), warehouses(name)").eq("po_id", id).maybeSingle();
+  const { data: po } = await supabase.from("purchase_orders").select("po_id, po_no, order_date, expected_date, status, approval_level, taxable_value, tax_value, total, notes, decision_note, created_by, suppliers(name, gstin), warehouses(name)").eq("po_id", id).maybeSingle();
   if (!po) notFound();
-  const [{ data: lines }, { data: grns }, { data: bills }, { data: me }, { data: canApprove }, { data: canPo }, { data: canGrn }, { data: canBill }] = await Promise.all([
+  const [{ data: lines }, { data: grns }, { data: bills }, { data: rtvs }, { data: me }, { data: canApproveMgr }, { data: isOwner }, { data: canPo }, { data: canGrn }, { data: canBill }] = await Promise.all([
     supabase.from("po_line_status").select("po_line_id, line_no, quantity, unit_price, gst_rate, received_qty, rejected_qty, billed_qty, product_id").eq("po_id", id).order("line_no"),
     supabase.from("goods_receipts").select("grn_id, grn_no, received_on, challan_no").eq("po_id", id).order("created_at"),
     supabase.from("purchase_bills").select("bill_id, bill_no, status, total").eq("po_id", id),
+    supabase.from("vendor_returns").select("rtv_id, rtv_no, returned_on, reason, ref_no").eq("po_id", id).order("created_at"),
     supabase.auth.getUser(),
-    supabase.rpc("has_purchase_approve"), supabase.rpc("has_po_write"), supabase.rpc("has_grn_write"), supabase.rpc("has_accounting_write"),
+    supabase.rpc("has_purchase_approve"), supabase.rpc("has_owner_approve"), supabase.rpc("has_po_write"), supabase.rpc("has_grn_write"), supabase.rpc("has_accounting_write"),
   ]);
   const ids = (lines ?? []).map((l) => l.product_id);
   const { data: prods } = ids.length ? await supabase.from("products").select("product_id, sku, name, lot_tracked").in("product_id", ids) : { data: [] };
@@ -56,11 +58,16 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
       </div>
 
       <OrderActions poId={po.po_id} status={po.status} lines={rows} isCreator={po.created_by === me.user?.id}
-        canApprove={canApprove === true} canPo={canPo === true} canGrn={canGrn === true} canBill={canBill === true} catalog={catalog} />
+        canApprove={po.approval_level === "owner" ? isOwner === true : (canApproveMgr === true || isOwner === true)} ownerOnly={po.approval_level === "owner"} canPo={canPo === true} canGrn={canGrn === true} canBill={canBill === true} catalog={catalog} />
+
+      {(rtvs ?? []).length ? (
+        <div className="mt-6"><h2 className="text-sm font-semibold text-ink">Returned to supplier</h2>
+          <ul className="mt-2 divide-y divide-line border border-line bg-surface text-sm">{(rtvs ?? []).map((r) => <li key={r.rtv_id} className="px-3 py-2"><span className="font-data">{r.rtv_no}</span> · {r.returned_on}{r.ref_no ? ` · ${r.ref_no}` : ""} · {r.reason}</li>)}</ul></div>
+      ) : null}
 
       <div className="mt-6 grid gap-6 md:grid-cols-2">
         <div><h2 className="text-sm font-semibold text-ink">Goods receipts</h2>
-          <ul className="mt-2 divide-y divide-line border border-line bg-surface text-sm">{(grns ?? []).map((g) => <li key={g.grn_id} className="px-3 py-2"><span className="font-data">{g.grn_no}</span> · {g.received_on}{g.challan_no ? ` · challan ${g.challan_no}` : ""}</li>)}{(grns ?? []).length === 0 ? <li className="px-3 py-2 text-ink-muted">Nothing received yet.</li> : null}</ul></div>
+          <ul className="mt-2 divide-y divide-line border border-line bg-surface text-sm">{(grns ?? []).map((g) => <li key={g.grn_id} className="px-3 py-2"><span className="font-data">{g.grn_no}</span> · {g.received_on}{g.challan_no ? ` · challan ${g.challan_no}` : ""}<div className="mt-2"><Proofs entityType="goods_receipt" entityId={g.grn_id} readOnly={canGrn !== true} kind="challan" label="Challan photo" /></div></li>)}{(grns ?? []).length === 0 ? <li className="px-3 py-2 text-ink-muted">Nothing received yet.</li> : null}</ul></div>
         <div><h2 className="text-sm font-semibold text-ink">Supplier bills</h2>
           <ul className="mt-2 divide-y divide-line border border-line bg-surface text-sm">{(bills ?? []).map((b) => <li key={b.bill_id} className="flex justify-between px-3 py-2"><Link className="text-accent hover:underline" href={`/purchases/bills/${b.bill_id}`}>{b.bill_no}</Link><span><StatusTag status={b.status} /> <span className="font-data">{inr(Number(b.total))}</span></span></li>)}{(bills ?? []).length === 0 ? <li className="px-3 py-2 text-ink-muted">No bill yet.</li> : null}</ul></div>
       </div>
