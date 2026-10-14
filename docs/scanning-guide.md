@@ -30,3 +30,10 @@ Everyone logs in with their own name. Every stock change records who, when, whic
 
 ## Barcodes are unique
 A barcode can belong to only one product. The product form now refuses a barcode that is already used.
+
+## Our own barcode and QR on every product (Round 26)
+- Every product has one code of our own, made by the system (a valid EAN-13 starting with 20, the range reserved for in-store use). It never changes, and it cannot clash with a supplier's or marketplace barcode.
+- Inventory -> Product Labels: search or filter ("Never printed"), type how many labels each product needs, choose the label size (50 x 25 mm roll, 70 x 35 mm roll, or an A4 sheet of 3 x 8), press Print. Each label carries the name, SKU, size, colour, the barcode and a QR of the same number.
+- The supplier's barcode stays linked to the same product ("Linked codes" on each row: add by typing or scanning, mark a carton code with its piece count, remove a wrong one). Scanning the supplier's label or ours finds the same product everywhere: receiving, stock-in, transfers.
+- Suggested routine on arrival: scan the supplier's barcode; if the goods carry no label of ours, print and stick ours. After that, scan whichever is easier.
+- One label per product variant (SKU, size and colour). Labels for each individual piece (unique serial per unit) are not part of this.

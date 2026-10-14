@@ -36,6 +36,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { label: "Inventory", href: "/inventory", status: "live", gate: "inventory_view" },
       { label: "Stock In (scan)", href: "/inventory/stock-in", status: "live", gate: "purchasing_view" },
       { label: "Store Transfers", href: "/inventory/transfers", status: "live", gate: "inventory_view" },
+      { label: "Product Labels", href: "/inventory/labels", status: "live", gate: "inventory_view" },
       { label: "Returns", href: "/returns", status: "live", gate: "returns_view" },
       { label: "RTO", href: "/rto", status: "live", gate: "returns_view" },
       { label: "Settlements", href: "/settlements", status: "live", gate: "settlements_view" },

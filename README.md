@@ -1465,3 +1465,6 @@ Purchases -> Matching tab (received-not-billed, billed-more-than-received, held 
 
 ## Round 25 — store-to-store transfers (0109)
 Inventory -> Store Transfers: scan to dispatch, scan to receive, shortfall settled by a manager. Run `supabase/migrations/0109_stock_transfers.sql` before deploying.
+
+## Round 26 — own barcode/QR on every product (0110)
+Every product gets a permanent system-generated EAN-13 (20-range) and QR; Inventory -> Product Labels prints them and manages the supplier codes linked to each product. Adds the `jsbarcode` and `qrcode` packages (run the install on deploy; Vercel does it automatically). Run `supabase/migrations/0110_own_barcodes.sql` before deploying.
