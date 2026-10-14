@@ -1433,3 +1433,8 @@ Bank → For review: a **Split** button on each line books it across several acc
 
 ## Round 12: demo data
 `supabase/migrations/0101_demo_data_round2.sql` (idempotent) plus `docs/demo-data-guide.md`: sample bank lines, recurring bills, credit notes, cash plan and a repeating journal for the newer screens, with exact figures to cross-check.
+
+## Round 13 — Product vs Platform comparison (0102–0103)
+- 0102 fixes the Profit & Loss / Trial Balance timeout (row-level-security role check evaluated once per query, plus indexes on journal_entries).
+- 0103 adds `product_platform_performance(from, to)`; screen at Business Insights → "Product vs Platform" (`/insights/compare`).
+- Filters: period (today … last financial year, or custom dates), platform tick-boxes, category, product/SKU search, measure (revenue, units, orders, AOV, return %, RTO %, margin %), sort, compare with previous period. Excel download has every product.

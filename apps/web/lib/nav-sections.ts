@@ -30,6 +30,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { label: "Ask a Question", href: "/ask", status: "live" },
       { label: "Dashboards", href: "/dashboard", status: "live" },
       { label: "Business Insights", href: "/insights", status: "live" },
+      { label: "Product vs Platform", href: "/insights/compare", status: "live" },
       { label: "Orders", href: "/orders", status: "live" },
       { label: "Excel Uploads", href: "/imports", status: "live", gate: "uploads" },
       { label: "Inventory", href: "/inventory", status: "live", gate: "inventory_view" },

@@ -163,6 +163,7 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
             What is selling on each platform, what is not, and which stock is running out of time. Cancelled and RTO orders are excluded.
           </p>
         </div>
+        <Link href="/insights/compare" className="h-9 border border-line bg-surface px-3 py-2 text-xs font-semibold text-accent hover:bg-surface-sunken">Product vs platform comparison →</Link>
         <div className="flex border border-line bg-surface text-xs">
           {RANGES.map((r) => (
             <Link
