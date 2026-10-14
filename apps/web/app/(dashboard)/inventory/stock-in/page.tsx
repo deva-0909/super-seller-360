@@ -25,7 +25,7 @@ export default async function StockInPage() {
     supabase.from("warehouses").select("warehouse_id, name").eq("status", "active").order("name"),
     supabase.from("user_warehouse_scope").select("warehouse_id").eq("user_id", u.user?.id ?? ""),
     supabase.from("suppliers").select("supplier_id, name").eq("status", "active").order("name"),
-    supabase.from("stock_ins").select("stock_in_id, si_no, received_on, reason, via, ref_no, created_at, warehouses(name), suppliers(name), stock_in_lines(quantity)").order("created_at", { ascending: false }).limit(15),
+    supabase.from("stock_ins").select("stock_in_id, si_no, received_on, reason, via, ref_no, created_at, warehouses(name), suppliers(name), review_status, stock_in_lines(quantity)").order("created_at", { ascending: false }).limit(15),
   ]);
   const mine = new Set((scope ?? []).map((s) => s.warehouse_id));
   // a warehouse person sees only the warehouses they are assigned to; others see all
@@ -52,7 +52,7 @@ export default async function StockInPage() {
       <h2 className="mt-8 text-sm font-semibold text-ink">Recent stock-ins</h2>
       <div className="mt-2 overflow-x-auto border border-line bg-surface">
         <table className="w-full text-left text-sm">
-          <thead><tr className="border-b border-line-strong text-xs text-ink-muted"><th className="px-3 py-2 font-medium">No.</th><th className="px-3 py-2 font-medium">Date</th><th className="px-3 py-2 font-medium">Warehouse</th><th className="px-3 py-2 font-medium">Why</th><th className="px-3 py-2 font-medium">Supplier</th><th className="px-3 py-2 font-medium">Challan</th><th className="px-3 py-2 text-right font-medium">Units</th></tr></thead>
+          <thead><tr className="border-b border-line-strong text-xs text-ink-muted"><th className="px-3 py-2 font-medium">No.</th><th className="px-3 py-2 font-medium">Date</th><th className="px-3 py-2 font-medium">Warehouse</th><th className="px-3 py-2 font-medium">Why</th><th className="px-3 py-2 font-medium">Supplier</th><th className="px-3 py-2 font-medium">Challan</th><th className="px-3 py-2 text-right font-medium">Units</th><th className="px-3 py-2 font-medium">Review</th></tr></thead>
           <tbody>
             {(recent ?? []).map((r) => (
               <tr key={r.stock_in_id} className="border-b border-line/60">
@@ -62,9 +62,10 @@ export default async function StockInPage() {
                 <td className="px-3 py-2">{(r.suppliers as unknown as { name: string } | null)?.name ?? "—"}</td>
                 <td className="px-3 py-2">{r.ref_no ?? "—"}</td>
                 <td className="px-3 py-2 text-right font-data">{((r.stock_in_lines as unknown as { quantity: number }[]) ?? []).reduce((s, l) => s + Number(l.quantity), 0)}</td>
+                <td className="px-3 py-2 text-ink-muted">{r.review_status === "reviewed" ? "Reviewed" : "Waiting"}</td>
               </tr>
             ))}
-            {!(recent ?? []).length ? <tr><td colSpan={7} className="px-3 py-6 text-center text-sm text-ink-muted">No stock-ins yet.</td></tr> : null}
+            {!(recent ?? []).length ? <tr><td colSpan={8} className="px-3 py-6 text-center text-sm text-ink-muted">No stock-ins yet.</td></tr> : null}
           </tbody>
         </table>
       </div>

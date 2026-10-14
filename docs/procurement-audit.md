@@ -103,3 +103,14 @@ Closes: C2, C3, C4, C5. Still open: B2–B6, A1–A4, E1–E3, F2–F3, C6.
 - PO amendment: quantity, price, drop a line, expected date; reason required; old version kept; the order goes back for approval at the tier the new total needs; not allowed once goods are received.
 - Printable PO (Print / PDF button on the order page).
 Closes: A1, A3, B2, B3, B5 (expected date shown and late flag existed). Not built yet: freight/other charges and landed cost (needs bill-side support, with E2), transfers between stores (A4), branch-wise re-order suggestions (A2), GRNI accrual (E1), review queue for direct stock-ins (C6), supplier-master re-check (F2).
+
+## Round 24 (migration 0108) — matching reports and stock-in review, built
+- Purchases -> Matching: "Received, not billed" (value at order price with GST, age in days), "Billed more than received", "Bills on hold", "Stock-ins to review".
+- Direct stock-ins (no order) are reviewed by a manager other than the person who entered them, with a note of what was checked.
+- Finding F2 (supplier bank/GST/TDS change) was already covered: editing those on an active supplier sends it back to pending approval (0059 `supplier_save`).
+Closes: E3, C6, F2. A4 (store-to-store transfers) and A2 (branch-wise suggestions) remain; requisitions cover the branch need for now.
+
+## Decisions for your CA (not built on purpose)
+1. **GRNI accrual:** should goods received but not yet billed be booked as stock and a liability at month-end? The Matching report gives the figure; posting it automatically needs the CA's call on cut-off and on reversal when the bill arrives.
+2. **Freight / other charges:** capitalised into stock cost (landed cost) or expensed? Decides how bill lines and COGS are changed.
+3. **Costing:** keep standard cost price, or move to weighted average?

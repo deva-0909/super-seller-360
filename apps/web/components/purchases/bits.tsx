@@ -23,6 +23,7 @@ const TABS = [
   { href: "/purchases/orders", label: "Orders" },
   { href: "/purchases/reorder", label: "Re-order" },
   { href: "/purchases/bills", label: "Bills" },
+  { href: "/purchases/matching", label: "Matching" },
   { href: "/purchases/recurring", label: "Recurring bills" },
   { href: "/purchases/payments", label: "Payments" },
   { href: "/purchases/payment-runs", label: "Payment runs" },
