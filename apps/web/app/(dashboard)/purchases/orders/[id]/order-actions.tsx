@@ -8,9 +8,9 @@ import { inputCls, Lbl, primaryBtn, smallBtn } from "@/components/purchases/bits
 import { ReceiveScan } from "@/components/scan/receive-scan";
 import type { CatRow } from "@/lib/scan/catalog";
 
-type L = { po_line_id: string; product_id: string; lot_tracked: boolean; line_no: number; sku: string; name: string; quantity: number; unit_price: number; received_qty: number; rejected_qty: number; billed_qty: number };
+type L = { po_line_id: string; gst_rate: number; product_id: string; lot_tracked: boolean; line_no: number; sku: string; name: string; quantity: number; unit_price: number; received_qty: number; rejected_qty: number; billed_qty: number };
 
-export function OrderActions({ poId, status, lines, isCreator, canApprove, ownerOnly, canPo, canGrn, canBill, catalog }: { poId: string; status: string; lines: L[]; catalog: CatRow[]; isCreator: boolean; canApprove: boolean; ownerOnly: boolean; canPo: boolean; canGrn: boolean; canBill: boolean }) {
+export function OrderActions({ poId, status, lines, isCreator, canApprove, ownerOnly, hasGrn, expected, canPo, canGrn, canBill, catalog }: { poId: string; status: string; lines: L[]; catalog: CatRow[]; isCreator: boolean; canApprove: boolean; ownerOnly: boolean; hasGrn: boolean; expected: string | null; canPo: boolean; canGrn: boolean; canBill: boolean }) {
   const router = useRouter();
   const supabase = createClient();
   const today = new Date().toISOString().slice(0, 10);
@@ -20,6 +20,11 @@ export function OrderActions({ poId, status, lines, isCreator, canApprove, owner
   const [prices, setPrices] = useState<Record<string, string>>({});
   const [qtys, setQtys] = useState<Record<string, string>>({});
   const [invTotal, setInvTotal] = useState("");
+  const [amendOpen, setAmendOpen] = useState(false);
+  const [aQty, setAQty] = useState<Record<string, string>>({});
+  const [aPrice, setAPrice] = useState<Record<string, string>>({});
+  const [aDate, setADate] = useState(expected ?? "");
+  const [aReason, setAReason] = useState("");
   const [rtvOpen, setRtvOpen] = useState(false);
   const [rtvReason, setRtvReason] = useState("");
   const [rtvRef, setRtvRef] = useState("");
@@ -93,6 +98,30 @@ export function OrderActions({ poId, status, lines, isCreator, canApprove, owner
               p_po: poId, p_returned_on: today, p_reason: rtvReason, p_ref: rtvRef || null,
               p_lines: lines.filter((l) => Number(rtvQty[l.po_line_id] || 0) > 0).map((l) => ({ po_line_id: l.po_line_id, quantity: Number(rtvQty[l.po_line_id]) })),
             }), (d) => { const r = d as { rtv_no: string; needs_credit_note: boolean }; setRtvQty({}); setRtvReason(""); setRtvRef(""); return `${r.rtv_no} recorded and stock taken out.${r.needs_credit_note ? " Part of this was already billed: raise a supplier credit note." : ""}`; })}>{busy === "rtv" ? "Saving…" : "Record return"}</button>
+          </>) : null}
+        </div>
+      ) : null}
+
+      {canPo && ["pending", "approved"].includes(status) && !hasGrn ? (
+        <div className="space-y-3 border border-line bg-surface p-4">
+          <div className="flex items-center justify-between"><p className="text-sm font-medium text-ink">Amend this order</p>
+            <button className={smallBtn} onClick={() => setAmendOpen(!amendOpen)}>{amendOpen ? "Hide" : "Open"}</button></div>
+          {amendOpen ? (<>
+            <p className="text-xs text-ink-muted">The old version is kept. After the change the order goes back for approval. Set a quantity to 0 to drop a line.</p>
+            {lines.map((l) => (
+              <div key={l.po_line_id} className="grid gap-3 md:grid-cols-2">
+                <Lbl label={`${l.sku}: quantity (now ${l.quantity})`}><input className={inputCls} inputMode="numeric" value={aQty[l.po_line_id] ?? ""} placeholder={String(l.quantity)} onChange={(e) => setAQty({ ...aQty, [l.po_line_id]: e.target.value })} /></Lbl>
+                <Lbl label={`${l.sku}: price (now ${l.unit_price})`}><input className={inputCls} inputMode="decimal" value={aPrice[l.po_line_id] ?? ""} placeholder={String(l.unit_price)} onChange={(e) => setAPrice({ ...aPrice, [l.po_line_id]: e.target.value })} /></Lbl>
+              </div>
+            ))}
+            <div className="grid gap-3 md:grid-cols-2">
+              <Lbl label="Expected by"><input type="date" className={inputCls} value={aDate} onChange={(e) => setADate(e.target.value)} /></Lbl>
+              <Lbl label="Why is it being changed? (required)"><input className={inputCls} value={aReason} onChange={(e) => setAReason(e.target.value)} /></Lbl>
+            </div>
+            <button className={primaryBtn} disabled={!!busy} onClick={() => call("amend", () => supabase.rpc("po_amend", {
+              p_id: poId, p_expected: aDate || null, p_reason: aReason,
+              p_lines: lines.map((l) => ({ product_id: l.product_id, quantity: aQty[l.po_line_id] === undefined || aQty[l.po_line_id] === "" ? l.quantity : Number(aQty[l.po_line_id]), unit_price: aPrice[l.po_line_id] === undefined || aPrice[l.po_line_id] === "" ? l.unit_price : Number(aPrice[l.po_line_id]), gst_rate: l.gst_rate })).filter((l) => l.quantity > 0),
+            }), () => { setAQty({}); setAPrice({}); setAReason(""); setAmendOpen(false); return "Order amended and sent back for approval."; })}>{busy === "amend" ? "Saving…" : "Save amendment"}</button>
           </>) : null}
         </div>
       ) : null}

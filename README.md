@@ -1455,3 +1455,6 @@ Two-tier PO approval (manager up to the limit, Owner above), supplier invoice ca
 
 ## Round 22 — receiving controls (0106)
 Challan number + photo required, backdating limit, receiver must differ from PO raiser/approver, damage reason, return to vendor. Run `supabase/migrations/0106_receiving_controls.sql` (after 0104 and 0105) before deploying.
+
+## Round 23 — branch requisitions and PO amendments (0107)
+Purchases → Requisitions (new tab), PO "Amend" panel with version history, and Print / PDF on each order. Run `supabase/migrations/0107_requisitions_po_amend.sql` before deploying.

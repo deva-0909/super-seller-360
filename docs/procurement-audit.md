@@ -97,3 +97,9 @@ Closes: B1 (partly), D1, D2, D3, D4. Still open: C2–C5, B2–B6, A1–A4, E1�
 - Damaged/rejected quantity needs a written reason.
 - Return to vendor (RTV): stock goes out, reason and gate-pass/debit-note reference recorded, billable quantity drops; warns when a supplier credit note is needed.
 Closes: C2, C3, C4, C5. Still open: B2–B6, A1–A4, E1–E3, F2–F3, C6.
+
+## Round 23 (migration 0107) — requisitions and PO amendments, built
+- Branch requisition (RQ-): the branch store raises it, a manager approves (not the same person), purchase makes a PO for that branch from what is still not ordered. Asked / ordered / received is tracked per line.
+- PO amendment: quantity, price, drop a line, expected date; reason required; old version kept; the order goes back for approval at the tier the new total needs; not allowed once goods are received.
+- Printable PO (Print / PDF button on the order page).
+Closes: A1, A3, B2, B3, B5 (expected date shown and late flag existed). Not built yet: freight/other charges and landed cost (needs bill-side support, with E2), transfers between stores (A4), branch-wise re-order suggestions (A2), GRNI accrual (E1), review queue for direct stock-ins (C6), supplier-master re-check (F2).

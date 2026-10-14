@@ -11,20 +11,21 @@ import type { CatRow } from "@/lib/scan/catalog";
 export default async function OrderPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await createClient();
-  const { data: po } = await supabase.from("purchase_orders").select("po_id, po_no, order_date, expected_date, status, approval_level, taxable_value, tax_value, total, notes, decision_note, created_by, suppliers(name, gstin), warehouses(name)").eq("po_id", id).maybeSingle();
+  const { data: po } = await supabase.from("purchase_orders").select("po_id, po_no, order_date, expected_date, status, approval_level, version, req_id, taxable_value, tax_value, total, notes, decision_note, created_by, suppliers(name, gstin), warehouses(name)").eq("po_id", id).maybeSingle();
   if (!po) notFound();
-  const [{ data: lines }, { data: grns }, { data: bills }, { data: rtvs }, { data: me }, { data: canApproveMgr }, { data: isOwner }, { data: canPo }, { data: canGrn }, { data: canBill }] = await Promise.all([
+  const [{ data: lines }, { data: grns }, { data: bills }, { data: rtvs }, { data: versions }, { data: me }, { data: canApproveMgr }, { data: isOwner }, { data: canPo }, { data: canGrn }, { data: canBill }] = await Promise.all([
     supabase.from("po_line_status").select("po_line_id, line_no, quantity, unit_price, gst_rate, received_qty, rejected_qty, billed_qty, product_id").eq("po_id", id).order("line_no"),
     supabase.from("goods_receipts").select("grn_id, grn_no, received_on, challan_no").eq("po_id", id).order("created_at"),
     supabase.from("purchase_bills").select("bill_id, bill_no, status, total").eq("po_id", id),
     supabase.from("vendor_returns").select("rtv_id, rtv_no, returned_on, reason, ref_no").eq("po_id", id).order("created_at"),
+    supabase.from("po_versions").select("version, reason, changed_at, snapshot").eq("po_id", id).order("version", { ascending: false }),
     supabase.auth.getUser(),
     supabase.rpc("has_purchase_approve"), supabase.rpc("has_owner_approve"), supabase.rpc("has_po_write"), supabase.rpc("has_grn_write"), supabase.rpc("has_accounting_write"),
   ]);
   const ids = (lines ?? []).map((l) => l.product_id);
   const { data: prods } = ids.length ? await supabase.from("products").select("product_id, sku, name, lot_tracked").in("product_id", ids) : { data: [] };
   const pm = new Map((prods ?? []).map((p) => [p.product_id, p]));
-  const rows = (lines ?? []).map((l) => ({ ...l, lot_tracked: pm.get(l.product_id)?.lot_tracked === true, sku: pm.get(l.product_id)?.sku ?? "", name: pm.get(l.product_id)?.name ?? "", quantity: Number(l.quantity), unit_price: Number(l.unit_price), received_qty: Number(l.received_qty), rejected_qty: Number(l.rejected_qty), billed_qty: Number(l.billed_qty) }));
+  const rows = (lines ?? []).map((l) => ({ ...l, lot_tracked: pm.get(l.product_id)?.lot_tracked === true, sku: pm.get(l.product_id)?.sku ?? "", name: pm.get(l.product_id)?.name ?? "", gst_rate: Number(l.gst_rate), quantity: Number(l.quantity), unit_price: Number(l.unit_price), received_qty: Number(l.received_qty), rejected_qty: Number(l.rejected_qty), billed_qty: Number(l.billed_qty) }));
   // the scanner's code list is only needed while goods can still be received
   const receiving = canGrn === true && ["approved", "part_received"].includes(po.status);
   const catalog = receiving ? (await fetchAll<CatRow>(() => supabase.rpc("scan_catalog"))).data : [];
@@ -36,9 +37,11 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
         <div>
           <h1 className="text-lg font-semibold tracking-tight text-ink">{po.po_no} <StatusTag status={po.status} /></h1>
           <p className="mt-1 text-sm text-ink-muted">{sup?.name}{sup?.gstin ? ` · ${sup.gstin}` : ""} → {(po.warehouses as unknown as { name: string } | null)?.name} · ordered {po.order_date}{po.expected_date ? ` · expected ${po.expected_date}` : ""}</p>
+          {po.version > 1 ? <p className="mt-1 text-sm text-warning">Amended: version {po.version}. See changes below.</p> : null}
+          {po.req_id ? <p className="mt-1 text-sm text-ink-muted">Raised from <Link className="text-accent hover:underline" href={`/purchases/requisitions/${po.req_id}`}>a branch requisition</Link></p> : null}
           {po.decision_note ? <p className="mt-1 text-sm text-ink-muted">Note: {po.decision_note}</p> : null}
         </div>
-        <Link href="/purchases/orders" className="text-sm text-accent hover:underline">All orders</Link>
+        <div className="flex gap-4 text-sm"><Link href={`/purchases/orders/${po.po_id}/print`} className="text-accent hover:underline">Print / PDF</Link><Link href="/purchases/orders" className="text-accent hover:underline">All orders</Link></div>
       </div>
 
       <div className="mt-4 overflow-x-auto border border-line bg-surface">
@@ -58,7 +61,15 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
       </div>
 
       <OrderActions poId={po.po_id} status={po.status} lines={rows} isCreator={po.created_by === me.user?.id}
-        canApprove={po.approval_level === "owner" ? isOwner === true : (canApproveMgr === true || isOwner === true)} ownerOnly={po.approval_level === "owner"} canPo={canPo === true} canGrn={canGrn === true} canBill={canBill === true} catalog={catalog} />
+        canApprove={po.approval_level === "owner" ? isOwner === true : (canApproveMgr === true || isOwner === true)} ownerOnly={po.approval_level === "owner"} hasGrn={(grns ?? []).length > 0} expected={po.expected_date} canPo={canPo === true} canGrn={canGrn === true} canBill={canBill === true} catalog={catalog} />
+
+      {(versions ?? []).length ? (
+        <div className="mt-6"><h2 className="text-sm font-semibold text-ink">Earlier versions</h2>
+          <ul className="mt-2 divide-y divide-line border border-line bg-surface text-sm">{(versions ?? []).map((v) => {
+            const sn = v.snapshot as { total: number; lines: { product_id: string; quantity: number; unit_price: number }[] };
+            return <li key={v.version} className="px-3 py-2">Version {v.version} · {String(v.changed_at).slice(0, 10)} · total {inr(Number(sn.total))} · {sn.lines.map((x) => `${pm.get(x.product_id)?.sku ?? "?"} ${x.quantity} @ ${x.unit_price}`).join(", ")}<div className="text-ink-muted">Changed because: {v.reason}</div></li>;
+          })}</ul></div>
+      ) : null}
 
       {(rtvs ?? []).length ? (
         <div className="mt-6"><h2 className="text-sm font-semibold text-ink">Returned to supplier</h2>
