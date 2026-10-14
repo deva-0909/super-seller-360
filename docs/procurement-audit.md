@@ -114,3 +114,10 @@ Closes: E3, C6, F2. A4 (store-to-store transfers) and A2 (branch-wise suggestion
 1. **GRNI accrual:** should goods received but not yet billed be booked as stock and a liability at month-end? The Matching report gives the figure; posting it automatically needs the CA's call on cut-off and on reversal when the bill arrives.
 2. **Freight / other charges:** capitalised into stock cost (landed cost) or expensed? Decides how bill lines and COGS are changed.
 3. **Costing:** keep standard cost price, or move to weighted average?
+
+## Round 25 (migration 0109) — store-to-store transfers, built
+- Inventory -> Store Transfers. Dispatch with a scanner or phone camera: stock leaves the sending store at once and shows as in transit.
+- The other store receives by scanning; stock is added only for what arrived. The receiver cannot be the sender. Anything not on the transfer is flagged.
+- A shortfall needs an explanation and is settled by a manager (not the sender or receiver): missing goods go back to the sending store, or are written off.
+- A transfer still on its way can be cancelled; the stock returns to the sending store.
+Closes: A4.

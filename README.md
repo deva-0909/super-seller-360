@@ -1462,3 +1462,6 @@ Purchases → Requisitions (new tab), PO "Amend" panel with version history, and
 
 ## Round 24 — matching reports and stock-in review (0108)
 Purchases -> Matching tab (received-not-billed, billed-more-than-received, held bills, stock-ins to review). Run `supabase/migrations/0108_matching_reports_stockin_review.sql` before deploying.
+
+## Round 25 — store-to-store transfers (0109)
+Inventory -> Store Transfers: scan to dispatch, scan to receive, shortfall settled by a manager. Run `supabase/migrations/0109_stock_transfers.sql` before deploying.
