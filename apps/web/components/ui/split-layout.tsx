@@ -4,32 +4,36 @@ import { createContext, useContext, useSyncExternalStore } from "react";
 
 // A list on the left and an "add / log" form on the right. The form can be folded away so the list gets the full width.
 // The choice is remembered in this browser (one setting for every screen); if the browser blocks storage it still works for the visit.
-const KEY = "ss-side-collapsed";
+const DEFAULT_KEY = "ss-side-collapsed";
 const listeners = new Set<() => void>();
-let mem: boolean | null = null;
+const mem = new Map<string, boolean>();
 
 function subscribe(cb: () => void) {
   listeners.add(cb);
   window.addEventListener("storage", cb);
   return () => { listeners.delete(cb); window.removeEventListener("storage", cb); };
 }
-function read(): boolean {
-  if (mem !== null) return mem;
-  try { return window.localStorage.getItem(KEY) === "1"; } catch { return false; }
+function read(key: string): boolean {
+  const m = mem.get(key);
+  if (m !== undefined) return m;
+  try { return window.localStorage.getItem(key) === "1"; } catch { return false; }
 }
-function write(v: boolean) {
-  mem = v;
-  try { window.localStorage.setItem(KEY, v ? "1" : "0"); } catch { /* storage blocked: keep it in memory only */ }
+function write(key: string, v: boolean) {
+  mem.set(key, v);
+  try { window.localStorage.setItem(key, v ? "1" : "0"); } catch { /* storage blocked: keep it in memory only */ }
   listeners.forEach((f) => f());
 }
 
 const Ctx = createContext<{ collapsed: boolean; toggle: () => void }>({ collapsed: false, toggle: () => {} });
 
-export function SplitLayout({ children }: { children: React.ReactNode }) {
-  const collapsed = useSyncExternalStore(subscribe, read, () => false);
+/** Pass `open` / `closed` (full Tailwind class names) for layouts other than the usual list + 320px form. `memory` keeps a screen's choice separate. */
+export function SplitLayout({
+  children, open = "lg:grid-cols-[1fr_320px]", closed = "lg:grid-cols-[1fr_auto]", mt = "mt-6", memory = DEFAULT_KEY,
+}: { children: React.ReactNode; open?: string; closed?: string; mt?: string; memory?: string }) {
+  const collapsed = useSyncExternalStore(subscribe, () => read(memory), () => false);
   return (
-    <Ctx.Provider value={{ collapsed, toggle: () => write(!collapsed) }}>
-      <div className={`mt-6 grid grid-cols-1 gap-6 ${collapsed ? "lg:grid-cols-[1fr_auto]" : "lg:grid-cols-[1fr_320px]"}`}>{children}</div>
+    <Ctx.Provider value={{ collapsed, toggle: () => write(memory, !collapsed) }}>
+      <div className={`${mt} grid grid-cols-1 gap-6 ${collapsed ? closed : open}`}>{children}</div>
     </Ctx.Provider>
   );
 }

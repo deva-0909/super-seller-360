@@ -5,6 +5,7 @@ import { EXCLUDE_REASONS, dateFmt, inr, type BookLine, type FeedRow, type ReconL
 import { Toolbar } from "./toolbar";
 import { LineActions } from "./line-actions";
 import { BookLineActions } from "./book-line-actions";
+import { SplitLayout, SidePanel } from "@/components/ui/split-layout";
 
 const VIEWS = [
   { key: "open", label: "Needs attention" },
@@ -93,7 +94,7 @@ export default async function ReconcilePage({ searchParams }: { searchParams: Pr
         ))}
       </div>
 
-      <div className="mt-4 grid grid-cols-1 gap-6 xl:grid-cols-[1.6fr_1fr]">
+      <SplitLayout mt="mt-4" memory="ss-recon-collapsed" open="xl:grid-cols-[1.6fr_1fr]" closed="xl:grid-cols-[1fr_auto]">
         <section>
           <h2 className="text-sm font-semibold text-ink">Bank statement lines</h2>
           <div className="mt-2 border border-line bg-surface">
@@ -129,6 +130,7 @@ export default async function ReconcilePage({ searchParams }: { searchParams: Pr
           </div>
         </section>
 
+        <SidePanel label="Show books not matched to the bank">
         <section>
           <h2 className="text-sm font-semibold text-ink">In your books, not matched to the bank</h2>
           <p className="mt-0.5 text-xs text-ink-muted">Payments made but not yet cleared, receipts not yet credited — or entries that need a look.</p>
@@ -148,7 +150,8 @@ export default async function ReconcilePage({ searchParams }: { searchParams: Pr
             ))}
           </div>
         </section>
-      </div>
+        </SidePanel>
+      </SplitLayout>
     </div>
   );
 }
