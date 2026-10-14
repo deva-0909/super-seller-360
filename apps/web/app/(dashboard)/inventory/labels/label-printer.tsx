@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import JsBarcode from "jsbarcode";
-import QRCode from "qrcode";
+import { ean13Svg } from "@/lib/codes/ean13";
+import { qrSvg } from "@/lib/codes/qr";
 import { createClient } from "@/lib/supabase/client";
 import { friendlyError } from "@/lib/friendly-error";
 
@@ -21,20 +21,15 @@ const inputCls = "h-9 border border-line bg-surface px-2 text-sm text-ink";
 const btn = "h-9 rounded-lg border border-line bg-surface px-3 text-sm font-semibold text-ink hover:bg-surface-sunken disabled:opacity-50";
 
 function Label({ p, w, h }: { p: LabelProduct; w: number; h: number }) {
-  const bar = useRef<SVGSVGElement>(null);
-  const [qr, setQr] = useState("");
-  useEffect(() => {
-    if (bar.current) {
-      try { JsBarcode(bar.current, p.internal_code, { format: "EAN13", width: 1.4, height: h > 30 ? 34 : 24, displayValue: true, fontSize: 11, margin: 0, flat: true }); } catch { /* invalid code: left blank */ }
-    }
-    QRCode.toString(p.internal_code, { type: "svg", margin: 0, width: 200 }).then(setQr, () => setQr(""));
-  }, [p.internal_code, h]);
+  // codes are drawn by our own code (lib/codes), no outside package or service
+  const bar = useMemo(() => { try { return ean13Svg(p.internal_code, { height: h > 30 ? 34 : 24 }); } catch { return ""; } }, [p.internal_code, h]);
+  const qr = useMemo(() => { try { return qrSvg(p.internal_code); } catch { return ""; } }, [p.internal_code]);
   const sub = [p.sku, p.size, p.colour].filter(Boolean).join(" · ");
   return (
     <div className="label-item flex items-stretch justify-between gap-1 overflow-hidden border border-dashed border-line bg-white p-1 text-black" style={{ width: `${w}mm`, height: `${h}mm`, breakInside: "avoid" }}>
       <div className="flex min-w-0 flex-1 flex-col justify-between">
         <div className="min-w-0"><p className="line-clamp-2 text-[9px] font-semibold leading-tight">{p.name}</p><p className="truncate text-[8px] leading-tight">{sub}</p></div>
-        <svg ref={bar} className="max-w-full" />
+        <div className="min-h-0 flex-1" dangerouslySetInnerHTML={{ __html: bar }} />
       </div>
       <div className="h-full shrink-0" style={{ width: `${Math.min(h - 4, 22)}mm` }} dangerouslySetInnerHTML={{ __html: qr }} />
     </div>

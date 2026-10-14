@@ -37,3 +37,8 @@ A barcode can belong to only one product. The product form now refuses a barcode
 - The supplier's barcode stays linked to the same product ("Linked codes" on each row: add by typing or scanning, mark a carton code with its piece count, remove a wrong one). Scanning the supplier's label or ours finds the same product everywhere: receiving, stock-in, transfers.
 - Suggested routine on arrival: scan the supplier's barcode; if the goods carry no label of ours, print and stick ours. After that, scan whichever is easier.
 - One label per product variant (SKU, size and colour). Labels for each individual piece (unique serial per unit) are not part of this.
+
+## Barcodes and QR codes are generated inside the app (Round 27)
+- Labels are drawn by our own code (`apps/web/lib/codes/ean13.ts`, `qr.ts`). No outside package, website or service is used, so nothing can be switched off, change price or expire.
+- Our code is a fixed 13-digit number stored against the product (`products.internal_code`). The barcode and QR are only a picture of that number, so a label printed today scans the same years later.
+- Checked by decoding the generated images with an independent reader: all EAN-13 barcodes read correctly; QR codes read correctly in nearly all cases. Always print one test label and scan it with your real scanner and a phone before printing a full roll.
