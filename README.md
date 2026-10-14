@@ -1438,3 +1438,6 @@ Bank → For review: a **Split** button on each line books it across several acc
 - 0102 fixes the Profit & Loss / Trial Balance timeout (row-level-security role check evaluated once per query, plus indexes on journal_entries).
 - 0103 adds `product_platform_performance(from, to)`; screen at Business Insights → "Product vs Platform" (`/insights/compare`).
 - Filters: period (today … last financial year, or custom dates), platform tick-boxes, category, product/SKU search, measure (revenue, units, orders, AOV, return %, RTO %, margin %), sort, compare with previous period. Excel download has every product.
+
+## Round 17 — two-step sign-in reminder
+Finance roles without an authenticator app now see a dismissible banner ("Remind me in 7 days") instead of being redirected to Security on every page. Vercel setting `REQUIRE_MFA`: unset = reminder only, `enforce` = old hard redirect, `off` = no reminder.
