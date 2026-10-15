@@ -7,9 +7,10 @@ import { friendlyError } from "@/lib/friendly-error";
 import { buildIndex, lookup, type CatRow } from "@/lib/scan/catalog";
 import { beep } from "@/lib/scan/feedback";
 import { ScanBox, type ScanBoxHandle } from "@/components/scan/scan-box";
+import { isSerial, lookupUnit, stateText } from "@/lib/scan/serial";
 
 type W = { warehouse_id: string; name: string };
-type Line = { key: string; product_id: string; label: string; lot: string; lot_tracked: boolean; qty: number };
+type Line = { key: string; product_id: string; label: string; lot: string; lot_tracked: boolean; qty: number; serials: string[] };
 const inputCls = "h-10 border border-line bg-surface px-2 text-sm text-ink";
 
 export function TransferSend({ catalog, from, all }: { catalog: CatRow[]; from: W[]; all: W[] }) {
@@ -24,10 +25,24 @@ export function TransferSend({ catalog, from, all }: { catalog: CatRow[]; from: 
   const [msg, setMsg] = useState<{ tone: "ok" | "warn" | "bad"; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const supabase = useMemo(() => createClient(), []);
 
   function say(tone: "ok" | "warn" | "bad", text: string) { beep(tone); setMsg({ tone, text }); }
+  async function onScanSerial(raw: string) {
+    const serial = raw.trim();
+    if (lines.some((l) => l.serials.includes(serial))) { say("warn", "That piece is already on the list."); return; }
+    let u;
+    try { u = await lookupUnit(supabase, serial); } catch { say("bad", "Could not check that piece. Try again."); return; }
+    if (!u) { say("bad", `Serial ${serial} is not one of our pieces.`); return; }
+    if (u.state !== "in_stock" || u.warehouse_id !== src) { say("bad", `${u.sku}: this piece is not in stock at the sending store (it is ${stateText(u.state)}).`); return; }
+    const key = `${u.product_id}|`;
+    const label = `${u.sku} · ${u.product_name}${u.size ? ` · ${u.size}` : ""}${u.colour ? ` · ${u.colour}` : ""}`;
+    setLines((l) => l.some((x) => x.key === key) ? l.map((x) => (x.key === key ? { ...x, qty: x.qty + 1, serials: [...x.serials, serial] } : x)) : [...l, { key, product_id: u.product_id, label, lot: "", lot_tracked: false, qty: 1, serials: [serial] }]);
+    say("ok", `${u.sku} piece ${serial.slice(-5)} added`);
+  }
   function onScan(raw: string) {
     setErr(null);
+    if (isSerial(raw)) { void onScanSerial(raw); return; }
     const r = lookup(idx, raw);
     if (r.kind === "none") { say("bad", `Unknown code ${raw.trim()}. Link it on the Stock in screen first.`); return; }
     if (r.kind === "many") { say("bad", `Code ${raw.trim()} belongs to more than one product.`); return; }
@@ -35,7 +50,7 @@ export function TransferSend({ catalog, from, all }: { catalog: CatRow[]; from: 
     const lotUse = h.lot_tracked ? lot.trim() : "";
     if (h.lot_tracked && !lotUse) { say("warn", `${h.sku} needs a lot number. Type it in the Lot box, then scan again.`); return; }
     const key = `${h.product_id}|${lotUse}`;
-    setLines((l) => l.some((x) => x.key === key) ? l.map((x) => (x.key === key ? { ...x, qty: x.qty + h.pack_qty } : x)) : [...l, { key, product_id: h.product_id, label: h.label, lot: lotUse, lot_tracked: h.lot_tracked, qty: h.pack_qty }]);
+    setLines((l) => l.some((x) => x.key === key) ? l.map((x) => (x.key === key ? { ...x, qty: x.qty + h.pack_qty } : x)) : [...l, { key, product_id: h.product_id, label: h.label, lot: lotUse, lot_tracked: h.lot_tracked, qty: h.pack_qty, serials: [] }]);
     say("ok", `${h.sku} +${h.pack_qty}`);
   }
   async function send() {
@@ -43,7 +58,7 @@ export function TransferSend({ catalog, from, all }: { catalog: CatRow[]; from: 
     if (!dst) { setErr("Choose the store it is going to."); return; }
     if (!lines.length) { setErr("Scan at least one item."); return; }
     setBusy(true);
-    const { data, error } = await createClient().rpc("transfer_dispatch", { p_from: src, p_to: dst, p_ref: ref || null, p_lines: lines.filter((l) => l.qty > 0).map((l) => ({ product_id: l.product_id, quantity: l.qty, lot_no: l.lot || null })) });
+    const { data, error } = await supabase.rpc("transfer_dispatch", { p_from: src, p_to: dst, p_ref: ref || null, p_serials: lines.flatMap((l) => l.serials), p_lines: lines.filter((l) => l.qty > 0).map((l) => ({ product_id: l.product_id, quantity: l.qty, lot_no: l.lot || null })) });
     setBusy(false);
     if (error) { setErr(friendlyError(error.message)); return; }
     router.push(`/inventory/transfers/${data as string}`);
@@ -64,8 +79,8 @@ export function TransferSend({ catalog, from, all }: { catalog: CatRow[]; from: 
         <tbody>
           {lines.map((l) => (
             <tr key={l.key} className="border-b border-line/60">
-              <td className="px-2 py-2">{l.label}</td><td className="px-2 py-2 text-ink-muted">{l.lot || "—"}</td>
-              <td className="px-2 py-2 text-right"><input className={`${inputCls} w-20 text-right`} inputMode="numeric" value={l.qty} onChange={(e) => setLines(lines.map((x) => (x.key === l.key ? { ...x, qty: Math.max(0, Math.floor(Number(e.target.value) || 0)) } : x)))} /></td>
+              <td className="px-2 py-2">{l.label}{l.serials.length ? <span className="ml-2 text-xs text-ink-muted">{l.serials.length} labelled piece{l.serials.length === 1 ? "" : "s"} scanned</span> : null}</td><td className="px-2 py-2 text-ink-muted">{l.lot || "—"}</td>
+              <td className="px-2 py-2 text-right"><input className={`${inputCls} w-20 text-right`} inputMode="numeric" value={l.qty} onChange={(e) => setLines(lines.map((x) => (x.key === l.key ? { ...x, qty: Math.max(x.serials.length, Math.floor(Number(e.target.value) || 0)) } : x)))} /></td>
               <td className="px-2 py-2"><button type="button" className="text-xs text-accent hover:underline" onClick={() => setLines(lines.filter((x) => x.key !== l.key))}>Remove</button></td>
             </tr>
           ))}

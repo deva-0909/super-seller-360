@@ -7,6 +7,7 @@ import { friendlyError } from "@/lib/friendly-error";
 import { buildIndex, lookup, type CatRow } from "@/lib/scan/catalog";
 import { beep } from "@/lib/scan/feedback";
 import { ScanBox, type ScanBoxHandle } from "@/components/scan/scan-box";
+import { isSerial, lookupUnit, stateText } from "@/lib/scan/serial";
 
 type Row = { line_id: string; label: string; product_id: string; lot: string | null; sent: number; got: number | null };
 const inputCls = "h-10 border border-line bg-surface px-2 text-sm text-ink";
@@ -19,12 +20,27 @@ export function TransferActions({ id, status, lines, catalog, canGrn, canDecide,
   const idx = useMemo(() => buildIndex(catalog), [catalog]);
   const box = useRef<ScanBoxHandle>(null);
   const [counts, setCounts] = useState<Record<string, number>>({});
+  const [serials, setSerials] = useState<string[]>([]);
   const [note, setNote] = useState("");
   const [msg, setMsg] = useState<{ tone: "ok" | "warn" | "bad"; text: string } | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
+  async function onScanSerial(raw: string) {
+    const serial = raw.trim();
+    if (serials.includes(serial)) { beep("warn"); setMsg({ tone: "warn", text: "That piece was already scanned." }); return; }
+    let u;
+    try { u = await lookupUnit(supabase, serial); } catch { beep("bad"); setMsg({ tone: "bad", text: "Could not check that piece. Try again." }); return; }
+    if (!u) { beep("bad"); setMsg({ tone: "bad", text: `Serial ${serial} is not one of our pieces.` }); return; }
+    if (u.state !== "in_transit" || u.transfer_id !== id) { beep("bad"); setMsg({ tone: "bad", text: `${u.sku}: this piece is NOT part of this transfer (it is ${stateText(u.state)}). Set it aside.` }); return; }
+    const target = lines.find((l) => l.product_id === u.product_id && (counts[l.line_id] ?? 0) < l.sent);
+    if (!target) { beep("warn"); setMsg({ tone: "warn", text: `${u.sku}: all that were sent are already counted.` }); return; }
+    setSerials((x) => [...x, serial]);
+    setCounts((c) => ({ ...c, [target.line_id]: (c[target.line_id] ?? 0) + 1 }));
+    beep("ok"); setMsg({ tone: "ok", text: `${u.sku} piece ${serial.slice(-5)} arrived (${(counts[target.line_id] ?? 0) + 1} of ${target.sent})` });
+  }
   function onScan(raw: string) {
+    if (isSerial(raw)) { void onScanSerial(raw); return; }
     const r = lookup(idx, raw);
     if (r.kind !== "one") { beep("bad"); setMsg({ tone: "bad", text: r.kind === "none" ? `Unknown code ${raw.trim()}` : "That code belongs to more than one product" }); return; }
     const h = r.hit;
@@ -60,7 +76,7 @@ export function TransferActions({ id, status, lines, catalog, canGrn, canDecide,
                 <td className="px-2 py-2 text-right"><input className={`${inputCls} w-20 text-right`} inputMode="numeric" value={counts[l.line_id] ?? 0} onChange={(e) => setCounts({ ...counts, [l.line_id]: Math.min(l.sent, Math.max(0, Math.floor(Number(e.target.value) || 0))) })} /></td></tr>))}</tbody>
           </table>
           {short ? <input className={`${inputCls} w-full`} placeholder="Some stock is missing: what happened? (required)" value={note} onChange={(e) => setNote(e.target.value)} /> : null}
-          <button className={primary} disabled={!!busy || isSender || (short && !note.trim())} onClick={() => run("recv", "transfer_receive", { p_id: id, p_note: note || null, p_lines: lines.map((l) => ({ line_id: l.line_id, received: counts[l.line_id] ?? 0 })) })}>{busy === "recv" ? "Saving…" : "Confirm received"}</button>
+          <button className={primary} disabled={!!busy || isSender || (short && !note.trim())} onClick={() => run("recv", "transfer_receive", { p_id: id, p_note: note || null, p_serials: serials, p_lines: lines.map((l) => ({ line_id: l.line_id, received: counts[l.line_id] ?? 0 })) })}>{busy === "recv" ? "Saving…" : "Confirm received"}</button>
         </div>
       ) : null}
       {status === "received_short" && canDecide ? (

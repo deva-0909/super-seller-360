@@ -42,3 +42,14 @@ A barcode can belong to only one product. The product form now refuses a barcode
 - Labels are drawn by our own code (`apps/web/lib/codes/ean13.ts`, `qr.ts`). No outside package, website or service is used, so nothing can be switched off, change price or expire.
 - Our code is a fixed 13-digit number stored against the product (`products.internal_code`). The barcode and QR are only a picture of that number, so a label printed today scans the same years later.
 - Checked by decoding the generated images with an independent reader: all EAN-13 barcodes read correctly; QR codes read correctly in nearly all cases. Always print one test label and scan it with your real scanner and a phone before printing a full roll.
+
+## A unique serial on every piece (Round 28, migration 0111)
+- **When a serial is made:** the moment goods are received (against an order or by direct stock-in). One serial per piece, a 13-digit barcode starting 21. Inventory -> Piece Labels & Tracking lists the labels waiting to print, grouped by receipt. Print them and stick one on every piece. After printing, they leave the list.
+- **Life of a piece:** in stock -> in transit (store transfer) -> in stock at the other store; in stock -> packed -> sold; sold -> back in stock after a customer return or RTO is restocked; in stock -> returned to supplier; or written off. Every step is saved with who, when and which document. Look any piece up by scanning it (Find a piece).
+- **Store transfers:** scan the pieces on dispatch and again on arrival. Pieces not scanned at the other end count as the shortfall, and the manager's settlement brings them back or writes them off.
+- **Return to supplier:** scan the pieces going back on the order page.
+- **Selling:** Inventory -> Pack an Order. Find the order, scan each piece in the parcel. When the order ships, those pieces become sold. A sold piece cannot be packed again.
+- **Marketplace orders are never blocked.** If an order ships without its pieces scanned, stock still goes down, the order appears under "Needs attention", and you clear it by scanning the pieces that left.
+- **Old stock** (received before this round) has no serials and keeps working by quantity. While a store holds labelled pieces, those cannot be sent or returned to a supplier by counting; they must be scanned. This stops labelled stock silently disappearing.
+- **Written off:** a manager can write off a lost labelled piece; stock goes down by one.
+- Switch off with `purchase_settings.serial_tracking = false` if ever needed (new receipts then make no serials).

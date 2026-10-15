@@ -250,7 +250,7 @@ function Inner({ catalog, warehouses, suppliers, defaultWarehouse, onDone }: { c
         <p className="text-xs text-ink-muted">Your list is kept on this device if you close the page. Every stock change is logged with who, when and the quantity before and after.</p>
       </div>
       {err ? <p role="alert" className="text-sm text-danger">{err}</p> : null}
-      {done ? <p className="text-sm text-success">{done}</p> : null}
+      {done ? <p className="text-sm text-success">{done} <a className="font-semibold underline" href="/inventory/pieces">Print the serial labels for these pieces</a>.</p> : null}
     </div>
   );
 }

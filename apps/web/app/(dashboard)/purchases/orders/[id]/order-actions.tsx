@@ -6,6 +6,8 @@ import { createClient } from "@/lib/supabase/client";
 import { friendlyError } from "@/lib/friendly-error";
 import { inputCls, Lbl, primaryBtn, smallBtn } from "@/components/purchases/bits";
 import { ReceiveScan } from "@/components/scan/receive-scan";
+import { ScanBox } from "@/components/scan/scan-box";
+import { isSerial, lookupUnit, stateText } from "@/lib/scan/serial";
 import type { CatRow } from "@/lib/scan/catalog";
 
 type L = { po_line_id: string; gst_rate: number; product_id: string; lot_tracked: boolean; line_no: number; sku: string; name: string; quantity: number; unit_price: number; received_qty: number; rejected_qty: number; billed_qty: number };
@@ -29,6 +31,8 @@ export function OrderActions({ poId, status, lines, isCreator, canApprove, owner
   const [rtvReason, setRtvReason] = useState("");
   const [rtvRef, setRtvRef] = useState("");
   const [rtvQty, setRtvQty] = useState<Record<string, string>>({});
+  const [rtvSerials, setRtvSerials] = useState<string[]>([]);
+  const [rtvMsg, setRtvMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
@@ -40,6 +44,22 @@ export function OrderActions({ poId, status, lines, isCreator, canApprove, owner
     if (error) { setErr(friendlyError(error.message)); return; }
     if (ok) setMsg(ok(data));
     router.refresh();
+  }
+
+  async function scanReturn(raw: string) {
+    const serial = raw.trim();
+    if (!isSerial(serial)) { setRtvMsg("Scan the serial label on the piece (the one that starts with 21), or type the quantity below."); return; }
+    if (rtvSerials.includes(serial)) { setRtvMsg("That piece was already scanned."); return; }
+    try {
+      const u = await lookupUnit(supabase, serial);
+      if (!u) { setRtvMsg(`Serial ${serial} is not one of our pieces.`); return; }
+      const line = lines.find((l) => l.product_id === u.product_id && l.received_qty > 0);
+      if (!line) { setRtvMsg(`${u.sku} is not on this order.`); return; }
+      if (u.state !== "in_stock") { setRtvMsg(`${u.sku}: this piece is not in stock (it is ${stateText(u.state)}).`); return; }
+      setRtvSerials((x) => [...x, serial]);
+      setRtvQty((q) => ({ ...q, [line.po_line_id]: String(Math.min(line.received_qty, Number(q[line.po_line_id] || 0) + 1)) }));
+      setRtvMsg(`${u.sku} piece ${serial.slice(-5)} added to the return.`);
+    } catch { setRtvMsg("Could not check that piece. Try again."); }
   }
 
   const canReceive = canGrn && ["approved", "part_received"].includes(status);
@@ -91,13 +111,17 @@ export function OrderActions({ poId, status, lines, isCreator, canApprove, owner
               <Lbl label="Why are they going back?"><input className={inputCls} value={rtvReason} onChange={(e) => setRtvReason(e.target.value)} /></Lbl>
               <Lbl label="Gate pass / debit note no."><input className={inputCls} value={rtvRef} onChange={(e) => setRtvRef(e.target.value)} /></Lbl>
             </div>
+            <div><p className="mb-1 text-xs text-ink-muted">Scan the serial label on each piece going back (pieces without a serial label are counted in the quantity below).</p>
+              <ScanBox onScan={(c) => void scanReturn(c)} disabled={!!busy} />
+              {rtvMsg ? <p className="mt-1 text-sm text-ink">{rtvMsg}</p> : null}
+              {rtvSerials.length ? <p className="mt-1 text-xs text-ink-muted">{rtvSerials.length} labelled piece{rtvSerials.length === 1 ? "" : "s"} scanned</p> : null}</div>
             {lines.filter((l) => l.received_qty > 0).map((l) => (
               <Lbl key={l.po_line_id} label={`${l.sku}: quantity going back (held from this order: ${l.received_qty})`}><input className={inputCls} inputMode="numeric" value={rtvQty[l.po_line_id] ?? ""} onChange={(e) => setRtvQty({ ...rtvQty, [l.po_line_id]: e.target.value })} /></Lbl>
             ))}
             <button className={primaryBtn} disabled={!!busy} onClick={() => call("rtv", () => supabase.rpc("rtv_create", {
-              p_po: poId, p_returned_on: today, p_reason: rtvReason, p_ref: rtvRef || null,
+              p_po: poId, p_returned_on: today, p_reason: rtvReason, p_ref: rtvRef || null, p_serials: rtvSerials,
               p_lines: lines.filter((l) => Number(rtvQty[l.po_line_id] || 0) > 0).map((l) => ({ po_line_id: l.po_line_id, quantity: Number(rtvQty[l.po_line_id]) })),
-            }), (d) => { const r = d as { rtv_no: string; needs_credit_note: boolean }; setRtvQty({}); setRtvReason(""); setRtvRef(""); return `${r.rtv_no} recorded and stock taken out.${r.needs_credit_note ? " Part of this was already billed: raise a supplier credit note." : ""}`; })}>{busy === "rtv" ? "Saving…" : "Record return"}</button>
+            }), (d) => { const r = d as { rtv_no: string; needs_credit_note: boolean }; setRtvQty({}); setRtvSerials([]); setRtvMsg(null); setRtvReason(""); setRtvRef(""); return `${r.rtv_no} recorded and stock taken out.${r.needs_credit_note ? " Part of this was already billed: raise a supplier credit note." : ""}`; })}>{busy === "rtv" ? "Saving…" : "Record return"}</button>
           </>) : null}
         </div>
       ) : null}

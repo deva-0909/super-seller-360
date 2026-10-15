@@ -260,7 +260,7 @@ function Inner({ poId, lines, catalog, onDone }: { poId: string; lines: RecvLine
         <p className="text-xs text-ink-muted">Only the good quantity is added to stock. Up to 10% over the ordered quantity is accepted. Your scans are kept on this device if you close the page.</p>
       </div>
       {err ? <p role="alert" className="text-sm text-danger">{err}</p> : null}
-      {done ? <p className="text-sm text-success">{done}</p> : null}
+      {done ? <p className="text-sm text-success">{done} <a className="font-semibold underline" href="/inventory/pieces">Print the serial labels for these pieces</a>.</p> : null}
     </div>
   );
 }
