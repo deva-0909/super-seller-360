@@ -10,9 +10,9 @@ const EVT = "nav-open-change";
 let memory: string | null = null; // used when the browser will not let us store anything
 function read(): string {
   if (memory !== null) return memory;
-  try { return localStorage.getItem(KEY) ?? "[]"; } catch { return "[]"; }
+  try { return localStorage.getItem(KEY) ?? "{}"; } catch { return "{}"; }
 }
-function save(next: string[]) {
+function save(next: Record<string, boolean>) {
   memory = JSON.stringify(next);
   try { localStorage.setItem(KEY, memory); } catch { /* private mode: lasts until the page reloads */ }
   window.dispatchEvent(new Event(EVT));
@@ -25,12 +25,11 @@ function subscribe(cb: () => void) {
 
 export function Sidebar({ access, onNavigate }: { access: Record<string, boolean> | null; onNavigate?: () => void }) {
   const pathname = usePathname();
-  // Sections are folded away; the one holding the page you are on is always open, and what you open stays open on this device.
-  const raw = useSyncExternalStore(subscribe, read, () => "[]");
-  const opened = useMemo<string[]>(() => { try { return JSON.parse(raw) as string[]; } catch { return []; } }, [raw]);
-  function toggle(label: string) {
-    const next = opened.includes(label) ? opened.filter((x) => x !== label) : [...opened, label];
-    save(next);
+  // Sections are folded away; the one holding the page you are on starts open, and whatever you open or close is remembered on this device.
+  const raw = useSyncExternalStore(subscribe, read, () => "{}");
+  const choice = useMemo<Record<string, boolean>>(() => { try { const v = JSON.parse(raw) as unknown; return v && typeof v === "object" && !Array.isArray(v) ? (v as Record<string, boolean>) : {}; } catch { return {}; } }, [raw]);
+  function toggle(label: string, isOpen: boolean) {
+    save({ ...choice, [label]: !isOpen });
   }
 
   return (
@@ -44,13 +43,14 @@ export function Sidebar({ access, onNavigate }: { access: Record<string, boolean
         const hrefs = visibleItems.map((i) => i.href).filter((h): h is string => !!h);
         const best = NAV_SECTIONS.flatMap((s) => s.items).map((i) => i.href).filter((h): h is string => !!h && pathname.startsWith(h)).sort((a, b) => b.length - a.length)[0];
         const hasActive = !!best && hrefs.includes(best);
-        const isOpen = hasActive || opened.includes(section.label);
+        // your own choice wins; with none, the group holding the current page is open
+        const isOpen = choice[section.label] ?? hasActive;
 
         return (
           <div key={section.label}>
             <button
               type="button"
-              onClick={() => toggle(section.label)}
+              onClick={() => toggle(section.label, isOpen)}
               aria-expanded={isOpen}
               className="flex w-full items-center justify-between rounded-lg px-2 py-2 text-xs font-semibold uppercase tracking-wide text-sidebar-text-muted hover:bg-white/5 hover:text-sidebar-text-active"
             >
